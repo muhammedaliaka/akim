@@ -16,6 +16,9 @@ import logging
 import re
 from typing import Iterable
 
+from difflib import SequenceMatcher
+
+from ..analysis.matching import title_key
 from ..http import HttpClient
 from ..models import ChartEntry, StoreGame
 
@@ -256,6 +259,23 @@ class SteamSource:
                 if full:
                     e.game = full
         return entries, errors
+
+    async def find_by_title(self, title: str) -> StoreGame | None:
+        """İsimle Steam'de oyun bulur (etiket ve açıklama için). Emin olunamazsa None."""
+        data = await self.http.get_json(
+            f"{STORE}/api/storesearch/", params={"term": title, "l": self.language, "cc": self.country}, retries=1
+        )
+        want = title_key(title)
+        best = None
+        for item in (data.get("items") or [])[:5]:
+            if item.get("type") != "app":
+                continue
+            ratio = SequenceMatcher(None, title_key(item.get("name", "")), want).ratio()
+            if ratio >= 0.9 and (best is None or ratio > best[0]):
+                best = (ratio, int(item["id"]))
+        if not best:
+            return None
+        return (await self.fetch_items([best[1]])).get(best[1])
 
     async def current_players(self, appid: int) -> int | None:
         try:

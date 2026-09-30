@@ -19,8 +19,11 @@ import re
 import time
 from dataclasses import dataclass, field
 
+from .analysis.concepts import CandidateText
 from .analysis.indie import IndieClassifier
-from .analysis.matching import TitleProfile, match_score, search_queries
+from .analysis.judge import LLMJudge
+from .analysis.matching import match_score, search_queries, title_key
+from .analysis.similarity import Evidence, GameContext, classify, heuristic_evidence
 from .analysis.scoring import MomentumSignals, RobloxAssessment, assess_roblox, decide, momentum_score
 from .config import Config
 from .events import EventBus
@@ -85,12 +88,12 @@ class LookupResult:
     title: str
     queries: list[str]
     generic: bool
-    matches: list[tuple[RobloxGame, float, str]]
-    related: list[tuple[RobloxGame, float, str]]
+    matches: list[tuple[RobloxGame, Evidence]]
+    related: list[tuple[RobloxGame, Evidence]]
 
     @property
     def all_games(self) -> list[RobloxGame]:
-        return [g for g, _, _ in self.matches + self.related]
+        return [g for g, _ in self.matches + self.related]
 
 
 def _fmt_int(n: int | float | None) -> str:
@@ -120,6 +123,7 @@ class Engine:
             allow=cfg.filters.allow_publishers,
         )
         self._ignore = [re.compile(p) for p in cfg.filters.ignore_titles]
+        self.judge = LLMJudge(cfg.llm, store)
         self.notifier = None  # __main__ tarafından atanır (kanallar engine.command'a ihtiyaç duyar)
         self._pending: dict[str, list[Signal]] = {}
         # title_key -> (zaman, sorgulayan oyun anahtarı, sonuç)
@@ -221,11 +225,44 @@ class Engine:
             bucket.append(signal)
 
     # ------------------------------------------------------------------ roblox
-    async def lookup_roblox(self, title: str) -> LookupResult:
-        """Bir başlık için Roblox'ta arama yapar ve sonuçları benzerliğe göre sınıflandırır."""
-        rc = self.cfg.roblox
-        profile = TitleProfile.from_title(title)
-        queries = search_queries(title, rc.max_queries_per_game)
+    async def context_for(self, game: dict) -> GameContext:
+        """Mağaza oyununun oynanış bağlamı. Etiketi olmayan Epic oyunları Steam'deki karşılığından beslenir."""
+        tags, desc = list(game.get("tags") or []), game.get("description") or ""
+        if game.get("store") == "epic" and not tags:
+            try:
+                twin = await self.steam.find_by_title(game["title"])
+            except Exception as exc:
+                log.debug("Steam karşılığı bulunamadı (%s): %s", game["title"], exc)
+                twin = None
+            if twin and twin.tags:
+                tags = twin.tags
+                if len(twin.description) > len(desc):
+                    desc = twin.description
+                self.store.enrich_game(game["key"], tags, desc)
+        return GameContext(game["title"], desc, tags)
+
+    async def context_for_title(self, title: str) -> tuple[GameContext, str]:
+        """Serbest başlık için bağlam (anlık kontrol). Önce takip edilen oyunlar, sonra Steam. (bağlam, kaynak)"""
+        row = self.store._one(
+            "SELECT key FROM games WHERE title_key=? ORDER BY length(COALESCE(description,'')) DESC LIMIT 1",
+            (title_key(title),),
+        )
+        if row:
+            game = self.store.get_game(row["key"])
+            if game and (game["description"] or game["tags"]):
+                return await self.context_for(game), f"takip edilen oyun ({game['store'].capitalize()})"
+        try:
+            twin = await self.steam.find_by_title(title)
+        except Exception:
+            twin = None
+        if twin:
+            return GameContext(twin.title, twin.description, twin.tags), f"Steam: {twin.title}"
+        return GameContext(title), "yalnızca isim (Steam'de bulunamadı)"
+
+    async def lookup_roblox(self, ctx: GameContext) -> LookupResult:
+        """Roblox'ta arar; her adayı isim, açıklama-atfı, oynanış ve (varsa) Claude ile değerlendirir."""
+        rc, sc = self.cfg.roblox, self.cfg.scoring
+        queries = search_queries(ctx.title, rc.max_queries_per_game)
         found: dict[int, RobloxGame] = {}
         want_details: list[int] = []
         for q in queries:
@@ -233,10 +270,10 @@ class Engine:
                 if g.universe_id in found:
                     continue
                 found[g.universe_id] = g
-                # Detay (ziyaret, açıklama, tarih) yalnızca umut vadeden adaylar için çekilir:
-                # aramanın ilk sıraları, açıklaması boş gelenler veya ön puanı yüksek olanlar
-                pre, _ = match_score(profile, g.name, g.description)
-                if pre >= 0.5 or pos < 6 or (not g.description and pos < 15):
+                # Detay (ziyaret, tür, tam açıklama) umut vadeden adaylar için: aramanın ilk sıraları,
+                # açıklaması boş gelenler ve isim/atıf ön puanı yüksek olanlar
+                pre, _ = match_score(ctx.title_profile, g.name, g.description)
+                if pre >= 0.5 or pos < 15 or (not g.description and pos < 25):
                     want_details.append(g.universe_id)
         if want_details:
             details = await self.roblox.details(want_details[:100])
@@ -246,11 +283,30 @@ class Engine:
                 d.description = d.description or s.description
                 found[uid] = d
 
-        thr = self.cfg.scoring.similarity_threshold
-        scored = [(g, *match_score(profile, g.name, g.description)) for g in found.values()]
-        matches = sorted((x for x in scored if x[1] >= thr), key=lambda x: (-x[1], -x[0].playing))
-        related = [x for x in scored if x[1] < thr][:6]  # Roblox aramasının kendi önerdiği benzerler
-        return LookupResult(title, queries, profile.generic, matches[: rc.max_matches_per_game], related)
+        games = list(found.values())
+        evidences = heuristic_evidence(ctx, [CandidateText(g.name, g.description, g.genre) for g in games])
+        has_ctx = not ctx.concept_profile.empty
+        for g, ev in zip(games, evidences):
+            classify(ev, sc, has_context=has_ctx, has_description=bool(g.description))
+
+        if self.judge.available:
+            ranked = sorted(zip(games, evidences), key=lambda x: -x[1].score)
+            ask = [g for g, ev in ranked if ev.score >= self.cfg.llm.min_prescore][: self.cfg.llm.max_candidates]
+            verdicts = await self.judge.judge(ctx, ask)
+            for g, ev in zip(games, evidences):
+                v = verdicts.get(g.universe_id)
+                if v:
+                    ev.llm, ev.llm_relation, ev.llm_reason = v.similarity, v.relation, v.reason
+                    classify(ev, sc, has_context=has_ctx, has_description=bool(g.description))
+
+        pairs = list(zip(games, evidences))
+        matches = sorted(
+            (p for p in pairs if p[1].kind != "none"),
+            key=lambda p: (p[1].kind != "clone", -p[1].score, -p[0].playing),
+        )[: rc.max_matches_per_game]
+        # Eşleşme sayılmayan ama en yakın adaylar (ör. farklı isimli konsept benzerleri) panelde gösterilir
+        related = sorted((p for p in pairs if p[1].kind == "none"), key=lambda p: -p[1].score)[:6]
+        return LookupResult(ctx.title, queries, ctx.generic, matches, related)
 
     async def scan_roblox(self, key: str) -> None:
         game = self.store.get_game(key)
@@ -263,7 +319,7 @@ class Engine:
         if cached and cached[1] != key and time.time() - cached[0] < 30 * 60:
             result = cached[2]
         else:
-            result = await self.lookup_roblox(game["title"])
+            result = await self.lookup_roblox(await self.context_for(game))
             self._lookup_cache[tkey] = (time.time(), key, result)
             if len(self._lookup_cache) > 500:
                 oldest = sorted(self._lookup_cache.items(), key=lambda kv: kv[1][0])[:100]
@@ -272,28 +328,38 @@ class Engine:
         now = time.time()
         self.store.upsert_roblox_games(result.all_games, now)
         prev_check = self.store.last_roblox_check(key)
-        new_ids = self.store.set_links(key, [(g.universe_id, s, r) for g, s, r in result.matches], now)
+        new_ids = self.store.set_links(
+            key,
+            [
+                {"universe_id": g.universe_id, "similarity": ev.score, "reason": ev.reason(), "kind": ev.kind,
+                 "weight": ev.weight, "evidence": ev.to_dict()}
+                for g, ev in result.matches
+            ],
+            now,
+        )
         baseline = self.store.roblox_baseline(key, now - DAY, now)
-        assessment = assess_roblox([g for g, _, _ in result.matches], baseline, self.cfg.scoring)
+        assessment = assess_roblox([(g, ev.weight) for g, ev in result.matches], baseline, self.cfg.scoring)
         related = [
             {"universe_id": g.universe_id, "name": g.name, "playing": g.playing, "visits": g.visits,
-             "url": g.url, "similarity": s}
-            for g, s, _ in result.related
+             "url": g.url, "similarity": ev.score, "reason": ev.reason()}
+            for g, ev in result.related
         ]
         self.store.add_roblox_check(
             key, now, assessment.status.value, assessment.saturation, assessment.match_count,
             assessment.total_playing, assessment.top_visits, {"generic": result.generic, "related": related}, True,
+            clone_count=assessment.clone_count,
         )
         events = RobloxEvents()
         if prev_check is not None:
-            events.first_clone = prev_check["match_count"] == 0 and assessment.match_count > 0
+            prev_clones = prev_check["clone_count"] if prev_check["clone_count"] is not None else prev_check["match_count"]
+            events.first_clone = prev_clones == 0 and assessment.clone_count > 0
             events.new_clones = [
-                {"name": g.name, "playing": g.playing, "url": g.url}
-                for g, _, _ in result.matches if g.universe_id in new_ids
+                {"name": g.name, "playing": g.playing, "url": g.url, "reason": ev.reason()}
+                for g, ev in result.matches if g.universe_id in new_ids and ev.kind == "clone"
             ]
         log.info(
-            "Roblox tarandı: %s -> %s (%d eşleşme, %d oyuncu)",
-            game["title"], assessment.status.label, assessment.match_count, assessment.total_playing,
+            "Roblox tarandı: %s -> %s (%d klon, %d benzer, %d oyuncu)", game["title"], assessment.status.label,
+            assessment.clone_count, assessment.similar_count, assessment.total_playing,
         )
         await self.evaluate(key, roblox_events=events, scanned_at=now)
 
@@ -311,19 +377,20 @@ class Engine:
         now = time.time()
         keys = [g["key"] for g in self.store.tracked_games(self.track_since(now), self.min_indie)]
         links = self.store.keys_with_links(keys)
-        ids = sorted({u for us in links.values() for u in us})
+        ids = sorted({u for us in links.values() for u, _ in us})
         if not ids:
             return
         details = await self.roblox.details(ids)
         self.store.upsert_roblox_games(details.values(), now)
         for key, uids in links.items():
-            games = [details[u] for u in uids if u in details]
+            games = [(details[u], w) for u, w in uids if u in details]
             if not games:
                 continue
             baseline = self.store.roblox_baseline(key, now - DAY, now)
             a = assess_roblox(games, baseline, self.cfg.scoring)
             self.store.add_roblox_check(
-                key, now, a.status.value, a.saturation, a.match_count, a.total_playing, a.top_visits, None, False
+                key, now, a.status.value, a.saturation, a.match_count, a.total_playing, a.top_visits, None, False,
+                clone_count=a.clone_count,
             )
             await self.evaluate(key)
         log.info("Roblox klon takibi: %d oyun, %d klon güncellendi", len(links), len(details))
@@ -400,9 +467,11 @@ class Engine:
         now = time.time()
         momentum, m_reasons, m = self.momentum_for(key, game, now)
         full = self.store.last_roblox_check(key, full_scan_only=True)
+        clones = check["clone_count"] if check["clone_count"] is not None else check["match_count"]
         assessment = RobloxAssessment(
             RobloxStatus(check["status"]), check["saturation"], check["match_count"],
-            check["total_playing"], check["top_visits"],
+            check["total_playing"], check["top_visits"], clone_count=clones,
+            similar_count=max(0, check["match_count"] - clones),
         )
         decision, score = decide(game["indie_score"], momentum, assessment, self.cfg.scoring, self.min_indie)
         prev = self.store.get_decision(key)
@@ -447,14 +516,17 @@ class Engine:
         fields = [
             ("Listeler", chart_txt or "-"),
             ("Yayıncı", ", ".join(game["publishers"][:2]) or "-"),
-            ("Roblox", f"{a.status.label} ({a.match_count} benzer, {_fmt_int(a.total_playing)} oyuncu)"),
+            ("Roblox", f"{a.status.label} ({a.clone_count} klon, {a.similar_count} benzer oynanış, "
+                       f"{_fmt_int(a.total_playing)} oyuncu)"),
             ("Skor", f"{score:.2f} (bağımsızlık {game['indie_score']:.2f} · momentum {momentum:.2f} · doygunluk {a.saturation:.2f})"),
         ]
         if m.ccu_now:
             fields.append(("Steam anlık oyuncu", _fmt_int(m.ccu_now) + (f" (x{m.ccu_ratio:.1f})" if m.ccu_ratio else "")))
         clones = self.store.linked_roblox_games(game["key"])[:3]
         if clones:
-            fields.append(("Öne çıkan Roblox benzerleri", "; ".join(f"{c['name'][:40]} ({_fmt_int(c['playing'])})" for c in clones)))
+            fields.append(("Öne çıkan Roblox benzerleri", "; ".join(
+                f"{c['name'][:40]} (%{round((c.get('similarity') or 0) * 100)}, {_fmt_int(c['playing'])} oyuncu)"
+                for c in clones)))
         return fields
 
     def _compose_alerts(
@@ -476,7 +548,8 @@ class Engine:
             critical = a.status == RobloxStatus.NONE and momentum >= 0.6
             roblox_txt = (
                 "Roblox'ta henüz karşılığı YOK." if a.status == RobloxStatus.NONE
-                else f"Roblox'ta yalnızca {a.match_count} küçük benzer oyun var ({_fmt_int(a.total_playing)} anlık oyuncu)."
+                else f"Roblox'ta yalnızca {a.clone_count} küçük klon ve {a.similar_count} benzer oynanışlı oyun var "
+                f"({_fmt_int(a.total_playing)} anlık oyuncu)."
             )
             signal_txt = ("\nSinyal: " + "; ".join(s.text for s in signals)) if signals else ""
             out.append(Alert(
@@ -515,7 +588,8 @@ class Engine:
             out.append(Alert(
                 type="saturated", priority=Priority.LOW,
                 title=f"Fırsat penceresi kapandı: {title}",
-                body=f"Roblox tarafı doydu ({a.match_count} benzer oyun, {_fmt_int(a.total_playing)} anlık oyuncu).",
+                body=f"Roblox tarafı doydu ({a.clone_count} klon, {a.similar_count} benzer oynanış, "
+                     f"{_fmt_int(a.total_playing)} anlık oyuncu).",
                 **base,
             ))
 
@@ -698,16 +772,20 @@ class Engine:
 
     # ------------------------------------------------------------------ sorgular (web + komutlar)
     async def adhoc_check(self, title: str) -> dict:
-        result = await self.lookup_roblox(title)
-        a = assess_roblox([g for g, _, _ in result.matches], None, self.cfg.scoring)
-        as_dict = lambda g, s, r: {  # noqa: E731
+        ctx, source = await self.context_for_title(title)
+        result = await self.lookup_roblox(ctx)
+        a = assess_roblox([(g, ev.weight) for g, ev in result.matches], None, self.cfg.scoring)
+        as_dict = lambda g, ev: {  # noqa: E731
             "name": g.name, "creator": g.creator, "playing": g.playing, "visits": g.visits,
-            "created": g.created, "url": g.url, "similarity": s, "reason": r,
+            "created": g.created, "url": g.url, "similarity": ev.score, "kind": ev.kind,
+            "reason": ev.reason(), "evidence": ev.to_dict(),
         }
         return {
-            "title": title, "queries": result.queries, "generic": result.generic,
+            "title": title, "resolved_title": ctx.title, "context_source": source, "tags": ctx.tags[:10],
+            "queries": result.queries, "generic": result.generic, "llm": self.judge.available,
             "status": a.status.value, "status_label": a.status.label, "saturation": a.saturation,
-            "total_playing": a.total_playing, "matches": [as_dict(*m) for m in result.matches],
+            "total_playing": a.total_playing, "clone_count": a.clone_count, "similar_count": a.similar_count,
+            "matches": [as_dict(*m) for m in result.matches],
             "related": [as_dict(*m) for m in result.related],
         }
 
@@ -772,20 +850,27 @@ class Engine:
             if not arg:
                 return "Kullanım: /kontrol &lt;oyun adı&gt;"
             r = await self.adhoc_check(arg)
-            lines = [f"<b>{e(arg)}</b> → <b>{e(r['status_label'])}</b> (doygunluk {r['saturation']:.2f})"]
+            lines = [
+                f"<b>{e(r['resolved_title'])}</b> → <b>{e(r['status_label'])}</b> "
+                f"({r['clone_count']} klon, {r['similar_count']} benzer · doygunluk {r['saturation']:.2f})",
+                f"<i>Bağlam: {e(r['context_source'])}</i>",
+            ]
             if r["generic"]:
                 lines.append("⚠️ Genel bir isim; eşleşmeleri elle doğrula.")
             if r["matches"]:
                 lines += ["", "<b>Roblox'taki benzerleri:</b>"]
                 for mt in r["matches"][:8]:
+                    tag = "🎯 klon" if mt["kind"] == "clone" else "≈ benzer"
                     lines.append(
-                        f'• <a href="{e(mt["url"], quote=True)}">{e(mt["name"][:60])}</a> — '
-                        f"{_fmt_int(mt['playing'])} oyuncu, {_fmt_int(mt['visits'])} ziyaret ({e(mt['reason'])})"
+                        f'• %{round(mt["similarity"] * 100)} {tag} — <a href="{e(mt["url"], quote=True)}">'
+                        f'{e(mt["name"][:60])}</a> ({_fmt_int(mt["playing"])} oyuncu, {_fmt_int(mt["visits"])} ziyaret)'
+                        f"\n   <i>{e(mt['reason'])}</i>"
                     )
             else:
-                lines.append("Roblox'ta doğrudan karşılığı bulunamadı.")
+                lines.append("Roblox'ta benzer oynanışa sahip oyun bulunamadı.")
             if r["related"]:
-                lines += ["", "Roblox aramasının önerdikleri: " + e(", ".join(x["name"][:30] for x in r["related"][:5]))]
+                lines += ["", "En yakın diğer adaylar: " + e(", ".join(
+                    f"{x['name'][:28]} (%{round(x['similarity'] * 100)})" for x in r["related"][:5]))]
             return "\n".join(lines)
         if cmd in ("oyun", "game"):
             if not arg:
@@ -803,7 +888,11 @@ class Engine:
             for r in d["ranks"]:
                 lines.append(f"• {e(chart_label(r['chart']))}: #{r['rank']}")
             for c in d["roblox"][:5]:
-                lines.append(f"• Roblox: {e(c['name'][:50])} — {_fmt_int(c['playing'])} oyuncu")
+                tag = "klon" if c.get("kind") == "clone" else "benzer"
+                lines.append(
+                    f"• Roblox ({tag} %{round((c.get('similarity') or 0) * 100)}): {e(c['name'][:50])} — "
+                    f"{_fmt_int(c['playing'])} oyuncu"
+                )
             return "\n".join(lines)
         return (
             "<b>Akım komutları</b>\n"

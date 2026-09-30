@@ -133,19 +133,26 @@ async def cmd_check(cfg: Config, title: str) -> None:
         r = await app.engine.adhoc_check(title)
     finally:
         await app.close()
-    print(f"\n{title} → {r['status_label']} (doygunluk {r['saturation']:.2f}, toplam {r['total_playing']} anlık oyuncu)")
-    print(f"Aramalar: {', '.join(r['queries'])}")
+    print(
+        f"\n{r['resolved_title']} → {r['status_label']} ({r['clone_count']} klon, {r['similar_count']} benzer oynanış, "
+        f"doygunluk {r['saturation']:.2f}, ağırlıklı {r['total_playing']} anlık oyuncu)"
+    )
+    print(f"Bağlam: {r['context_source']}" + (f" · etiketler: {', '.join(r['tags'][:6])}" if r["tags"] else ""))
+    print(f"Aramalar: {', '.join(r['queries'])}" + (" · Claude doğrulaması açık" if r["llm"] else ""))
     if r["generic"]:
         print("⚠️  Genel bir isim; eşleşmeleri elle doğrula.")
     if r["matches"]:
-        print("\nRoblox'taki benzerleri:")
+        print("\nRoblox'taki benzerleri (% benzerlik):")
         for m in r["matches"]:
-            print(f"  {m['similarity']:.2f}  {m['name'][:45]:45} {_fmt_int(m['playing']):>6} oyuncu {_fmt_int(m['visits']):>7} ziyaret  ({m['reason']})")
-            print(f"        {m['url']}")
+            kind = "KLON  " if m["kind"] == "clone" else "benzer"
+            print(f"  %{round(m['similarity'] * 100):3} {kind} {m['name'][:42]:42} {_fmt_int(m['playing']):>6} oyuncu {_fmt_int(m['visits']):>7} ziyaret")
+            print(f"              {m['reason']}")
+            print(f"              {m['url']}")
     else:
-        print("\nRoblox'ta doğrudan karşılığı bulunamadı.")
+        print("\nRoblox'ta benzer oynanışa sahip oyun bulunamadı.")
     if r["related"]:
-        print("\nRoblox aramasının önerdikleri (eşleşme sayılmadı): " + ", ".join(x["name"][:30] for x in r["related"]))
+        print("\nEn yakın diğer adaylar (eşleşme sayılmadı): " + ", ".join(
+            f"{x['name'][:28]} (%{round(x['similarity'] * 100)})" for x in r["related"]))
 
 
 async def cmd_test_notify(cfg: Config) -> None:

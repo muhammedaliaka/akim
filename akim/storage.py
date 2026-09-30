@@ -73,7 +73,22 @@ CREATE TABLE IF NOT EXISTS source_health (
     consecutive_failures INTEGER DEFAULT 0, alerted INTEGER DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS kv (k TEXT PRIMARY KEY, v TEXT);
+CREATE TABLE IF NOT EXISTS llm_verdicts (
+    title_key TEXT NOT NULL, universe_id INTEGER NOT NULL, fingerprint TEXT, similarity REAL, relation TEXT,
+    reason TEXT, model TEXT, ts REAL,
+    PRIMARY KEY (title_key, universe_id)
+);
 """
+
+# Sonradan eklenen sütunlar: (tablo, sütun, tanım). Eski veritabanları açılışta güncellenir.
+MIGRATIONS = [
+    ("games", "discount_pct", "INTEGER DEFAULT 0"),
+    ("roblox_games", "genre", "TEXT"),
+    ("roblox_links", "kind", "TEXT DEFAULT 'clone'"),
+    ("roblox_links", "weight", "REAL DEFAULT 1.0"),
+    ("roblox_links", "evidence", "TEXT"),
+    ("roblox_checks", "clone_count", "INTEGER"),
+]
 
 
 def _row(r: sqlite3.Row | None) -> dict | None:
@@ -99,8 +114,10 @@ class Storage:
             self.db.execute("ALTER TABLE games ADD COLUMN title_key TEXT")
             for r in self.db.execute("SELECT key, title FROM games").fetchall():
                 self.db.execute("UPDATE games SET title_key=? WHERE key=?", (title_key(r["title"]), r["key"]))
-        if "discount_pct" not in cols:
-            self.db.execute("ALTER TABLE games ADD COLUMN discount_pct INTEGER DEFAULT 0")
+        for table, col, ddl in MIGRATIONS:
+            existing = {r["name"] for r in self.db.execute(f"PRAGMA table_info({table})").fetchall()}
+            if col not in existing:
+                self.db.execute(f"ALTER TABLE {table} ADD COLUMN {col} {ddl}")
         self.db.execute("CREATE INDEX IF NOT EXISTS ix_games_tkey ON games(title_key)")
 
     def close(self) -> None:
@@ -222,8 +239,8 @@ class Storage:
             self.db.execute(
                 """
                 INSERT INTO roblox_games(universe_id, root_place_id, name, creator, description, playing, visits,
-                    up_votes, down_votes, favorites, created, updated, first_seen, last_seen)
-                VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    up_votes, down_votes, favorites, created, updated, first_seen, last_seen, genre)
+                VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                 ON CONFLICT(universe_id) DO UPDATE SET
                     root_place_id=excluded.root_place_id, name=excluded.name,
                     creator=COALESCE(NULLIF(excluded.creator,''), roblox_games.creator),
@@ -235,11 +252,12 @@ class Storage:
                     favorites=MAX(excluded.favorites, COALESCE(roblox_games.favorites,0)),
                     created=COALESCE(excluded.created, roblox_games.created),
                     updated=COALESCE(excluded.updated, roblox_games.updated),
+                    genre=COALESCE(NULLIF(excluded.genre,''), roblox_games.genre),
                     last_seen=excluded.last_seen
                 """,
                 (
                     g.universe_id, g.root_place_id, g.name, g.creator, g.description, g.playing, g.visits,
-                    g.up_votes, g.down_votes, g.favorites, g.created, g.updated, now, now,
+                    g.up_votes, g.down_votes, g.favorites, g.created, g.updated, now, now, g.genre,
                 ),
             )
             self.db.execute(
@@ -247,50 +265,59 @@ class Storage:
                 (g.universe_id, g.playing, g.visits, now),
             )
 
-    def set_links(self, key: str, links: list[tuple[int, float, str]], now: float) -> list[int]:
-        """Oyunun güncel Roblox eşleşmelerini yazar; yeni eklenen universe_id'leri döner."""
+    def set_links(self, key: str, links: list[dict], now: float) -> list[int]:
+        """Oyunun güncel Roblox eşleşmelerini yazar; yeni eklenen universe_id'leri döner.
+
+        links: {universe_id, similarity, reason, kind, weight, evidence} sözlükleri.
+        """
         old = {r["universe_id"]: r for r in self._all("SELECT * FROM roblox_links WHERE key=?", (key,))}
         self.db.execute("DELETE FROM roblox_links WHERE key=?", (key,))
         new_ids = []
-        for uid, sim, reason in links:
+        for link in links:
+            uid = link["universe_id"]
             first = old[uid]["first_seen"] if uid in old else now
             if uid not in old:
                 new_ids.append(uid)
             self.db.execute(
-                "INSERT INTO roblox_links(key, universe_id, similarity, reason, first_seen, last_seen) VALUES(?,?,?,?,?,?)",
-                (key, uid, sim, reason, first, now),
+                """INSERT INTO roblox_links(key, universe_id, similarity, reason, first_seen, last_seen, kind, weight, evidence)
+                   VALUES(?,?,?,?,?,?,?,?,?)""",
+                (key, uid, link["similarity"], link["reason"], first, now, link.get("kind", "clone"),
+                 link.get("weight", 1.0), json.dumps(link.get("evidence") or {}, ensure_ascii=False)),
             )
         return new_ids
 
     def linked_roblox_games(self, key: str) -> list[dict]:
         return self._all(
             """
-            SELECT r.*, l.similarity, l.reason, l.first_seen AS linked_since
+            SELECT r.*, l.similarity, l.reason, l.kind, l.weight, l.evidence, l.first_seen AS linked_since
             FROM roblox_links l JOIN roblox_games r ON r.universe_id=l.universe_id
-            WHERE l.key=? ORDER BY r.playing DESC, r.visits DESC
+            WHERE l.key=? ORDER BY (l.kind='clone') DESC, l.similarity DESC, r.playing DESC
             """,
             (key,),
         )
 
-    def keys_with_links(self, keys: Iterable[str]) -> dict[str, list[int]]:
+    def keys_with_links(self, keys: Iterable[str]) -> dict[str, list[tuple[int, float]]]:
+        """oyun anahtarı -> [(universe_id, doygunluk ağırlığı)]"""
         keys = list(keys)
         if not keys:
             return {}
         q = ",".join("?" * len(keys))
-        out: dict[str, list[int]] = {}
-        for r in self._all(f"SELECT key, universe_id FROM roblox_links WHERE key IN ({q})", keys):
-            out.setdefault(r["key"], []).append(r["universe_id"])
+        out: dict[str, list[tuple[int, float]]] = {}
+        for r in self._all(f"SELECT key, universe_id, weight FROM roblox_links WHERE key IN ({q})", keys):
+            out.setdefault(r["key"], []).append((r["universe_id"], r["weight"] if r["weight"] is not None else 1.0))
         return out
 
     def add_roblox_check(
         self, key: str, now: float, status: str, saturation: float, match_count: int,
-        total_playing: int, top_visits: int, related: list[dict] | None, full_scan: bool,
+        total_playing: int, top_visits: int, related: dict | None, full_scan: bool, clone_count: int | None = None,
     ) -> None:
         self.db.execute(
-            """INSERT INTO roblox_checks(key, ts, status, saturation, match_count, total_playing, top_visits, related, full_scan)
-               VALUES(?,?,?,?,?,?,?,?,?)""",
+            """INSERT INTO roblox_checks(key, ts, status, saturation, match_count, total_playing, top_visits, related,
+                   full_scan, clone_count)
+               VALUES(?,?,?,?,?,?,?,?,?,?)""",
             (key, now, status, saturation, match_count, total_playing, top_visits,
-             json.dumps(related, ensure_ascii=False) if related is not None else None, int(full_scan)),
+             json.dumps(related, ensure_ascii=False) if related is not None else None, int(full_scan),
+             match_count if clone_count is None else clone_count),
         )
 
     def last_roblox_check(self, key: str, full_scan_only: bool = False) -> dict | None:
@@ -308,6 +335,31 @@ class Storage:
         return self._all(
             "SELECT ts, status, saturation, match_count, total_playing FROM roblox_checks WHERE key=? AND ts>=? ORDER BY ts",
             (key, since),
+        )
+
+    # ------------------------------------------------------------------ LLM kararları (önbellek)
+    def get_verdict(self, tkey: str, universe_id: int) -> dict | None:
+        return self._one("SELECT * FROM llm_verdicts WHERE title_key=? AND universe_id=?", (tkey, universe_id))
+
+    def save_verdict(
+        self, tkey: str, universe_id: int, fingerprint: str, similarity: float, relation: str, reason: str,
+        model: str, now: float,
+    ) -> None:
+        self.db.execute(
+            """INSERT INTO llm_verdicts(title_key, universe_id, fingerprint, similarity, relation, reason, model, ts)
+               VALUES(?,?,?,?,?,?,?,?)
+               ON CONFLICT(title_key, universe_id) DO UPDATE SET fingerprint=excluded.fingerprint,
+                   similarity=excluded.similarity, relation=excluded.relation, reason=excluded.reason,
+                   model=excluded.model, ts=excluded.ts""",
+            (tkey, universe_id, fingerprint, similarity, relation, reason, model, now),
+        )
+
+    def enrich_game(self, key: str, tags: list[str], description: str) -> None:
+        """Etiketi olmayan (ör. Epic) oyuna başka mağazadan bulunan etiket/açıklamayı ekler."""
+        self.db.execute(
+            """UPDATE games SET tags=?, description=CASE WHEN length(COALESCE(description,'')) < length(?)
+                   THEN ? ELSE description END WHERE key=?""",
+            (json.dumps(tags), description, description, key),
         )
 
     # ------------------------------------------------------------------ kararlar
@@ -450,6 +502,7 @@ class Storage:
         return {
             "games": one("SELECT COUNT(*) AS c FROM games"),
             "roblox_games": one("SELECT COUNT(DISTINCT universe_id) AS c FROM roblox_links"),
+            "roblox_clones": one("SELECT COUNT(DISTINCT universe_id) AS c FROM roblox_links WHERE kind='clone'"),
             "alerts": one("SELECT COUNT(*) AS c FROM alerts"),
             "decisions": {r["decision"]: r["c"] for r in self._all("SELECT decision, COUNT(*) AS c FROM decisions GROUP BY decision")},
         }

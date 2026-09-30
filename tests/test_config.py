@@ -45,3 +45,10 @@ def test_env_shortcuts(tmp_path, monkeypatch):
     monkeypatch.setenv("AKIM_NTFY_TOPIC", "benim-konum")
     cfg = load_config()
     assert cfg.notifications.channels["ntfy"].topic == "benim-konum"
+
+
+def test_example_config_is_valid(monkeypatch):
+    from pathlib import Path
+
+    cfg = load_config(Path(__file__).parent.parent / "config.example.yaml")
+    assert cfg.scoring.concept_clone_threshold == 0.75 and cfg.llm.model == "claude-opus-5-5"

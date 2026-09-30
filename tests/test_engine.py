@@ -39,6 +39,9 @@ class FakeSteam:
     async def current_players(self, appid):
         return None
 
+    async def find_by_title(self, title):
+        return None
+
 
 class FakeEpic:
     async def fetch_charts(self, collections, include_free=False):
@@ -207,7 +210,7 @@ def test_telegram_commands_render():
         text = await engine.command("firsatlar", "")
         assert "Moss &lt;Diver&gt;" in text  # HTML kaçışı
         assert "Akım durumu" in await engine.command("durum", "")
-        assert "Roblox'ta doğrudan karşılığı bulunamadı" in await engine.command("kontrol", "Some Game")
+        assert "Roblox'ta benzer oynanışa sahip oyun bulunamadı" in await engine.command("kontrol", "Some Game")
         await engine.http.close()
 
     asyncio.run(scenario())

@@ -79,6 +79,16 @@ def test_roblox_assessment_states():
     assert rising.status == RobloxStatus.RISING
 
 
+def test_huge_same_genre_game_does_not_saturate_alone():
+    cfg = ScoringConfig()
+    rivals = RobloxGame(universe_id=9, root_place_id=9, name="RIVALS", playing=135_000, visits=18_000_000_000)
+    a = assess_roblox([(rivals, cfg.similar_weight)], None, cfg)
+    assert a.status in (RobloxStatus.NONE, RobloxStatus.EARLY) and a.saturation <= cfg.similar_weight
+    assert a.clone_count == 0 and a.similar_count == 1 and a.total_playing == 0
+    # türdaşın günlük dalgalanması "AKIM BAŞLADI" üretmez: artış yalnızca klonlardan ölçülür
+    assert assess_roblox([(rivals, cfg.similar_weight)], baseline_playing=10, cfg=cfg).status != RobloxStatus.RISING
+
+
 def test_decisions():
     cfg = ScoringConfig()
     none = assess_roblox([], None, cfg)

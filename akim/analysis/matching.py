@@ -62,7 +62,7 @@ _BRACKETS_RE = re.compile(r"[\[\(\{【<][^\]\)\}】>]*[\]\)\}】>]")
 # ifadelerde araya birkaç kelime girebilir
 _INSPIRED_STRONG_RE = re.compile(
     r"(inspired by|inspiration from|based on|based off|clone of|tribute to|fan ?made|fan game|remake of|"
-    r"version of|similar to|parody of|our take on|homage to)(?:\W+\w+){0,8}\W*$"
+    r"version of|similar to|parody of|our take on|homage to)(?:\W+\w+){0,6}\W*$"
 )
 _INSPIRED_WEAK_RE = re.compile(r"(if you like|if you liked|fans of|like)\W*$")
 
@@ -199,19 +199,28 @@ class TitleProfile:
 def description_signal(profile: TitleProfile, description: str) -> tuple[float, str]:
     if not description:
         return 0.0, ""
-    desc = normalize(description, drop_brackets=False)
+    # "inspired by" ile oyun adı aynı cümlede/satırda olmalı: "…inspired by REPO. Tags: … lethal company"
+    # bir etiket listesidir, Lethal Company'ye atıf değildir.
+    raw = _collapse_acronyms(unicodedata.normalize("NFKC", description))
+    segments = [
+        normalize(seg, drop_brackets=False)
+        for seg in re.split(r"[.!?\n\r|•]+|(?i:\btags?\s*[:\-])", raw)
+        if seg
+    ]
     best = (0.0, "")
     for phrase, plain_ok in profile.phrases:
-        for m in re.finditer(r"\b" + re.escape(phrase) + r"\b", desc):
-            window = desc[max(0, m.start() - 90) : m.start()]
-            inspired = _INSPIRED_STRONG_RE.search(window) or _INSPIRED_WEAK_RE.search(window[-20:])
-            if inspired:
-                return 0.95, f"açıklamada '{inspired.group(1)} … {phrase}' ifadesi"
-            if not plain_ok:
-                continue
-            score = 0.45 if profile.generic else 0.78
-            if score > best[0]:
-                best = (score, "açıklamada oyunun adı geçiyor")
+        pattern = re.compile(r"\b" + re.escape(phrase) + r"\b")
+        for seg in segments:
+            for m in pattern.finditer(seg):
+                window = seg[max(0, m.start() - 90) : m.start()]
+                inspired = _INSPIRED_STRONG_RE.search(window) or _INSPIRED_WEAK_RE.search(window[-20:])
+                if inspired:
+                    return 0.95, f"açıklamada '{inspired.group(1)} … {phrase}' ifadesi"
+                if not plain_ok:
+                    continue
+                score = 0.45 if profile.generic else 0.78
+                if score > best[0]:
+                    best = (score, "açıklamada oyunun adı geçiyor")
     return best
 
 

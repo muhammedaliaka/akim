@@ -57,6 +57,7 @@ class RobloxGame:
     favorites: int = 0
     created: str | None = None  # ISO-8601
     updated: str | None = None
+    genre: str = ""  # ör. "Action / Open World Action"
 
     @property
     def url(self) -> str:

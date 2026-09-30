@@ -103,28 +103,53 @@ def _log_scale(x: float, floor: float, full: float) -> float:
 class RobloxAssessment:
     status: RobloxStatus
     saturation: float
-    match_count: int
-    total_playing: int
+    match_count: int  # klon + benzer
+    total_playing: int  # ağırlıklı toplam anlık oyuncu
     top_visits: int
     reasons: list[str] = field(default_factory=list)
+    clone_count: int = 0
+    similar_count: int = 0
+
+
+def _saturation(games: list[RobloxGame], cfg: ScoringConfig) -> float:
+    if not games:
+        return 0.0
+    return min(1.0, (
+        0.30 * min(1.0, len(games) / max(1, cfg.saturation_match_count))
+        + 0.45 * _log_scale(sum(g.playing for g in games), 10, cfg.saturation_ccu)
+        + 0.25 * _log_scale(max(g.visits for g in games), 10_000, cfg.saturation_visits)
+    ))
 
 
 def assess_roblox(
-    matches: list[RobloxGame], baseline_playing: int | None, cfg: ScoringConfig
+    matches: list[RobloxGame | tuple[RobloxGame, float]], baseline_playing: int | None, cfg: ScoringConfig
 ) -> RobloxAssessment:
-    """matches: eşik üstü benzerlikteki Roblox oyunları. baseline_playing: son 24 saatteki en düşük toplam."""
-    if not matches:
-        return RobloxAssessment(RobloxStatus.NONE, 0.0, 0, 0, 0, ["Roblox'ta eşleşen oyun yok"])
-    n = len(matches)
-    total_playing = sum(g.playing for g in matches)
-    top_visits = max(g.visits for g in matches)
-    sat = (
-        0.30 * min(1.0, n / max(1, cfg.saturation_match_count))
-        + 0.45 * _log_scale(total_playing, 10, cfg.saturation_ccu)
-        + 0.25 * _log_scale(top_visits, 10_000, cfg.saturation_visits)
-    )
-    sat = round(min(1.0, sat), 3)
-    reasons = [f"{n} benzer oyun", f"toplam {total_playing} anlık oyuncu", f"en çok ziyaret {top_visits:,}"]
+    """Roblox tarafının ne kadar dolu olduğunu ölçer.
+
+    matches: eşleşen oyunlar; (oyun, ağırlık) çiftleri de olabilir. Ağırlığı 1 olanlar klon, daha düşük
+    olanlar "benzer oynanış"tır. Doygunluk klonlardan hesaplanır; benzer oyunlar yalnızca sınırlı bir ek
+    rekabet katkısı yapar (en fazla similar_weight): RIVALS gibi dev ama sadece aynı türdeki bir oyun,
+    bir taktik nişancının Roblox'ta "zaten var" sayılmasına yetmez.
+    total_playing yalnızca klonların anlık oyuncusudur; ani artış (AKIM BAŞLADI) bundan ölçülür, böylece
+    dev bir türdaşın günlük dalgalanması sahte alarm üretmez.
+    """
+    items = [(m, 1.0) if isinstance(m, RobloxGame) else m for m in matches]
+    items = [(g, w) for g, w in items if w > 0]
+    clones = [g for g, w in items if w >= 0.99]
+    similar = [g for g, w in items if w < 0.99]
+    if not items:
+        return RobloxAssessment(RobloxStatus.NONE, 0.0, 0, 0, 0, ["Roblox'ta benzer oyun yok"])
+    sat_clone = _saturation(clones, cfg)
+    sat_similar = _saturation(similar, cfg)
+    sat = round(min(1.0, sat_clone + cfg.similar_weight * sat_similar * (1 - sat_clone)), 3)
+    total_playing = sum(g.playing for g in clones)
+    top_visits = max((g.visits for g in clones), default=0)
+    reasons = [f"{len(clones)} klon, {len(similar)} benzer oynanış"]
+    if clones:
+        reasons.append(f"klonlarda toplam {total_playing} anlık oyuncu")
+    if similar:
+        big = max(similar, key=lambda g: g.playing)
+        reasons.append(f"en büyük türdaş: {big.name[:40]} ({big.playing} oyuncu)")
 
     rising = (
         baseline_playing is not None
@@ -134,13 +159,15 @@ def assess_roblox(
     if rising:
         status = RobloxStatus.RISING
         reasons.append(f"24 saatte {baseline_playing} -> {total_playing} oyuncu")
+    elif not clones and sat < 0.15:
+        status = RobloxStatus.NONE  # birebir karşılık yok, yalnızca zayıf benzerler
     elif sat >= 0.7:
         status = RobloxStatus.SATURATED
     elif sat >= 0.4:
         status = RobloxStatus.COMPETITIVE
     else:
         status = RobloxStatus.EARLY
-    return RobloxAssessment(status, sat, n, total_playing, top_visits, reasons)
+    return RobloxAssessment(status, sat, len(items), total_playing, top_visits, reasons, len(clones), len(similar))
 
 
 def opportunity_score(indie: float, momentum: float, saturation: float) -> float:

@@ -7,7 +7,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 COPY pyproject.toml README.md ./
 COPY akim ./akim
-RUN pip install --no-cache-dir . && useradd --create-home --uid 1000 akim && mkdir -p /data && chown akim /data
+RUN pip install --no-cache-dir ".[llm]" && useradd --create-home --uid 1000 akim && mkdir -p /data && chown akim /data
 
 USER akim
 VOLUME ["/data"]

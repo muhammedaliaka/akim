@@ -41,7 +41,11 @@ filters:
   # ignore_titles: ["(?i)soundtrack", "(?i)\\bdlc\\b"]   # regex listesi (varsayılanı ezer)
 
 scoring:
-  similarity_threshold: 0.72  # Roblox oyununu "benzer" saymak için isim/açıklama benzerliği
+  # Roblox eşleştirme (bkz. README > Benzerlik nasıl hesaplanır)
+  clone_threshold: 0.72         # isim / açıklama-atfı bu eşiği geçerse "klon"
+  concept_clone_threshold: 0.75 # birleşik benzerlik bunu geçer ve oynanış örtüşüyorsa isim tutmasa da "klon"
+  similar_threshold: 0.6        # bunun üstü "benzer oynanış"
+  similar_weight: 0.35          # benzer oynanışlı oyunların Roblox doygunluğuna katkı ağırlığı (klon = 1.0)
   opportunity_threshold: 0.65
   watch_threshold: 0.5
   min_opportunity_momentum: 0.3
@@ -50,6 +54,17 @@ scoring:
   rank_surge_positions: 15    # bu kadar sıra tırmanış = sinyal
   ccu_surge_ratio: 1.5
   ccu_surge_min_players: 1000
+
+# İsteğe bağlı Claude doğrulaması: sezgisel skorun belirsiz kaldığı adayları (klon mu, aynı tür mü?)
+# Claude'a sorar. ANTHROPIC_API_KEY gerekir. Kararlar önbelleklenir, saatlik çağrı sınırı vardır.
+llm:
+  enabled: false
+  model: claude-opus-5-5
+  effort: low               # sınıflandırma işi; low yeterli
+  max_candidates: 10        # oyun başına en fazla aday
+  min_prescore: 0.3         # sezgisel ön puanı bunun altındakiler gönderilmez
+  max_calls_per_hour: 30
+  cache_days: 14
 
 notifications:
   cooldown_hours: 12          # aynı oyun + aynı olay için tekrar bildirim bekleme süresi

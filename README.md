@@ -4,7 +4,7 @@ Akım, 7/24 açık kalan bir izleme servisidir:
 
 1. **Steam** ve **Epic Games Store** listelerini (en çok satanlar, en çok oynananlar, trend, yeni çıkanlar…) sürekli çeker.
 2. Büyük markaları (EA, Ubisoft, Sony, Tencent…) eler; **az bilinen / bağımsız yapımcıların** yükselen oyunlarını bulur.
-3. Her adayı **Roblox'ta arar**. İsim benzerliğine ve açıklamalardaki *"inspired by PEAK"* gibi ifadelere bakarak klonları tespit eder.
+3. Her adayı **Roblox'ta arar**. Klonları yalnızca isme göre değil **oynanışa göre** tespit eder. Örneğin adında "CS2" geçmeyen ama "5v5, bombayı kur/çöz" oynatan bir Roblox oyunu Counter-Strike klonu sayılır (bkz. [Benzerlik nasıl hesaplanır](#benzerlik-nasıl-hesaplanır)).
 4. Sıra tırmanışı, yeni giriş, oyuncu artışı ve Roblox doygunluğunu birleştirip **karar verir**.
 5. Durum değiştiği anda Telegram, telefon (ntfy), Discord, Slack, e-posta veya webhook ile **bildirim gönderir**.
 6. Canlı bir **web paneli** sunar ve Telegram üzerinden komut alır (`/firsatlar`, `/kontrol <oyun>`).
@@ -40,6 +40,53 @@ fırsat skoru = 0.25·B + 0.45·M + 0.30·(1 − D)
 | ⚫ **ELENDİ** | bağımsızlık < 0.5 | Büyük marka, kapsam dışı |
 
 Roblox durumları: **YOK** · **Erken aşama** (birkaç zayıf klon) · **Yükselişte** · **Rekabetçi** · **Doymuş**.
+
+## Benzerlik nasıl hesaplanır
+
+Sistem Roblox oyununda mağaza oyununun adının geçmesini beklemez. Her aday için dört bağımsız kanıt toplar ve bunları tek bir **% benzerlik** oranına indirger:
+
+| Kanıt | Neye bakar | Örnek |
+|---|---|---|
+| **İsim** | Emoji, `[UPDATE]` gibi süslerden arındırılmış isim benzerliği | "Schedule I" ~ "Schedule X" |
+| **Atıf** | Açıklamada orijinal oyuna gönderme (aynı cümle içinde) | "inspired by the viral title PEAK" |
+| **Oynanış** | Steam etiketleri ve açıklamadan çıkarılan oynanış kavramlarının Roblox açıklamasıyla örtüşmesi | Counter-Strike 2 profili: *taktik FPS (bomba kur/çöz)*. Roblox'ta "5v5, plant the bomb, buy weapons" → %84 |
+| **Claude** (isteğe bağlı) | Oynanış döngüsünü bütün bağlamıyla karşılaştıran LLM değerlendirmesi | "aynı çekirdek döngü, farklı tema: %78 esinlenme" |
+
+- **Oynanış kavramları.** 40'tan fazla oynanış kavramı eş anlamlı terimleri bir araya toplar: *tırmanış*, *kota/ganimet toplama*, *sosyal çıkarım (hain kim)*, *market işletme*, *hayalet avı*… Açıklamanın ilk cümlesindeki kavramlar ana oynanış sayılır; etiketler ikincildir. "FPS", "korku" gibi geniş türler, "bomba kur/çöz" gibi ayırt edici mekaniklerden daha az kanıt değeri taşır.
+- **Birleştirme.** Kanıtlar olasılıksal olarak birleştirilir (noisy-OR). Tek başına ikna etmeyen iki kanıt birlikte güçlü olabilir: Counter Blox'ta isim %57 + oynanış %84 → **%90 klon**.
+- **Yanlış pozitif korumaları:**
+  - Aynı isim ama bambaşka oynanış klon sayılmaz.
+  - Açıklaması zayıf tek geniş kavramlı profiller "tam örtüşme" iddia edemez.
+  - Mağaza adındaki kelimeler oynanış hesabına ikinci kez girmez.
+- **Sınıflar.** Adaylar üç gruba ayrılır:
+  - 🎯 **Klon:** aynı oyunu oynatıyor; Roblox doygunluğuna tam ağırlıkla katılır.
+  - ≈ **Benzer oynanış:** aynı alt tür; sınırlı ek rekabet katkısı yapar.
+  - **İlgisiz.**
+
+  RIVALS gibi dev ama yalnızca aynı türdeki bir oyun, bir taktik nişancının Roblox'ta "zaten var" sayılmasına tek başına yetmez. "AKIM BAŞLADI" tespiti de yalnızca klonların oyuncu artışından yapılır.
+
+Gerçek veriyle örnek (`akim check "Counter-Strike 2"`):
+
+```
+Counter-Strike 2 → Doymuş (4 klon, 7 benzer oynanış)
+  % 99 KLON   [🧤] Defusal       açıklamada 'inspired by … counter strike' · oynanış %89 (taktik FPS)
+  % 93 KLON   Defuse Division    açıklamada oyunun adı geçiyor · oynanış %73
+  % 90 KLON   Counter Blox       isim %57 · oynanış %84 (taktik FPS (bomba kur/çöz))
+  % 80 KLON   BloxStrike         oynanış %84 (taktik FPS (bomba kur/çöz))      ← isim hiç benzemiyor
+  % 62 benzer RIVALS             oynanış %66 (FPS/nişancı)                      ← aynı tür, klon değil
+```
+
+### İsteğe bağlı Claude doğrulaması
+
+Sezgisel skorlar %60-75 bandında "klon mu, aynı tür mü?" sorusunda belirsiz kalabilir. `llm.enabled: true` ve `ANTHROPIC_API_KEY` ile en iyi adaylar (oyun başına en fazla 10) Claude'a gönderilir. Claude her aday için 0-100 benzerlik, ilişki türü (*klon / esinlenme / aynı tür / ilgisiz*) ve kısa Türkçe gerekçe döner; bu kararın son sözü olur.
+
+- **Model:** varsayılan `claude-opus-5-5`, `effort: low` (sınıflandırma işi). `llm.model` ile değiştirilebilir.
+- **Maliyet kontrolü:**
+  - Kararlar veritabanında önbelleklenir; aynı aday ve aynı açıklama 14 gün boyunca tekrar sorulmaz.
+  - Saatlik çağrı sınırı vardır (varsayılan 30).
+  - Ön puanı %30'un altındaki adaylar hiç gönderilmez.
+  - Kaba tahmin: yeni bir oyun için tek çağrı ≈ 2 bin girdi + 1 bin çıktı token'ı, yani Opus 5.5 fiyatıyla yaklaşık $0,03. İlk açılışta ~90 oyun ≈ $3; sonrasında yalnızca yeni oyunlar ve yeni adaylar ücretlendirilir. (Bu tahmin ölçülmedi; gerçek tüketimi Anthropic konsolundan takip et.)
+- **Güvenlik ağı:** API hatası, hız sınırı veya reddetme durumunda sistem sezgisel skorlarla devam eder. Reddetmede sunucu tarafı yedek model (`fallbacks: "default"`) devreye girer.
 
 ### Bildirim türleri
 
@@ -155,7 +202,8 @@ Tüm API çağrılarında yeniden deneme, üstel geri çekilme ve host bazlı h�
 
 ## Sınırlamalar
 
-- Roblox eşleştirmesi **isim ve açıklamaya** dayanır. Farklı isimli konsept klonlar yalnızca açıklamada orijinal oyunu anıyorsa yakalanır. Örneğin "CLIMB", PEAK'in bir klonudur ama açıklamada PEAK'i anmadığı için eşleşme sayılmaz. Bu tür oyunlar panelde "Roblox aramasının önerdikleri" başlığında ayrıca listelenir.
+- Oynanış benzerliği kavram sözlüğüne ve açıklamalara dayanır. Açıklaması çok kısa veya boş Roblox oyunları ve sözlükte karşılığı olmayan yeni türler için isabet düşer. %60-75 bandındaki "klon mu, aynı tür mü?" ayrımı sezgiseldir; bu bant için isteğe bağlı Claude doğrulaması önerilir. Eşleşme sayılmayan en yakın adaylar panelde yüzdeleriyle ayrıca listelenir.
+- Roblox aramasının döndürmediği oyunlar hiç değerlendirilmez. Sistem, Roblox'un kendi aramasında oyun adıyla bulunan adaylarla sınırlıdır.
 - "Peak", "Halloween" gibi **genel isimler** için isim eşleşmesi yalnızca neredeyse birebir ise kabul edilir ve kararın yanında "elle doğrula" notu çıkar.
 - Epic, tam koleksiyon sayfalarını Cloudflare arkasında tuttuğu için her Epic listesinden mağaza ana sayfasında görünen ilk ~15 oyun alınır.
 - Kullanılan uç noktalar herkese açık ama resmi olarak belgelenmemiştir; biçimleri değişebilir. Bir kaynak bozulursa sistem çalışmaya devam eder ve `system` bildirimi gönderir.
@@ -172,7 +220,12 @@ Proje yapısı:
 ```
 akim/
   sources/    steam.py · epic.py · roblox.py     veri toplayıcılar
-  analysis/   indie.py · matching.py · scoring.py  bağımsızlık, Roblox eşleştirme, karar
+  analysis/   indie.py      büyük marka / bağımsız ayrımı
+              matching.py   isim benzerliği, açıklamada atıf
+              concepts.py   oynanış kavramları ve konsept benzerliği
+              similarity.py kanıtların birleştirilmesi, klon / benzer sınıflandırması
+              judge.py      isteğe bağlı Claude doğrulaması
+              scoring.py    momentum, Roblox doygunluğu, karar
   notify/     telegram.py · channels.py           bildirim kanalları + dağıtıcı
   web/        server.py · dashboard.html          canlı panel ve API
   engine.py   döngüler, karar geçişleri, bildirim üretimi

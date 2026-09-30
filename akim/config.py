@@ -91,7 +91,13 @@ class FilterConfig:
 
 @dataclass
 class ScoringConfig:
-    similarity_threshold: float = 0.72
+    # Roblox eşleştirme: isim / açıklama-atfı bu eşiği geçerse "klon"
+    clone_threshold: float = 0.72
+    # Oynanış (konsept) benzerliği bu eşiği geçerse isim tutmasa da "klon"
+    concept_clone_threshold: float = 0.75
+    # Bu eşiğin üstü "benzer oynanış": doygunluğa kısmi ağırlıkla katılır
+    similar_threshold: float = 0.6
+    similar_weight: float = 0.35
     opportunity_threshold: float = 0.65
     watch_threshold: float = 0.5
     # FIRSAT için gereken en düşük momentum (gerçek bir yükseliş olmadan fırsat sayma)
@@ -107,6 +113,19 @@ class ScoringConfig:
     rank_surge_positions: int = 15
     ccu_surge_ratio: float = 1.5
     ccu_surge_min_players: int = 1000
+
+
+@dataclass
+class LLMConfig:
+    """İsteğe bağlı Claude doğrulaması (ANTHROPIC_API_KEY gerekir)."""
+
+    enabled: bool = False
+    model: str = "claude-opus-5-5"
+    effort: str = "low"  # sınıflandırma işi; low yeterli ve ucuz
+    max_candidates: int = 10  # oyun başına Claude'a gönderilecek en fazla aday
+    min_prescore: float = 0.3  # sezgisel ön puanı bunun altındaki adaylar gönderilmez
+    max_calls_per_hour: int = 30
+    cache_days: float = 14
 
 
 @dataclass
@@ -166,6 +185,7 @@ class Config:
     roblox: RobloxConfig = field(default_factory=RobloxConfig)
     filters: FilterConfig = field(default_factory=FilterConfig)
     scoring: ScoringConfig = field(default_factory=ScoringConfig)
+    llm: LLMConfig = field(default_factory=LLMConfig)
     notifications: NotificationConfig = field(default_factory=NotificationConfig)
     web: WebConfig = field(default_factory=WebConfig)
 
@@ -269,5 +289,7 @@ def _apply_env_shortcuts(cfg: Config) -> None:
         ch["slack"] = ChannelConfig(enabled=True, webhook_url=env["AKIM_SLACK_WEBHOOK_URL"])
     if env.get("AKIM_WEB_TOKEN"):
         cfg.web.token = env["AKIM_WEB_TOKEN"]
+    if env.get("AKIM_LLM_ENABLED"):
+        cfg.llm.enabled = env["AKIM_LLM_ENABLED"].strip().lower() in {"1", "true", "yes", "on", "evet"}
     if env.get("AKIM_DATA_DIR"):
         cfg.general.data_dir = env["AKIM_DATA_DIR"]

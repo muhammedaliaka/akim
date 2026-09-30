@@ -247,6 +247,11 @@ function renderTabs() {
     renderTabs(); loadBoard();
   });
 }
+function kindBadge(kind, sim) {
+  const pct = "%" + Math.round((sim || 0) * 100);
+  return kind === "clone" ? `<span class="badge b-saturated">KLON ${pct}</span>`
+                          : `<span class="badge b-watch">BENZER ${pct}</span>`;
+}
 function storesText(r) {
   const names = [r.store, ...(r.also || []).map(a => a.store)].map(s => s === "steam" ? "Steam" : "Epic");
   return esc([...new Set(names)].join(" + "));
@@ -360,14 +365,16 @@ $("check-form").onsubmit = async (e) => {
   try {
     const r = await api("/api/check", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title }) });
     const list = r.matches.slice(0, 8).map(m =>
-      `<li><a href="${safeUrl(m.url)}" target="_blank" rel="noopener">${esc(m.name)}</a> — ${fmt(m.playing)} oyuncu, ${fmt(m.visits)} ziyaret <span class="muted">(${esc(m.reason)})</span></li>`).join("");
-    const rel = r.related.slice(0, 5).map(m => esc(m.name)).join(", ");
+      `<li>${kindBadge(m.kind, m.similarity)} <a href="${safeUrl(m.url)}" target="_blank" rel="noopener">${esc(m.name)}</a> — ${fmt(m.playing)} oyuncu, ${fmt(m.visits)} ziyaret
+       <div class="muted small">${esc(m.reason)}</div></li>`).join("");
+    const rel = r.related.slice(0, 5).map(m => `${esc(m.name)} (%${Math.round(m.similarity * 100)})`).join(", ");
     $("check-result").innerHTML = `
-      <p><b>${esc(r.title)}</b> → <span class="rs-${esc(r.status)}"><b>${esc(r.status_label)}</b></span>
-      <span class="muted">(doygunluk ${Number(r.saturation).toFixed(2)})</span></p>
+      <p><b>${esc(r.resolved_title || r.title)}</b> → <span class="rs-${esc(r.status)}"><b>${esc(r.status_label)}</b></span>
+      <span class="muted">(${r.clone_count} klon, ${r.similar_count} benzer · doygunluk ${Number(r.saturation).toFixed(2)})</span></p>
+      <p class="small muted">Bağlam: ${esc(r.context_source)}${r.llm ? " · Claude doğrulaması açık" : ""}</p>
       ${r.generic ? `<p class="small">⚠️ Genel bir isim; eşleşmeleri elle doğrula.</p>` : ""}
       ${list ? `<ul>${list}</ul>` : `<p>Roblox'ta doğrudan karşılığı bulunamadı.</p>`}
-      ${rel ? `<p class="small muted">Roblox aramasının önerdikleri: ${rel}</p>` : ""}`;
+      ${rel ? `<p class="small muted">En yakın diğer adaylar: ${rel}</p>` : ""}`;
   } catch (err) {
     $("check-result").innerHTML = `<p>⚠️ ${esc(err.message)}</p>`;
   } finally { $("check-btn").disabled = false; }
@@ -395,10 +402,10 @@ async function openGame(key) {
     const byChart = {};
     d.rank_history.forEach(h => (byChart[h.chart] = byChart[h.chart] || []).push([h.ts, h.rank]));
     const rankCharts = Object.entries(byChart).map(([c, pts]) => `<div><b class="small">${esc(CHARTS[c] || c)}</b>${spark(pts, true)}</div>`).join("");
-    const clones = d.roblox.map(c => `<tr><td><a href="${safeUrl("https://www.roblox.com/games/" + c.root_place_id)}" target="_blank" rel="noopener">${esc(c.name)}</a>
+    const clones = d.roblox.map(c => `<tr><td>${kindBadge(c.kind, c.similarity)}</td><td><a href="${safeUrl("https://www.roblox.com/games/" + c.root_place_id)}" target="_blank" rel="noopener">${esc(c.name)}</a>
       <div class="muted small">${esc(c.reason)}</div></td><td class="num">${fmt(c.playing)}</td><td class="num">${fmt(c.visits)}</td>
       <td class="muted small">${esc((c.created || "").slice(0, 10))}</td></tr>`).join("");
-    const related = (d.roblox_related || []).map(r => `<span class="chip"><a href="${safeUrl(r.url)}" target="_blank" rel="noopener">${esc(r.name)}</a> · ${fmt(r.playing)}</span>`).join("");
+    const related = (d.roblox_related || []).map(r => `<span class="chip" title="${esc(r.reason || "")}"><a href="${safeUrl(r.url)}" target="_blank" rel="noopener">${esc(r.name)}</a> · %${Math.round((r.similarity || 0) * 100)}</span>`).join("");
     const robloxHist = spark(d.roblox_history.map(h => [h.ts, h.total_playing]));
     dlg.innerHTML = `
       <div class="dlg-head">
@@ -421,10 +428,10 @@ async function openGame(key) {
                <h3 style="margin-top:12px">Roblox benzerleri toplam oyuncu</h3>${robloxHist}</div>
         </div>
         <div><h3>Roblox'taki benzerleri</h3>
-          ${clones ? `<div class="table-wrap"><table><thead><tr><th>Oyun</th><th>Oyuncu</th><th>Ziyaret</th><th>Oluşturma</th></tr></thead><tbody>${clones}</tbody></table></div>`
+          ${clones ? `<div class="table-wrap"><table><thead><tr><th>Benzerlik</th><th>Oyun</th><th>Oyuncu</th><th>Ziyaret</th><th>Oluşturma</th></tr></thead><tbody>${clones}</tbody></table></div>`
                    : `<p class="rs-none">Roblox'ta doğrudan karşılığı bulunamadı.</p>`}
         </div>
-        ${related ? `<div><h3>Roblox aramasının önerdikleri (eşleşme değil)</h3><div class="chips">${related}</div></div>` : ""}
+        ${related ? `<div><h3>En yakın diğer adaylar (eşleşme sayılmadı)</h3><div class="chips">${related}</div></div>` : ""}
         <div><h3>Bu oyunla ilgili bildirimler</h3>${d.alerts.length ? d.alerts.map(a => alertHtml(a, false)).join("") : `<p class="muted small">Yok.</p>`}</div>
       </div>`;
   } catch (e) {

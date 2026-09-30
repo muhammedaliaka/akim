@@ -76,5 +76,6 @@ class RobloxSource:
                     favorites=int(g.get("favoritedCount") or 0),
                     created=g.get("created"),
                     updated=g.get("updated"),
+                    genre=" / ".join(x for x in (g.get("genre_l1"), g.get("genre_l2")) if x),
                 )
         return out

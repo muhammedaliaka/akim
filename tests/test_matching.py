@@ -82,3 +82,16 @@ def test_different_words_with_similar_letters_do_not_match():
     p = TitleProfile.from_title("iRacing")
     assert match_score(p, "Racing")[0] < 0.72
     assert match_score(p, "Racing Simulator [UPDATE]")[0] < 0.72
+
+
+def test_inspired_by_must_be_in_same_sentence():
+    p = TitleProfile.from_title("Lethal Company")
+    desc = "Collect scraps to meet your quota! Game inspired by REPO.\nTags: repo, seize, scary, horror, lethal company"
+    score, _ = match_score(p, "SEIZE", desc)
+    assert score < 0.9  # etiket listesi atıf değildir
+    assert match_score(p, "Deadly Company", "Heavily inspired by Lethal Company, a great game!")[0] >= 0.9
+
+
+def test_inspired_by_with_colon():
+    p = TitleProfile.from_title("PEAK")
+    assert match_score(p, "Summit", "A co-op climb. Inspired by: PEAK")[0] >= 0.9

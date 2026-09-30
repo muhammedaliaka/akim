@@ -39,7 +39,7 @@ jobs:
           python-version: "3.12"
       - name: install.ps1
         shell: powershell
-        run: .\deploy\windows\install.ps1 -NoLlm
+        run: .\deploy\windows\install.ps1
       - name: Kurulum çıktılarını doğrula
         shell: powershell
         run: |
@@ -76,3 +76,24 @@ jobs:
           ) > config.yaml
           start "akim" /b cmd /c deploy\windows\run.cmd
           powershell -NoProfile -Command "for ($i=0; $i -lt 60; $i++) { try { (Invoke-WebRequest http://127.0.0.1:18080/healthz -UseBasicParsing -TimeoutSec 2).StatusCode; exit 0 } catch { Start-Sleep 1 } }; exit 1"
+
+  termux-scripts:
+    name: termux scripts (derleyicisiz kurulum, sh)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: install.sh
+        run: sh deploy/termux/install.sh
+      - name: run.sh ile çalıştır, sağlık ucunu yokla, Ctrl+C ile temiz kapat
+        run: |
+          printf 'steam: {enabled: false}\nepic: {enabled: false}\nroblox: {enabled: false}\nweb: {host: 127.0.0.1, port: 18080}\n' > config.yaml
+          setsid sh deploy/termux/run.sh > run.log 2>&1 &
+          for i in $(seq 1 30); do curl -fs http://127.0.0.1:18080/healthz && break; sleep 1; done
+          curl -fs http://127.0.0.1:18080/healthz || { cat run.log; exit 1; }
+          pkill -INT -f "akim -c config.yaml run"
+          sleep 3
+          grep -q "Kapatılıyor" run.log || { cat run.log; exit 1; }
+          ! grep -q "yeniden başlatılıyor" run.log || { cat run.log; exit 1; }

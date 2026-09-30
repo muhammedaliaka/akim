@@ -14,12 +14,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# İsteğe bağlı Claude doğrulaması (config: llm.enabled, ANTHROPIC_API_KEY)
-llm = ["anthropic>=1.9"]
-# İsteğe bağlı yerel Laya karar modeli (config: laya.enabled). PyTorch gerektirir.
+# İsteğe bağlı yerel ve ücretsiz Laya karar modeli (config: laya.enabled). PyTorch gerektirir.
 laya = ["laya>=0.3.22"]
-# Testler sahte istemciyle çalışır ama Anthropic hata sınıflarını içe aktarır
-dev = ["pytest>=8", "anthropic>=1.9"]
+dev = ["pytest>=8"]
 
 [project.scripts]
 akim = "akim.__main__:main"

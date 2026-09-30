@@ -1,13 +1,13 @@
 # Android ve HyperOS (Xiaomi) telefon kurulumu
 
-## Mimari: sunucu PC/VPS'te, telefon istemci
+## Mimari: sunucu PC'de, telefon istemci
 
-Akım 7/24 çalışan bir süreçtir. **Bunu telefonda çalıştırmanı önermiyorum**: Android 12 ve sonrası Termux gibi uygulamaların alt süreçlerini sistem düzeyinde öldürebiliyor
-("Phantom Process Killer"; wake-lock ve pil ayarları bunu engellemiyor). Xiaomi'nin HyperOS/MIUI'si ayrıca agresif arka plan kısıtlamalarıyla bilinir.
-Doğru düzen:
+Akım 7/24 çalışan bir süreçtir. **Bunu telefonda çalıştırmak riskli**: Android 12 ve sonrası Termux gibi uygulamaların alt süreçlerini sistem düzeyinde öldürebiliyor
+("Phantom Process Killer"; wake-lock ve pil ayarları tek başına bunu engellemiyor). Xiaomi'nin HyperOS/MIUI'si ayrıca agresif arka plan kısıtlamalarıyla bilinir.
+Yine de telefonda çalıştırmak istersen: [termux.md](termux.md). Daha güvenli düzen:
 
 ```
-Windows PC / Linux sunucu / VPS (Docker)  ──►  ntfy ve/veya Telegram  ──►  Android telefon (HyperOS)
+Windows PC / Linux makine (Docker)        ──►  ntfy ve/veya Telegram  ──►  Android telefon (HyperOS)
          Akım burada 7/24 çalışır               anlık push                   bildirim + panel (PWA)
 ```
 

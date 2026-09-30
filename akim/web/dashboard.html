@@ -434,7 +434,7 @@ $("check-form").onsubmit = async (e) => {
     $("check-result").innerHTML = `
       <p><b>${esc(r.resolved_title || r.title)}</b> → <span class="rs-${esc(r.status)}"><b>${esc(r.status_label)}</b></span>
       <span class="muted">(${r.clone_count} klon, ${r.similar_count} benzer · doygunluk ${Number(r.saturation).toFixed(2)})</span></p>
-      <p class="small muted">Bağlam: ${esc(r.context_source)}${r.llm ? " · Claude doğrulaması açık" : ""}${r.laya ? " · Laya açık" : ""}</p>
+      <p class="small muted">Bağlam: ${esc(r.context_source)}${r.laya ? " · Laya açık" : ""}</p>
       ${r.generic ? `<p class="small">⚠️ Genel bir isim; eşleşmeleri elle doğrula.</p>` : ""}
       ${list ? `<ul>${list}</ul>` : `<p>Roblox'ta doğrudan karşılığı bulunamadı.</p>`}
       ${rel ? `<p class="small muted">En yakın diğer adaylar: ${rel}</p>` : ""}`;

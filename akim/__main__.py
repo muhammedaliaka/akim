@@ -172,7 +172,7 @@ async def cmd_check(cfg: Config, title: str) -> None:
         f"doygunluk {r['saturation']:.2f}, ağırlıklı {r['total_playing']} anlık oyuncu)"
     )
     print(f"Bağlam: {r['context_source']}" + (f" · etiketler: {', '.join(r['tags'][:6])}" if r["tags"] else ""))
-    extras = [name for name, on in (("Claude doğrulaması", r["llm"]), ("Laya", r.get("laya"))) if on]
+    extras = ["Laya"] if r.get("laya") else []
     print(f"Aramalar: {', '.join(r['queries'])}" + (f" · açık: {', '.join(extras)}" if extras else ""))
     if r["generic"]:
         print("⚠️  Genel bir isim; eşleşmeleri elle doğrula.")

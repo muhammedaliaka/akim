@@ -51,4 +51,19 @@ def test_example_config_is_valid(monkeypatch):
     from pathlib import Path
 
     cfg = load_config(Path(__file__).parent.parent / "config.example.yaml")
-    assert cfg.scoring.concept_clone_threshold == 0.75 and cfg.llm.model == "claude-opus-5-5"
+    assert cfg.scoring.concept_clone_threshold == 0.75
+    assert not hasattr(cfg, "llm")  # ücretli Claude doğrulaması kaldırıldı
+
+
+def test_removed_llm_section_is_ignored_with_warning(tmp_path, monkeypatch, caplog):
+    """Eski config.example.yaml'dan kopyalanmış config.yaml'daki llm: bölümü yüklemeyi bozmamalı."""
+    import logging
+
+    monkeypatch.delenv("AKIM_CONFIG", raising=False)
+    monkeypatch.setenv("AKIM_LLM_ENABLED", "true")  # eski .env satırı da zararsız olmalı
+    f = tmp_path / "config.yaml"
+    f.write_text("llm:\n  enabled: true\n  model: x\nscoring:\n  clone_threshold: 0.8\n", encoding="utf-8")
+    with caplog.at_level(logging.WARNING, logger="akim.config"):
+        cfg = load_config(f)
+    assert cfg.scoring.clone_threshold == 0.8
+    assert any("llm" in r.getMessage() and "yok sayıldı" in r.getMessage() for r in caplog.records)

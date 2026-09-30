@@ -1,8 +1,8 @@
 FROM python:3.12-slim
 
-# İsteğe bağlı eklentiler: "llm" (Claude) varsayılan; yerel Laya için EXTRAS=llm,laya ile derle
-# (CPU PyTorch ~700 MB ekler). docker compose'da: build.args.EXTRAS
-ARG EXTRAS=llm
+# İsteğe bağlı eklenti: yerel ve ücretsiz Laya için EXTRAS=laya ile derle (CPU PyTorch ~700 MB ekler).
+# docker compose'da: build.args.EXTRAS
+ARG EXTRAS=
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -15,7 +15,8 @@ COPY akim ./akim
 RUN if echo "$EXTRAS" | grep -q laya; then \
         pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu; \
     fi \
-    && pip install --no-cache-dir ".[${EXTRAS}]" && useradd --create-home --uid 1000 akim && mkdir -p /data && chown akim /data
+    && if [ -n "$EXTRAS" ]; then pip install --no-cache-dir ".[${EXTRAS}]"; else pip install --no-cache-dir .; fi \
+    && useradd --create-home --uid 1000 akim && mkdir -p /data && chown akim /data
 
 USER akim
 VOLUME ["/data"]

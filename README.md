@@ -17,6 +17,15 @@ Epic ──┘        │                                      │   ▲        
                               (SQLite)                                                └─ Web paneli (canlı)
 ```
 
+## Ücretsiz çalışır
+
+Akım'da para, kredi veya ücretli API anahtarı isteyen hiçbir bileşen yoktur:
+
+- **Veri:** Steam, Epic ve Roblox'un herkese açık uç noktaları; hesap veya anahtar gerekmez.
+- **Analiz:** isim, atıf ve oynanış analizi yerelde çalışır. İsteğe bağlı Laya modeli de yerel ve Apache 2.0 lisanslıdır.
+- **Bildirim:** Telegram botu, ntfy, Discord/Slack webhook'u, e-posta (ücretsiz bir SMTP hesabıyla) ve genel webhook.
+- Ücretli bir LLM (Claude/API) doğrulaması bir ara vardı; **kaldırıldı**. Eski bir `config.yaml` içinde `llm:` bölümü kalmışsa uyarıyla yok sayılır.
+
 ## Karar mantığı
 
 Her oyun için üç bileşen hesaplanır (0–1):
@@ -43,14 +52,14 @@ Roblox durumları: **YOK** · **Erken aşama** (birkaç zayıf klon) · **Yükse
 
 ## Benzerlik nasıl hesaplanır
 
-Sistem Roblox oyununda mağaza oyununun adının geçmesini beklemez. Her aday için dört bağımsız kanıt toplar ve bunları tek bir **% benzerlik** oranına indirger:
+Sistem Roblox oyununda mağaza oyununun adının geçmesini beklemez. Her aday için üç bağımsız kanıt (isteğe bağlı olarak dördüncüsü: yerel Laya) toplar ve bunları tek bir **% benzerlik** oranına indirger:
 
 | Kanıt | Neye bakar | Örnek |
 |---|---|---|
 | **İsim** | Emoji, `[UPDATE]` gibi süslerden arındırılmış isim benzerliği | "Schedule I" ~ "Schedule X" |
 | **Atıf** | Açıklamada orijinal oyuna gönderme (aynı cümle içinde) | "inspired by the viral title PEAK" |
 | **Oynanış** | Steam etiketleri ve açıklamadan çıkarılan oynanış kavramlarının Roblox açıklamasıyla örtüşmesi | Counter-Strike 2 profili: *taktik FPS (bomba kur/çöz)*. Roblox'ta "5v5, plant the bomb, buy weapons" → %84 |
-| **Claude** (isteğe bağlı) | Oynanış döngüsünü bütün bağlamıyla karşılaştıran LLM değerlendirmesi | "aynı çekirdek döngü, farklı tema: %78 esinlenme" |
+| **Laya** (isteğe bağlı, yerel ve ücretsiz) | Karar modelinin "klon / esinlenme / aynı tür / ilgisiz" yorumu; düşük güvenle diğer kanıtlara eklenir | aşağıdaki Laya bölümüne bak |
 
 - **Oynanış kavramları.** 40'tan fazla oynanış kavramı eş anlamlı terimleri bir araya toplar: *tırmanış*, *kota/ganimet toplama*, *sosyal çıkarım (hain kim)*, *market işletme*, *hayalet avı*… Açıklamanın ilk cümlesindeki kavramlar ana oynanış sayılır; etiketler ikincildir. "FPS", "korku" gibi geniş türler, "bomba kur/çöz" gibi ayırt edici mekaniklerden daha az kanıt değeri taşır.
 - **Birleştirme.** Kanıtlar olasılıksal olarak birleştirilir (noisy-OR). Tek başına ikna etmeyen iki kanıt birlikte güçlü olabilir: Counter Blox'ta isim %57 + oynanış %84 → **%90 klon**.
@@ -76,18 +85,6 @@ Counter-Strike 2 → Doymuş (4 klon, 7 benzer oynanış)
   % 62 benzer RIVALS             oynanış %66 (FPS/nişancı)                      ← aynı tür, klon değil
 ```
 
-### İsteğe bağlı Claude doğrulaması
-
-Sezgisel skorlar %60-75 bandında "klon mu, aynı tür mü?" sorusunda belirsiz kalabilir. `llm.enabled: true` ve `ANTHROPIC_API_KEY` ile en iyi adaylar (oyun başına en fazla 10) Claude'a gönderilir. Claude her aday için 0-100 benzerlik, ilişki türü (*klon / esinlenme / aynı tür / ilgisiz*) ve kısa Türkçe gerekçe döner; bu kararın son sözü olur.
-
-- **Model:** varsayılan `claude-opus-5-5`, `effort: low` (sınıflandırma işi). `llm.model` ile değiştirilebilir.
-- **Maliyet kontrolü:**
-  - Kararlar veritabanında önbelleklenir; aynı aday ve aynı açıklama 14 gün boyunca tekrar sorulmaz.
-  - Saatlik çağrı sınırı vardır (varsayılan 30).
-  - Ön puanı %30'un altındaki adaylar hiç gönderilmez.
-  - Kaba tahmin: yeni bir oyun için tek çağrı ≈ 2 bin girdi + 1 bin çıktı token'ı, yani Opus 5.5 fiyatıyla yaklaşık $0,03. İlk açılışta ~90 oyun ≈ $3; sonrasında yalnızca yeni oyunlar ve yeni adaylar ücretlendirilir. (Bu tahmin ölçülmedi; gerçek tüketimi Anthropic konsolundan takip et.)
-- **Güvenlik ağı:** API hatası, hız sınırı veya reddetme durumunda sistem sezgisel skorlarla devam eder. Reddetmede sunucu tarafı yedek model (`fallbacks: "default"`) devreye girer.
-
 ### İsteğe bağlı Laya (yerel, ücretsiz)
 
 [Laya](https://github.com/NandhaKishorM/laya) (Convai Innovations, Apache 2.0) metin üretmeyen bir karar modelidir. Oyun çiftine "klon / esinlenme / aynı tür / ilgisiz" sorusunu sorar ve her seçenek için olasılık döner. Yerelde çalışır; API anahtarı ve ücret gerekmez.
@@ -111,7 +108,7 @@ pip install "akim[laya]"
 AKIM_LAYA_ENABLED=true akim check "Buckshot Roulette"
 ```
 
-Docker'da `docker-compose.yml` içindeki `EXTRAS: "llm,laya"` ile derle. Model (~800 MB) ilk kullanımda `data/hf` altına iner. CPU'da oyun başına ~10-20 sn sürer; sonuçlar önbelleklenir.
+Docker'da `docker-compose.yml` içindeki `EXTRAS: "laya"` ile derle. Model (~800 MB) ilk kullanımda `data/hf` altına iner. CPU'da oyun başına ~10-20 sn sürer; sonuçlar önbelleklenir.
 
 ### Bildirim türleri
 
@@ -132,10 +129,11 @@ Aynı oyun + aynı olay için 12 saat tekrar koruması vardır. Aynı oyun hem S
 | Platform | Rol | Nasıl |
 |---|---|---|
 | **Windows 10/11** | Sunucu (PC açık kaldığı sürece) | [docs/windows.md](docs/windows.md): `deploy\windows\install.cmd` → `run.cmd` veya `autostart.ps1` |
-| **Linux / VPS** | Sunucu, gerçek 7/24 | Docker (aşağıda) veya `deploy/akim.service` (systemd) |
+| **Linux** (kendi makinen, Raspberry Pi, eski bilgisayar) | Sunucu, sürekli açık kaldığı sürece | Docker (aşağıda) veya `deploy/akim.service` (systemd) |
 | **Android (HyperOS / Xiaomi dahil)** | İstemci: anlık bildirim + panel | [docs/android-hyperos.md](docs/android-hyperos.md): ntfy/Telegram + HyperOS arka plan ayarları + panel kısayolu |
+| **Android + Termux** | Sunucu (telefonun kendisinde) | [docs/termux.md](docs/termux.md): `sh deploy/termux/install.sh` → `sh deploy/termux/run.sh` |
 
-Sunucuyu **telefonda çalıştırmak önerilmez** (Android arka plan süreçlerini öldürür); telefon bildirimi alır ve paneli açar.
+Sunucuyu telefonda çalıştırmak mümkündür ([docs/termux.md](docs/termux.md): Termux, `deploy/termux/install.sh`) ama riskli: Android arka plan süreçlerini öldürebilir. Güvenilir düzen, sunucunun PC/Linux'ta, telefonun istemci olmasıdır.
 Windows ve Android tarafı kodda şunları kapsar: UTF-8 konsol, `.env` okuma, Ctrl+C/Ctrl+Break ile temiz kapanış, boşta uykuyu engelleme, konsolsuz çalışmada dosya logu, port doluysa panelsiz devam, yüklenebilir (PWA) mobil panel.
 Testler CI'da Ubuntu ve Windows üzerinde, Python 3.10 ve 3.12 ile çalışır.
 
@@ -242,7 +240,7 @@ Tüm API çağrılarında yeniden deneme, üstel geri çekilme ve host bazlı h�
 
 ## Sınırlamalar
 
-- Oynanış benzerliği kavram sözlüğüne ve açıklamalara dayanır. Açıklaması çok kısa veya boş Roblox oyunları ve sözlükte karşılığı olmayan yeni türler için isabet düşer. %60-75 bandındaki "klon mu, aynı tür mü?" ayrımı sezgiseldir; bu bant için isteğe bağlı Claude doğrulaması önerilir. Eşleşme sayılmayan en yakın adaylar panelde yüzdeleriyle ayrıca listelenir.
+- Oynanış benzerliği kavram sözlüğüne ve açıklamalara dayanır. Açıklaması çok kısa veya boş Roblox oyunları ve sözlükte karşılığı olmayan yeni türler için isabet düşer. %60-75 bandındaki "klon mu, aynı tür mü?" ayrımı sezgiseldir; bu bant için isteğe bağlı yerel Laya (evidence modu) eklenebilir ama ölçümlerde kazancı sınırlı kaldı (bkz. Laya bölümü). Eşleşme sayılmayan en yakın adaylar panelde yüzdeleriyle ayrıca listelenir.
 - Roblox aramasının döndürmediği oyunlar hiç değerlendirilmez. Sistem, Roblox'un kendi aramasında oyun adıyla bulunan adaylarla sınırlıdır.
 - "Peak", "Halloween" gibi **genel isimler** için isim eşleşmesi yalnızca neredeyse birebir ise kabul edilir ve kararın yanında "elle doğrula" notu çıkar.
 - Epic, tam koleksiyon sayfalarını Cloudflare arkasında tuttuğu için her Epic listesinden mağaza ana sayfasında görünen ilk ~15 oyun alınır.
@@ -264,7 +262,6 @@ akim/
               matching.py   isim benzerliği, açıklamada atıf
               concepts.py   oynanış kavramları ve konsept benzerliği
               similarity.py kanıtların birleştirilmesi, klon / benzer sınıflandırması
-              judge.py      isteğe bağlı Claude doğrulaması
               laya_judge.py isteğe bağlı yerel Laya karar modeli
               scoring.py    momentum, Roblox doygunluğu, karar
   notify/     telegram.py · channels.py           bildirim kanalları + dağıtıcı
@@ -273,7 +270,7 @@ akim/
   runtime.py  Windows konsolu, uyku engelleme, .env, kapatma sinyalleri, yerel ağ adresi
   engine.py   döngüler, karar geçişleri, bildirim üretimi
   storage.py  SQLite (sıra geçmişi, Roblox geçmişi, kararlar, bildirim tekrar koruması)
-deploy/       akim.service (systemd) · windows/ (kurulum, çalıştırma, otomatik başlatma)
-docs/         windows.md · android-hyperos.md
+deploy/       akim.service (systemd) · windows/ (kurulum, çalıştırma, otomatik başlatma) · termux/ (Android kurulum ve çalıştırma)
+docs/         windows.md · android-hyperos.md · termux.md
 eval/         etiketli gerçek veri, değerlendirme betiği ve sonuçlar (bkz. eval/README.md)
 ```

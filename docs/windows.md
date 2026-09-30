@@ -24,7 +24,7 @@ Panel: <http://localhost:8080>. Uygulama olarak yüklemek için Edge/Chrome adre
 
 `general.keep_awake` (varsayılan açık) Windows'a "sistem meşgul" bilgisi verir; **boşta uyku** engellenir, ekran kapanabilir.
 Şunları engellemez: kapağı kapatmak (Güç seçenekleri → "Kapağı kapattığımda: Hiçbir şey yapma" ayarla), Başlat'tan elle Uyku/Hazırda Beklet, Windows Update yeniden başlatması.
-Görev oturum açılınca başladığından yeniden başlatmadan sonra bir kez oturum açman gerekir. **Gerçek 7/24 için bir sunucu/VPS ve Docker daha doğru seçimdir**; PC yalnızca kapalı olmadığı sürece izler.
+Görev oturum açılınca başladığından yeniden başlatmadan sonra bir kez oturum açman gerekir. **Gerçek 7/24 için sürekli açık bir Linux makine (Raspberry Pi, eski bir bilgisayar) ve Docker daha doğru seçimdir**; PC yalnızca kapalı olmadığı sürece izler.
 
 ## Telefondan panele erişim
 

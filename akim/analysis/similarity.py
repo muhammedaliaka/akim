@@ -5,7 +5,7 @@ Her aday için dört bağımsız kanıt toplanır ve tek bir "% benzer" oranına
   isim      : gürültüsü temizlenmiş isimlerin benzerliği        ("Schedule I" ~ "Schedule X")
   atıf      : açıklamada orijinal oyuna gönderme                 ("inspired by the viral title PEAK")
   oynanış   : açıklama ve etiketlerden çıkarılan oynanış örtüşmesi ("5v5, bombayı kur/çöz" ~ Counter-Strike)
-  Claude    : (isteğe bağlı) LLM'in oynanış karşılaştırması       ("aynı çekirdek döngü: %92 klon")
+  Laya      : (isteğe bağlı, yerel ve ücretsiz) karar modelinin oynanış yorumu
 
 Sınıflar:
   clone    : aynı oyunu oynatıyor (Roblox doygunluğunda tam ağırlık)
@@ -48,9 +48,6 @@ class Evidence:
     reference_reason: str = ""
     concept: float = 0.0
     shared_concepts: list[str] = field(default_factory=list)
-    llm: float | None = None
-    llm_relation: str | None = None
-    llm_reason: str | None = None
     laya: float | None = None
     laya_relation: str | None = None
     score: float = 0.0
@@ -60,9 +57,6 @@ class Evidence:
 
     def reason(self) -> str:
         parts = []
-        if self.llm is not None:
-            rel = RELATION_LABELS.get(self.llm_relation or "", self.llm_relation or "")
-            parts.append(f"Claude %{round(self.llm * 100)} {rel}" + (f": {self.llm_reason}" if self.llm_reason else ""))
         if self.laya is not None:
             rel = RELATION_LABELS.get(self.laya_relation or "", self.laya_relation or "")
             parts.append(f"Laya %{round(self.laya * 100)} {rel}")
@@ -82,7 +76,6 @@ class Evidence:
             "score": self.score, "kind": self.kind, "weight": self.weight, "name": self.name,
             "reference": self.reference, "concept": self.concept,
             "shared_concepts": [CONCEPT_LABELS.get(c, c) for c in self.shared_concepts],
-            "llm": self.llm, "llm_relation": self.llm_relation, "llm_reason": self.llm_reason,
             "laya": self.laya, "laya_relation": self.laya_relation,
             "reason": self.reason(),
         }
@@ -136,13 +129,9 @@ def classify(
 ) -> Evidence:
     """Kanıtları tek bir benzerlik oranı ve sınıfa indirger (yerinde günceller).
 
-    Öncelik: Claude kararı > Laya (judge modu) > sezgisel birleştirme (+ Laya evidence modu).
+    Öncelik: Laya (judge modu) > sezgisel birleştirme (+ Laya evidence modu).
     """
-    if ev.llm is not None:
-        # Claude oynanışı bütün bağlamıyla değerlendirdi; son söz onun
-        ev.score = round(ev.llm, 3)
-        ev.kind = _judge_kind(ev.llm, ev.llm_relation, cfg)
-    elif ev.laya is not None and laya_mode == "judge":
+    if ev.laya is not None and laya_mode == "judge":
         ev.score = round(ev.laya, 3)
         ev.kind = _judge_kind(ev.laya, ev.laya_relation, cfg)
     else:

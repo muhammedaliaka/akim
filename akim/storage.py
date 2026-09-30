@@ -78,11 +78,6 @@ CREATE TABLE IF NOT EXISTS laya_scores (
     probabilities TEXT, confidence REAL, embedding REAL, checkpoint TEXT, ts REAL,
     PRIMARY KEY (title_key, universe_id)
 );
-CREATE TABLE IF NOT EXISTS llm_verdicts (
-    title_key TEXT NOT NULL, universe_id INTEGER NOT NULL, fingerprint TEXT, similarity REAL, relation TEXT,
-    reason TEXT, model TEXT, ts REAL,
-    PRIMARY KEY (title_key, universe_id)
-);
 """
 
 # Sonradan eklenen sütunlar: (tablo, sütun, tanım). Eski veritabanları açılışta güncellenir.
@@ -342,23 +337,7 @@ class Storage:
             (key, since),
         )
 
-    # ------------------------------------------------------------------ LLM kararları (önbellek)
-    def get_verdict(self, tkey: str, universe_id: int) -> dict | None:
-        return self._one("SELECT * FROM llm_verdicts WHERE title_key=? AND universe_id=?", (tkey, universe_id))
-
-    def save_verdict(
-        self, tkey: str, universe_id: int, fingerprint: str, similarity: float, relation: str, reason: str,
-        model: str, now: float,
-    ) -> None:
-        self.db.execute(
-            """INSERT INTO llm_verdicts(title_key, universe_id, fingerprint, similarity, relation, reason, model, ts)
-               VALUES(?,?,?,?,?,?,?,?)
-               ON CONFLICT(title_key, universe_id) DO UPDATE SET fingerprint=excluded.fingerprint,
-                   similarity=excluded.similarity, relation=excluded.relation, reason=excluded.reason,
-                   model=excluded.model, ts=excluded.ts""",
-            (tkey, universe_id, fingerprint, similarity, relation, reason, model, now),
-        )
-
+    # ------------------------------------------------------------------ Laya kararları (önbellek)
     def get_laya_score(self, tkey: str, universe_id: int) -> dict | None:
         return self._one("SELECT * FROM laya_scores WHERE title_key=? AND universe_id=?", (tkey, universe_id))
 

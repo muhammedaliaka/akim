@@ -101,10 +101,6 @@ def test_judge_mode_gives_final_word():
     ev = classify(Evidence(laya=0.88, laya_relation="clone"), cfg, has_context=True, has_description=True,
                   laya_mode="judge")
     assert ev.kind == "clone"
-    # Claude kararı her zaman önce gelir
-    ev = classify(Evidence(laya=0.88, laya_relation="clone", llm=0.2, llm_relation="unrelated"), cfg,
-                  has_context=True, has_description=True, laya_mode="judge")
-    assert ev.kind == "none"
 
 
 def test_engine_sends_top_search_results_even_if_heuristic_is_zero():

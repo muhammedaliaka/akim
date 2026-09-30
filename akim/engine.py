@@ -21,7 +21,6 @@ from dataclasses import dataclass, field
 
 from .analysis.concepts import CandidateText
 from .analysis.indie import IndieClassifier
-from .analysis.judge import LLMJudge
 from .analysis.laya_judge import LayaJudge
 from .analysis.matching import match_score, search_queries, title_key
 from .analysis.similarity import Evidence, GameContext, classify, heuristic_evidence
@@ -124,7 +123,6 @@ class Engine:
             allow=cfg.filters.allow_publishers,
         )
         self._ignore = [re.compile(p) for p in cfg.filters.ignore_titles]
-        self.judge = LLMJudge(cfg.llm, store)
         self.laya = LayaJudge(cfg.laya, store)
         self.notifier = None  # __main__ tarafından atanır (kanallar engine.command'a ihtiyaç duyar)
         self._pending: dict[str, list[Signal]] = {}
@@ -262,7 +260,7 @@ class Engine:
         return GameContext(title), "yalnızca isim (Steam'de bulunamadı)"
 
     async def lookup_roblox(self, ctx: GameContext) -> LookupResult:
-        """Roblox'ta arar; her adayı isim, açıklama-atfı, oynanış ve (varsa) Claude ile değerlendirir."""
+        """Roblox'ta arar; her adayı isim, açıklama-atfı, oynanış ve (açıksa) Laya ile değerlendirir."""
         rc, sc = self.cfg.roblox, self.cfg.scoring
         queries = search_queries(ctx.title, rc.max_queries_per_game)
         found: dict[int, RobloxGame] = {}
@@ -309,16 +307,6 @@ class Engine:
                 v = verdicts.get(g.universe_id)
                 if v:
                     ev.laya, ev.laya_relation = v.similarity, v.relation
-            reclassify()
-
-        if self.judge.available:
-            ranked = sorted(zip(games, evidences), key=lambda x: -x[1].score)
-            ask = [g for g, ev in ranked if ev.score >= self.cfg.llm.min_prescore][: self.cfg.llm.max_candidates]
-            verdicts = await self.judge.judge(ctx, ask)
-            for g, ev in zip(games, evidences):
-                v = verdicts.get(g.universe_id)
-                if v:
-                    ev.llm, ev.llm_relation, ev.llm_reason = v.similarity, v.relation, v.reason
             reclassify()
 
         pairs = list(zip(games, evidences))
@@ -804,7 +792,7 @@ class Engine:
         }
         return {
             "title": title, "resolved_title": ctx.title, "context_source": source, "tags": ctx.tags[:10],
-            "queries": result.queries, "generic": result.generic, "llm": self.judge.available,
+            "queries": result.queries, "generic": result.generic,
             "laya": self.laya.available,
             "status": a.status.value, "status_label": a.status.label, "saturation": a.saturation,
             "total_playing": a.total_playing, "clone_count": a.clone_count, "similar_count": a.similar_count,
@@ -841,7 +829,6 @@ class Engine:
             "sources": self.store.source_health(),
             "channels": self.notifier.channel_health() if self.notifier else [],
             "judges": {
-                "claude": {"enabled": self.judge.available, "last_error": self.judge.last_error},
                 "laya": {"enabled": self.laya.available, "mode": self.cfg.laya.mode, "model": self.laya.checkpoint,
                          "last_error": self.laya.last_error},
             },

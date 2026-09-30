@@ -58,18 +58,8 @@ scoring:
   ccu_surge_ratio: 1.5
   ccu_surge_min_players: 1000
 
-# İsteğe bağlı Claude doğrulaması: sezgisel skorun belirsiz kaldığı adayları (klon mu, aynı tür mü?)
-# Claude'a sorar. ANTHROPIC_API_KEY gerekir. Kararlar önbelleklenir, saatlik çağrı sınırı vardır.
-llm:
-  enabled: false
-  model: claude-opus-5-5
-  effort: low               # sınıflandırma işi; low yeterli
-  max_candidates: 10        # oyun başına en fazla aday
-  min_prescore: 0.3         # sezgisel ön puanı bunun altındakiler gönderilmez
-  max_calls_per_hour: 30
-  cache_days: 14
-
-# İsteğe bağlı Laya karar modeli (Convai, Apache 2.0): yerel, ücretsiz, API anahtarı gerekmez.
+# İsteğe bağlı Laya karar modeli (Convai, Apache 2.0): yerel ve ücretsiz, API anahtarı/hesap gerekmez.
+# Akım'da ücretli (kredi/API anahtarı isteyen) hiçbir bileşen yoktur.
 # pip install "akim[laya]" (PyTorch gerekir). Ölçüm sonuçları ve öneriler: eval/README.md
 laya:
   enabled: false

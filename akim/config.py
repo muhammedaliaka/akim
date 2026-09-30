@@ -8,6 +8,7 @@ değişkenleriyle doldurulur, böylece gizli bilgiler dosyaya yazılmaz.
 from __future__ import annotations
 
 import dataclasses
+import logging
 import os
 import re
 import typing
@@ -18,6 +19,14 @@ from typing import Any
 import yaml
 
 from .runtime import load_dotenv
+
+log = logging.getLogger(__name__)
+
+# Eski config dosyalarında kalmış olabilecek, artık desteklenmeyen bölümler: hata vermek yerine
+# uyarıp yok sayılır (eski config.example.yaml'dan kopyalanan config.yaml'lar bozulmasın).
+REMOVED_SECTIONS = {
+    "llm": "Claude doğrulaması (ücretli API) kaldırıldı; Akım yalnızca ücretsiz kaynaklarla çalışır",
+}
 
 
 @dataclass
@@ -123,19 +132,6 @@ class ScoringConfig:
 
 
 @dataclass
-class LLMConfig:
-    """İsteğe bağlı Claude doğrulaması (ANTHROPIC_API_KEY gerekir)."""
-
-    enabled: bool = False
-    model: str = "claude-opus-5-5"
-    effort: str = "low"  # sınıflandırma işi; low yeterli ve ucuz
-    max_candidates: int = 10  # oyun başına Claude'a gönderilecek en fazla aday
-    min_prescore: float = 0.3  # sezgisel ön puanı bunun altındaki adaylar gönderilmez
-    max_calls_per_hour: int = 30
-    cache_days: float = 14
-
-
-@dataclass
 class LayaConfig:
     """İsteğe bağlı Laya karar modeli (yerel, ücretsiz; PyTorch gerekir). Bkz. eval/README.md."""
 
@@ -209,7 +205,6 @@ class Config:
     roblox: RobloxConfig = field(default_factory=RobloxConfig)
     filters: FilterConfig = field(default_factory=FilterConfig)
     scoring: ScoringConfig = field(default_factory=ScoringConfig)
-    llm: LLMConfig = field(default_factory=LLMConfig)
     laya: LayaConfig = field(default_factory=LayaConfig)
     notifications: NotificationConfig = field(default_factory=NotificationConfig)
     web: WebConfig = field(default_factory=WebConfig)
@@ -298,6 +293,10 @@ def load_config(path: str | os.PathLike | None = None) -> Config:
         # ör. docker, eksik config.yaml için boş bir klasör oluşturmuşsa
         raise FileNotFoundError(f"Config dosyası bulunamadı veya dosya değil: {p}")
     raw = _expand_env(raw)
+    for name, why in REMOVED_SECTIONS.items():
+        if isinstance(raw, dict) and name in raw:
+            raw.pop(name)
+            log.warning("config: '%s:' bölümü yok sayıldı (%s); dosyadan silebilirsin", name, why)
 
     channels = (raw.get("notifications") or {}).get("channels")
     if channels is not None:
@@ -333,8 +332,6 @@ def _apply_env_shortcuts(cfg: Config) -> None:
         ch["slack"] = ChannelConfig(enabled=True, webhook_url=env["AKIM_SLACK_WEBHOOK_URL"])
     if env.get("AKIM_WEB_TOKEN"):
         cfg.web.token = env["AKIM_WEB_TOKEN"]
-    if env.get("AKIM_LLM_ENABLED"):
-        cfg.llm.enabled = env["AKIM_LLM_ENABLED"].strip().lower() in {"1", "true", "yes", "on", "evet"}
     if env.get("AKIM_LAYA_ENABLED"):
         cfg.laya.enabled = env["AKIM_LAYA_ENABLED"].strip().lower() in {"1", "true", "yes", "on", "evet"}
     if env.get("AKIM_DATA_DIR"):

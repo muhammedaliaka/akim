@@ -7,8 +7,7 @@
   powershell -ExecutionPolicy Bypass -File deploy\windows\install.ps1 -WithLaya   # yerel Laya modeli (PyTorch CPU, ~700 MB)
 #>
 param(
-  [switch]$WithLaya,  # Laya için PyTorch (CPU) ve laya paketini de kur
-  [switch]$NoLlm      # Claude doğrulama eklentisini (anthropic paketi) kurma
+  [switch]$WithLaya   # Laya için PyTorch (CPU) ve laya paketini de kur
 )
 
 $ErrorActionPreference = "Stop"
@@ -53,7 +52,6 @@ if (-not (Test-Path $venvPy)) {
 if ($LASTEXITCODE -ne 0) { throw "pip güncellenemedi" }
 
 $extras = @()
-if (-not $NoLlm) { $extras += "llm" }
 if ($WithLaya) { $extras += "laya" }
 $spec = "."
 if ($extras.Count -gt 0) { $spec = ".[" + ($extras -join ",") + "]" }

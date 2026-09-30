@@ -18,7 +18,8 @@ dependencies = [
 llm = ["anthropic>=1.9"]
 # İsteğe bağlı yerel Laya karar modeli (config: laya.enabled). PyTorch gerektirir.
 laya = ["laya>=0.3.22"]
-dev = ["pytest>=8"]
+# Testler sahte istemciyle çalışır ama Anthropic hata sınıflarını içe aktarır
+dev = ["pytest>=8", "anthropic>=1.9"]
 
 [project.scripts]
 akim = "akim.__main__:main"
@@ -27,7 +28,7 @@ akim = "akim.__main__:main"
 include = ["akim*"]
 
 [tool.setuptools.package-data]
-akim = ["web/*.html"]
+akim = ["web/*.html", "web/static/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

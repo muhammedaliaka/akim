@@ -1,0 +1,10 @@
+# Çalışma kopyası her platformda LF olsun (Windows'ta autocrlf testlerin fixture'larını ve kabuk betiklerini bozmasın)
+* text=auto eol=lf
+
+# Windows betikleri CRLF ister (cmd etiketleri LF ile bozulabilir)
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+*.png binary
+*.db binary

@@ -15,7 +15,8 @@ from .base import PRIORITY_EMOJI, PRIORITY_LABEL, Channel, plain_text
 
 log = logging.getLogger("akim.alert")
 
-_ANSI = {
+# Renk kodu log kaydına eklenir; yalnızca renk destekleyen konsol işleyicisi uygular (dosya logu temiz kalır)
+ANSI = {
     Priority.LOW: "\033[37m",
     Priority.MEDIUM: "\033[36m",
     Priority.HIGH: "\033[33;1m",
@@ -27,9 +28,8 @@ class ConsoleChannel(Channel):
     name = "console"
 
     async def send(self, alert: Alert) -> None:
-        color, reset = _ANSI[alert.priority], "\033[0m"
         text = plain_text(alert).replace("\n", "\n    ")
-        log.info("%s%s%s", color, text, reset)
+        log.info("%s", text, extra={"akim_color": ANSI[alert.priority]})
 
 
 class DiscordChannel(Channel):
@@ -78,6 +78,7 @@ class NtfyChannel(Channel):
 
     name = "ntfy"
     PRIO = {Priority.LOW: "2", Priority.MEDIUM: "3", Priority.HIGH: "4", Priority.CRITICAL: "5"}
+    MAX_BODY = 3800  # ntfy 4096 bayttan uzun mesajı bildirim yerine ek dosyaya çevirir
     TAGS = {Priority.LOW: "information_source", Priority.MEDIUM: "bell", Priority.HIGH: "rotating_light", Priority.CRITICAL: "fire"}
 
     def __init__(self, cfg: ChannelConfig, http: HttpClient):
@@ -90,6 +91,7 @@ class NtfyChannel(Channel):
         body = alert.body
         if alert.fields:
             body += "\n" + "\n".join(f"{k}: {v}" for k, v in alert.fields)
+        body = _clip_bytes(body, self.MAX_BODY)
         headers = {
             # HTTP başlıkları latin-1 olmalı; Türkçe başlıklar için RFC 2047 kodlaması
             "Title": _rfc2047(alert.title),
@@ -104,6 +106,13 @@ class NtfyChannel(Channel):
             headers["Authorization"] = f"Bearer {self.cfg.token}"
         url = f"{self.cfg.server.rstrip('/')}/{self.cfg.topic}"
         await self.http.post(url, data=body.encode("utf-8"), headers=headers, retries=2)
+
+
+def _clip_bytes(text: str, limit: int) -> str:
+    data = text.encode("utf-8")
+    if len(data) <= limit:
+        return text
+    return data[: limit - 3].decode("utf-8", errors="ignore") + "..."
 
 
 def _rfc2047(text: str) -> str:

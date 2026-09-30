@@ -12,9 +12,10 @@ from __future__ import annotations
 import argparse
 import asyncio
 import logging
-import signal
+import logging.handlers
 import sys
 import time
+from pathlib import Path
 
 from . import __version__
 from .config import Config, load_config
@@ -23,17 +24,41 @@ from .events import EventBus
 from .http import HttpClient
 from .models import Decision, RobloxStatus
 from .notify import Notifier, build_channels
+from .runtime import has_console, install_stop_handlers, keep_awake, lan_addresses, setup_console
 from .storage import Storage
 
 log = logging.getLogger("akim")
 
 
-def setup_logging(level: str) -> None:
-    logging.basicConfig(
-        level=getattr(logging, level.upper(), logging.INFO),
-        format="%(asctime)s %(levelname)-7s %(name)s: %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
+LOG_FORMAT = "%(asctime)s %(levelname)-7s %(name)s: %(message)s"
+LOG_DATEFMT = "%Y-%m-%d %H:%M:%S"
+
+
+class ColorFormatter(logging.Formatter):
+    """Bildirim kanalının işaretlediği kayıtları renklendirir (yalnızca konsol işleyicisinde kullanılır)."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        text = super().format(record)
+        color = getattr(record, "akim_color", None)
+        return f"{color}{text}\033[0m" if color else text
+
+
+def setup_logging(level: str, log_file: str = "", color: bool = False) -> None:
+    root = logging.getLogger()
+    root.setLevel(getattr(logging, level.upper(), logging.INFO))
+    for handler in list(root.handlers):
+        root.removeHandler(handler)
+    console = logging.StreamHandler()
+    console.setFormatter(ColorFormatter(LOG_FORMAT, LOG_DATEFMT) if color else logging.Formatter(LOG_FORMAT, LOG_DATEFMT))
+    root.addHandler(console)
+    if log_file:
+        try:
+            Path(log_file).parent.mkdir(parents=True, exist_ok=True)
+            fh = logging.handlers.RotatingFileHandler(log_file, maxBytes=5_000_000, backupCount=3, encoding="utf-8")
+            fh.setFormatter(logging.Formatter(LOG_FORMAT, LOG_DATEFMT))
+            root.addHandler(fh)
+        except OSError as exc:
+            root.warning("Log dosyası açılamadı (%s): %s", log_file, exc)
     logging.getLogger("aiohttp.access").setLevel(logging.WARNING)
 
 
@@ -58,34 +83,43 @@ class App:
 
 async def cmd_run(cfg: Config) -> None:
     app = App(cfg)
-    await app.notifier.start()
     runner = None
-    if cfg.web.enabled:
-        from .web.server import start_web
-
-        runner = await start_web(app.engine, cfg.web)
-
+    engine_task: asyncio.Task | None = None
     stop = asyncio.Event()
-    loop = asyncio.get_running_loop()
-    for sig in (signal.SIGINT, signal.SIGTERM):
-        try:
-            loop.add_signal_handler(sig, stop.set)
-        except NotImplementedError:  # Windows
-            pass
+    awake = False
+    try:
+        install_stop_handlers(asyncio.get_running_loop(), stop)
+        await app.notifier.start()
+        if cfg.general.keep_awake and keep_awake(True):
+            awake = True
+            log.info("Windows uyku modu engellendi (ekran kapanabilir; kapağı kapatırsan bilgisayar yine uyur)")
+        if cfg.web.enabled:
+            from .web.server import start_web
 
-    log.info("Akım %s başladı (veri: %s)", __version__, cfg.db_path)
-    engine_task = asyncio.create_task(app.engine.run_forever(), name="engine")
-    stop_task = asyncio.create_task(stop.wait())
-    done, _ = await asyncio.wait({engine_task, stop_task}, return_when=asyncio.FIRST_COMPLETED)
-    if engine_task in done and engine_task.exception():
-        log.error("Motor beklenmedik şekilde durdu", exc_info=engine_task.exception())
-    log.info("Kapatılıyor…")
-    for t in (engine_task, stop_task):
-        t.cancel()
-    await asyncio.gather(engine_task, stop_task, return_exceptions=True)
-    if runner:
-        await runner.cleanup()
-    await app.close()
+            try:
+                runner = await start_web(app.engine, cfg.web)
+            except OSError as exc:
+                # Bildirimler panelden önemli: port doluysa (Windows'ta 8080 sık kullanılır) panelsiz sürdür
+                log.error("Web paneli başlatılamadı (port %d dolu olabilir; web.port ile değiştir): %s", cfg.web.port, exc)
+
+        log.info("Akım %s başladı (veri: %s)", __version__, cfg.db_path)
+        engine_task = asyncio.create_task(app.engine.run_forever(), name="engine")
+        stop_task = asyncio.create_task(stop.wait(), name="stop")
+        done, _ = await asyncio.wait({engine_task, stop_task}, return_when=asyncio.FIRST_COMPLETED)
+        stop_task.cancel()
+        if engine_task in done and not engine_task.cancelled() and engine_task.exception():
+            log.error("Motor beklenmedik şekilde durdu", exc_info=engine_task.exception())
+            raise SystemExit(1)  # bir denetleyici (Görev Zamanlayıcı, systemd, run.cmd) yeniden başlatsın
+    finally:
+        log.info("Kapatılıyor…")
+        if engine_task:
+            engine_task.cancel()
+            await asyncio.gather(engine_task, return_exceptions=True)
+        if runner:
+            await runner.cleanup()
+        await app.close()
+        if awake:
+            keep_awake(False)
 
 
 def _print_board(rows: list[dict]) -> None:
@@ -193,8 +227,13 @@ def main(argv: list[str] | None = None) -> None:
     sub.add_parser("test-notify", help="tüm kanallara test bildirimi gönder")
     args = parser.parse_args(argv)
 
+    console = has_console()  # setup_console() konsolsuz akışları değiştirmeden önce ölç
+    color = setup_console()
     cfg = load_config(args.config)
-    setup_logging("DEBUG" if args.verbose else cfg.general.log_level)
+    log_file = cfg.general.log_file
+    if not log_file and not console:
+        log_file = str(Path(cfg.general.data_dir) / "akim.log")  # pythonw/Görev Zamanlayıcı: log görünmez olmasın
+    setup_logging("DEBUG" if args.verbose else cfg.general.log_level, log_file, color)
     command = args.command or "run"
     try:
         if command == "run":

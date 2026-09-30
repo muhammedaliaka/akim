@@ -13,9 +13,11 @@ from aiohttp import web
 
 from ..config import WebConfig
 from ..engine import Engine
+from ..runtime import lan_addresses
 
 log = logging.getLogger(__name__)
 DASHBOARD = Path(__file__).with_name("dashboard.html")
+STATIC = Path(__file__).with_name("static")
 
 
 def _json(data, status: int = 200) -> web.Response:
@@ -34,7 +36,25 @@ def create_app(engine: Engine, cfg: WebConfig) -> web.Application:
         return hmac.compare_digest(header, f"Bearer {cfg.token}")
 
     async def index(_: web.Request) -> web.Response:
-        return web.Response(text=DASHBOARD.read_text(encoding="utf-8"), content_type="text/html")
+        return web.Response(
+            text=DASHBOARD.read_text(encoding="utf-8"), content_type="text/html", headers={"Cache-Control": "no-cache"}
+        )
+
+    async def manifest(_: web.Request) -> web.Response:
+        # Android'de "Ana ekrana ekle / Uygulamayı yükle", Windows'ta Edge/Chrome "Uygulama olarak yükle"
+        return web.Response(
+            body=(STATIC / "manifest.webmanifest").read_bytes(),
+            content_type="application/manifest+json",
+            headers={"Cache-Control": "no-cache"},
+        )
+
+    async def service_worker(_: web.Request) -> web.Response:
+        # Kök kapsamda servis edilmeli; her zaman yeniden doğrulanır ki güncellemeler gecikmesin
+        return web.Response(
+            body=(STATIC / "sw.js").read_bytes(),
+            content_type="text/javascript",
+            headers={"Cache-Control": "no-cache", "Service-Worker-Allowed": "/"},
+        )
 
     async def healthz(_: web.Request) -> web.Response:
         last = max(engine.last_run.values(), default=engine.started_at)
@@ -106,6 +126,9 @@ def create_app(engine: Engine, cfg: WebConfig) -> web.Application:
         return resp
 
     app.router.add_get("/", index)
+    app.router.add_get("/manifest.webmanifest", manifest)
+    app.router.add_get("/sw.js", service_worker)
+    app.router.add_static("/static/", STATIC, follow_symlinks=False)
     app.router.add_get("/healthz", healthz)
     app.router.add_get("/api/status", status)
     app.router.add_get("/api/board", board)
@@ -123,5 +146,10 @@ async def start_web(engine: Engine, cfg: WebConfig) -> web.AppRunner:
     await runner.setup()
     site = web.TCPSite(runner, cfg.host, cfg.port)
     await site.start()
-    log.info("Web paneli: http://%s:%d", "localhost" if cfg.host in ("0.0.0.0", "") else cfg.host, cfg.port)
+    if cfg.host in ("0.0.0.0", "", "::"):
+        log.info("Web paneli: http://localhost:%d", cfg.port)
+        for ip in lan_addresses():
+            log.info("Telefondan (aynı Wi-Fi): http://%s:%d", ip, cfg.port)
+    else:
+        log.info("Web paneli: http://%s:%d", cfg.host, cfg.port)
     return runner

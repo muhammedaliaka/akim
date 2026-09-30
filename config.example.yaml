@@ -4,11 +4,14 @@
 # ${DEGISKEN} ifadeleri ortam değişkeninden (.env) okunur; gizli bilgileri buraya yazma.
 
 general:
-  data_dir: ./data            # SQLite veritabanı burada tutulur
+  data_dir: ./data            # SQLite veritabanı; göreli yol bu dosyanın klasörüne göre çözülür
   country: US                 # mağaza bölgesi (listeler bu ülkeye göre çekilir)
   language: english
   log_level: INFO
   track_days: 7               # listeden düşen oyun kaç gün daha takip edilsin
+  log_file: ""                # dosyaya da log yaz, ör. akim.log (göreli yol bu dosyanın klasörüne göre).
+                              # Boşsa yalnızca konsol; konsolsuz çalışmada (Windows Görev Zamanlayıcı) data_dir/akim.log
+  keep_awake: true            # Windows'ta bilgisayar boşta uykuya geçmesin (diğer sistemlerde etkisiz)
 
 steam:
   enabled: true

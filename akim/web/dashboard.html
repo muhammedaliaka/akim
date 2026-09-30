@@ -2,7 +2,14 @@
 <html lang="tr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#2f6fed" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#171b21" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Akım">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/static/icon-192.png">
 <title>Akım Paneli</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232f6fed'/%3E%3Cpath d='M6 22l6-7 5 4 9-11' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <style>
@@ -120,6 +127,37 @@ svg.spark { width: 100%; height: 70px; display: block; }
   .score { min-width: 64px; }
   .score .muted { display: none; }
   td.rs { font-size: 12px; }
+}
+
+/* Telefon (Android/HyperOS Chrome ve Mi Tarayıcı, çentikli ekranlar) */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
+@supports (padding: max(0px)) {
+  header { padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); padding-top: max(14px, env(safe-area-inset-top)); }
+  main { padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); padding-bottom: max(40px, env(safe-area-inset-bottom)); }
+}
+@media (pointer: coarse) {
+  .tab { padding: 0 14px; min-height: 44px; font-size: 13px; }
+  button.primary, .theme, .close { min-height: 44px; min-width: 44px; }
+  input[type=search], input[type=text] { min-height: 44px; font-size: 16px; }
+  tbody td { padding-top: 12px; padding-bottom: 12px; }
+}
+dialog { max-height: calc(100vh - 48px); max-height: calc(100dvh - 48px); }
+@media (max-width: 600px) {
+  /* Dar ekranda tablo satırı iki katlı karta döner: üstte oyun adı, altında karar · Roblox durumu · skor */
+  .table-wrap { overflow-x: visible; }
+  table, tbody { display: block; }
+  thead { display: none; }
+  tbody tr { display: grid; grid-template-columns: auto 1fr minmax(64px, auto); column-gap: 12px; row-gap: 8px; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  tbody td { display: block; padding: 0; border: 0; min-width: 0; }
+  tbody td:first-child { grid-column: 1 / -1; }
+  tbody td.rs { max-width: none; }
+  .game .t { overflow-wrap: anywhere; }
+  dialog { width: 100vw; max-width: 100vw; height: 100vh; height: 100dvh; max-height: none; border: 0; border-radius: 0; margin: 0; }
+  @supports (padding: max(0px)) {
+    header { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+    main { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+  }
 }
 </style>
 </head>
@@ -334,8 +372,21 @@ function scheduleReload() {
   clearTimeout(reloadTimer);
   reloadTimer = setTimeout(() => { loadBoard(); loadStatus(); }, 1500);
 }
+let es = null;
+function pageNotify(a) {
+  // Android Chrome'da `new Notification()` "Illegal constructor" verir; servis çalışanı üzerinden gösterilir
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  try {
+    if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.ready.then((reg) => reg.showNotification(a.title, { body: a.body, icon: "/static/icon-192.png" }));
+    } else {
+      new Notification(a.title, { body: a.body });
+    }
+  } catch (e) { console.warn(e); }
+}
 function connect() {
-  const es = new EventSource("/api/events");
+  if (es) es.close();
+  es = new EventSource("/api/events");
   es.onopen = () => { $("live-dot").classList.add("on"); $("live-text").textContent = "canlı"; };
   es.onerror = () => { $("live-dot").classList.remove("on"); $("live-text").textContent = "yeniden bağlanıyor…"; };
   es.addEventListener("alert", (ev) => {
@@ -343,16 +394,28 @@ function connect() {
     const feed = $("feed");
     if (feed.querySelector(".empty")) feed.innerHTML = "";
     feed.insertAdjacentHTML("afterbegin", alertHtml(a, true));
-    if (["high", "critical"].includes(a.priority) && "Notification" in window && Notification.permission === "granted") {
-      new Notification(a.title, { body: a.body });
-    }
+    if (["high", "critical"].includes(a.priority)) pageNotify(a);
     scheduleReload();
   });
   es.addEventListener("decision", scheduleReload);
   es.addEventListener("charts", scheduleReload);
 }
-if ("Notification" in window && Notification.permission === "default") {
+// Telefonda ekran kilitlenince / sekme arka plana gidince tarayıcı canlı bağlantıyı dondurur veya koparır:
+// sayfa yeniden görünür olduğunda bağlantıyı yenile ve kaçırılanları çek
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") return;
+  if (!es || es.readyState !== EventSource.OPEN) connect();
+  loadBoard(); loadStatus(); loadAlerts();
+});
+window.addEventListener("online", () => { connect(); loadBoard(); loadStatus(); loadAlerts(); });
+// Masaüstünde sayfa içi bildirim izni iste; telefonda bildirimler ntfy/Telegram'dan gelir, ilk dokunuşta izin penceresi çıkmasın
+if ("Notification" in window && Notification.permission === "default" && matchMedia("(pointer: fine)").matches) {
   document.addEventListener("click", () => Notification.requestPermission(), { once: true });
+}
+// Ana ekrana eklenebilir uygulama (PWA). Servis çalışanı yalnızca güvenli bağlamda (HTTPS veya localhost) çalışır;
+// düz http://192.168.x.x üzerinde Chrome yine de "Ana ekrana ekle" kısayolu oluşturur.
+if ("serviceWorker" in navigator && window.isSecureContext) {
+  navigator.serviceWorker.register("/sw.js").catch((e) => console.warn("sw", e));
 }
 
 /* ---------- anlık kontrol ---------- */

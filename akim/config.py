@@ -17,6 +17,8 @@ from typing import Any
 
 import yaml
 
+from .runtime import load_dotenv
+
 
 @dataclass
 class GeneralConfig:
@@ -26,6 +28,11 @@ class GeneralConfig:
     log_level: str = "INFO"
     # Bir oyun listelerden düştükten sonra kaç gün daha takip edilsin
     track_days: int = 7
+    # Dosyaya da log yaz (boş = yalnızca konsol). Konsolsuz çalışmada (pythonw, Görev Zamanlayıcı) varsayılan:
+    # <data_dir>/akim.log. Göreli yollar config dosyasının klasörüne göre çözülür.
+    log_file: str = ""
+    # Windows'ta bilgisayar boşta uykuya geçmesin (7/24 izleme için). Diğer sistemlerde etkisizdir.
+    keep_awake: bool = True
 
 
 @dataclass
@@ -217,7 +224,8 @@ _ENV_PATTERN = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)(?::-([^}]*))?\}")
 
 def _expand_env(value: Any) -> Any:
     if isinstance(value, str):
-        return _ENV_PATTERN.sub(lambda m: os.environ.get(m.group(1), m.group(2) or ""), value)
+        # kabuktaki ${X:-varsayılan} gibi: değişken tanımsız VEYA boşsa varsayılan kullanılır
+        return _ENV_PATTERN.sub(lambda m: os.environ.get(m.group(1)) or m.group(2) or "", value)
     if isinstance(value, list):
         return [_expand_env(v) for v in value]
     if isinstance(value, dict):
@@ -264,13 +272,28 @@ def _build(cls: type, data: dict, path: str = "") -> Any:
     return cls(**kwargs)
 
 
+def _resolve_path(value: str, base: Path) -> str:
+    """``~`` açılır; göreli yollar ``base`` (config dosyasının klasörü) altında çözülür.
+
+    Görev Zamanlayıcı/systemd çalışma klasörünü (System32, /) kendi seçer; veri o klasöre yazılmamalıdır.
+    """
+    path = Path(value).expanduser()
+    return str(path if path.is_absolute() else base / path)
+
+
 def load_config(path: str | os.PathLike | None = None) -> Config:
-    """Config dosyasını yükler. Yol verilmezse AKIM_CONFIG veya ./config.yaml denenir."""
+    """Config dosyasını yükler. Yol verilmezse AKIM_CONFIG veya ./config.yaml denenir.
+
+    Config dosyasının (yoksa çalışma klasörünün) yanındaki ``.env`` dosyası da okunur; bu sayede Windows ve
+    Termux'ta Docker/systemd'nin yaptığı gibi ortam değişkeni tanımlamaya gerek kalmaz.
+    """
     candidate = path or os.environ.get("AKIM_CONFIG") or "config.yaml"
     p = Path(candidate)
+    base = p.resolve().parent if p.is_file() else Path.cwd()
+    load_dotenv([base / ".env", Path.cwd() / ".env"])
     raw: dict = {}
     if p.is_file():
-        raw = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
+        raw = yaml.safe_load(p.read_text(encoding="utf-8-sig")) or {}
     elif path or p.exists():
         # ör. docker, eksik config.yaml için boş bir klasör oluşturmuşsa
         raise FileNotFoundError(f"Config dosyası bulunamadı veya dosya değil: {p}")
@@ -283,6 +306,9 @@ def load_config(path: str | os.PathLike | None = None) -> Config:
 
     cfg = _build(Config, raw)
     _apply_env_shortcuts(cfg)
+    cfg.general.data_dir = _resolve_path(cfg.general.data_dir, base)
+    if cfg.general.log_file:
+        cfg.general.log_file = _resolve_path(cfg.general.log_file, base)
     return cfg
 
 
@@ -313,3 +339,5 @@ def _apply_env_shortcuts(cfg: Config) -> None:
         cfg.laya.enabled = env["AKIM_LAYA_ENABLED"].strip().lower() in {"1", "true", "yes", "on", "evet"}
     if env.get("AKIM_DATA_DIR"):
         cfg.general.data_dir = env["AKIM_DATA_DIR"]
+    if env.get("AKIM_LOG_FILE"):
+        cfg.general.log_file = env["AKIM_LOG_FILE"]

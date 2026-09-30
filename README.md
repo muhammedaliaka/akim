@@ -127,6 +127,18 @@ Docker'da `docker-compose.yml` içindeki `EXTRAS: "llm,laya"` ile derle. Model (
 
 Aynı oyun + aynı olay için 12 saat tekrar koruması vardır. Aynı oyun hem Steam'de hem Epic'te listelenmişse **tek bildirim** gider. İlk açılışta, mevcut her fırsat için ayrı bildirim göndermek yerine **tek bir başlangıç özeti** gönderilir.
 
+## Platformlar
+
+| Platform | Rol | Nasıl |
+|---|---|---|
+| **Windows 10/11** | Sunucu (PC açık kaldığı sürece) | [docs/windows.md](docs/windows.md): `deploy\windows\install.cmd` → `run.cmd` veya `autostart.ps1` |
+| **Linux / VPS** | Sunucu, gerçek 7/24 | Docker (aşağıda) veya `deploy/akim.service` (systemd) |
+| **Android (HyperOS / Xiaomi dahil)** | İstemci: anlık bildirim + panel | [docs/android-hyperos.md](docs/android-hyperos.md): ntfy/Telegram + HyperOS arka plan ayarları + panel kısayolu |
+
+Sunucuyu **telefonda çalıştırmak önerilmez** (Android arka plan süreçlerini öldürür); telefon bildirimi alır ve paneli açar.
+Windows ve Android tarafı kodda şunları kapsar: UTF-8 konsol, `.env` okuma, Ctrl+C/Ctrl+Break ile temiz kapanış, boşta uykuyu engelleme, konsolsuz çalışmada dosya logu, port doluysa panelsiz devam, yüklenebilir (PWA) mobil panel.
+Testler CI'da Ubuntu ve Windows üzerinde, Python 3.10 ve 3.12 ile çalışır.
+
 ## Hızlı başlangıç
 
 ### Docker (önerilen, 7/24)
@@ -143,12 +155,15 @@ Panel: <http://localhost:8080>. `restart: unless-stopped` sayesinde servis çök
 ### Doğrudan Python (3.10+)
 
 ```bash
-python -m venv .venv && . .venv/bin/activate
+python -m venv .venv && . .venv/bin/activate     # Windows: deploy\windows\install.cmd
 pip install -e .
 cp config.example.yaml config.yaml
-akim run                  # veya: python -m akim run
+cp .env.example .env                             # config.yaml'ın yanındaki .env otomatik okunur
+akim run                                         # veya: python -m akim run
 ```
 
+`.env` dosyası config dosyasının klasöründen (yoksa çalışma klasöründen) okunur; gerçek ortam değişkenleri `.env`'in önüne geçer.
+Göreli `data_dir` ve `log_file` yolları çalışma klasörüne değil **config dosyasının klasörüne** göre çözülür (Görev Zamanlayıcı/systemd çalışma klasörünü kendi seçer).
 Sunucuda systemd servisi olarak çalıştırmak için `deploy/akim.service` dosyasındaki adımlara bak.
 
 ## Bildirim kurulumu
@@ -254,7 +269,11 @@ akim/
               scoring.py    momentum, Roblox doygunluğu, karar
   notify/     telegram.py · channels.py           bildirim kanalları + dağıtıcı
   web/        server.py · dashboard.html          canlı panel ve API
+              static/                             PWA: manifest, simgeler, servis çalışanı
+  runtime.py  Windows konsolu, uyku engelleme, .env, kapatma sinyalleri, yerel ağ adresi
   engine.py   döngüler, karar geçişleri, bildirim üretimi
   storage.py  SQLite (sıra geçmişi, Roblox geçmişi, kararlar, bildirim tekrar koruması)
+deploy/       akim.service (systemd) · windows/ (kurulum, çalıştırma, otomatik başlatma)
+docs/         windows.md · android-hyperos.md
 eval/         etiketli gerçek veri, değerlendirme betiği ve sonuçlar (bkz. eval/README.md)
 ```

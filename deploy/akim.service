@@ -1,0 +1,26 @@
+# systemd servisi: sunucu açıldığında başlar, çökerse yeniden başlar.
+#   sudo cp deploy/akim.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now akim
+#   journalctl -u akim -f        # canlı log
+[Unit]
+Description=Akim - Steam/Epic -> Roblox akim izleme
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=akim
+WorkingDirectory=/opt/akim
+EnvironmentFile=-/opt/akim/.env
+ExecStart=/opt/akim/.venv/bin/akim -c /opt/akim/config.yaml run
+Restart=always
+RestartSec=10
+# Güvenlik sıkılaştırma
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/akim/data
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Akım Paneli</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232f6fed'/%3E%3Cpath d='M6 22l6-7 5 4 9-11' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --panel-2: #f0f2f5; --text: #15181d; --muted: #5d6673; --line: #e2e5ea;
+  --accent: #2f6fed; --green: #1f9d55; --green-bg: #e3f6ec; --rocket: #7c3aed; --rocket-bg: #efe7fe;
+  --amber: #b7791f; --amber-bg: #fdf3dc; --red: #c53030; --red-bg: #fde8e8; --gray-bg: #eceef1;
+  --shadow: 0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.08);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1216; --panel: #171b21; --panel-2: #1e232b; --text: #e8ebf0; --muted: #98a2b3; --line: #2a303a;
+    --accent: #6b9bff; --green: #4ade80; --green-bg: #133024; --rocket: #b794f6; --rocket-bg: #2a1f45;
+    --amber: #f6c350; --amber-bg: #3a2e12; --red: #fc8181; --red-bg: #3b1818; --gray-bg: #232a33;
+    --shadow: none;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1216; --panel: #171b21; --panel-2: #1e232b; --text: #e8ebf0; --muted: #98a2b3; --line: #2a303a;
+  --accent: #6b9bff; --green: #4ade80; --green-bg: #133024; --rocket: #b794f6; --rocket-bg: #2a1f45;
+  --amber: #f6c350; --amber-bg: #3a2e12; --red: #fc8181; --red-bg: #3b1818; --gray-bg: #232a33;
+  --shadow: none;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+header { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 5; }
+header h1 { font-size: 18px; margin: 0; letter-spacing: .2px; }
+header .sub { color: var(--muted); font-size: 12px; }
+.live { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); margin-left: auto; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--red); }
+.dot.on { background: var(--green); box-shadow: 0 0 0 0 var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(74,222,128,.5); } 70% { box-shadow: 0 0 0 8px rgba(74,222,128,0); } 100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); } }
+main { padding: 16px 20px 40px; max-width: 1500px; margin: 0 auto; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; box-shadow: var(--shadow); }
+.kpi .v { font-size: 26px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.kpi .l { color: var(--muted); font-size: 12px; }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start; }
+@media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); min-width: 0; }
+.card h2 { font-size: 14px; margin: 0; padding: 12px 14px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.tab { border: 1px solid var(--line); background: var(--panel-2); color: var(--text); border-radius: 999px; padding: 4px 11px; cursor: pointer; font-size: 12px; }
+.tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+input[type=search], input[type=text] { flex: 1; min-width: 140px; border: 1px solid var(--line); background: var(--panel-2); color: var(--text); border-radius: 8px; padding: 6px 10px; font: inherit; }
+button.primary { border: 0; background: var(--accent); color: #fff; border-radius: 8px; padding: 6px 12px; cursor: pointer; font: inherit; }
+button.primary:disabled { opacity: .6; cursor: wait; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+th { font-size: 11px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+tbody tr { cursor: pointer; }
+tbody tr:hover { background: var(--panel-2); }
+.game { display: flex; gap: 10px; align-items: center; min-width: 220px; }
+.game img { width: 92px; height: 43px; object-fit: cover; border-radius: 5px; background: var(--gray-bg); flex: none; }
+.game .t { font-weight: 600; }
+.game .p { color: var(--muted); font-size: 12px; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 650; white-space: nowrap; }
+.b-opportunity { background: var(--green-bg); color: var(--green); }
+.b-rising_trend { background: var(--rocket-bg); color: var(--rocket); }
+.b-watch { background: var(--amber-bg); color: var(--amber); }
+.b-saturated { background: var(--red-bg); color: var(--red); }
+.b-low, .b-filtered { background: var(--gray-bg); color: var(--muted); }
+.rs-none { color: var(--green); font-weight: 600; }
+.rs-early { color: var(--green); }
+.rs-rising { color: var(--rocket); font-weight: 600; }
+.rs-competitive { color: var(--amber); }
+.rs-saturated { color: var(--red); }
+.score { min-width: 130px; }
+.bar { height: 6px; background: var(--gray-bg); border-radius: 3px; overflow: hidden; margin-top: 4px; }
+.bar > span { display: block; height: 100%; background: var(--accent); }
+.num { font-variant-numeric: tabular-nums; }
+.nowrap { white-space: nowrap; }
+.muted { color: var(--muted); }
+.small { font-size: 12px; }
+.feed { max-height: 70vh; overflow-y: auto; }
+.alert { padding: 10px 14px; border-bottom: 1px solid var(--line); border-left: 3px solid transparent; }
+.alert.p-critical { border-left-color: var(--red); }
+.alert.p-high { border-left-color: var(--amber); }
+.alert.p-medium { border-left-color: var(--accent); }
+.alert.p-low { border-left-color: var(--line); }
+.alert.new { animation: flash 2.5s ease-out; }
+@keyframes flash { from { background: var(--amber-bg); } to { background: transparent; } }
+.alert .at { font-weight: 600; }
+.alert .ab { white-space: pre-line; color: var(--muted); font-size: 12px; margin-top: 2px; }
+.empty { padding: 24px 14px; color: var(--muted); text-align: center; }
+.side { display: grid; gap: 16px; }
+.check-result { padding: 0 14px 12px; font-size: 13px; }
+.check-result ul { padding-left: 18px; margin: 6px 0; }
+dialog { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--text); width: min(900px, calc(100vw - 32px)); max-height: calc(100vh - 48px); padding: 0; }
+dialog::backdrop { background: rgba(0,0,0,.45); }
+.dlg-head { display: flex; gap: 12px; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--panel); }
+.dlg-head img { width: 138px; height: 64px; object-fit: cover; border-radius: 6px; }
+.dlg-body { padding: 14px 16px; display: grid; gap: 16px; }
+.dlg-body h3 { font-size: 13px; margin: 0 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 700px) { .two { grid-template-columns: 1fr; } .dlg-head img { display: none; } }
+svg.spark { width: 100%; height: 70px; display: block; }
+.close { margin-left: auto; border: 1px solid var(--line); background: var(--panel-2); color: var(--text); border-radius: 8px; padding: 4px 10px; cursor: pointer; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; font-size: 12px; }
+.theme { border: 1px solid var(--line); background: var(--panel-2); color: var(--text); border-radius: 8px; padding: 6px 8px; cursor: pointer; display: inline-flex; }
+@media (max-width: 600px) {
+  header { padding: 12px 16px; }
+  main { padding: 12px 16px 32px; }
+  .hide-sm { display: none; }
+  .kpis { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .kpi { padding: 10px; }
+  .kpi .v { font-size: 20px; }
+  .game { min-width: 0; }
+  .game img { display: none; }
+  th, td { padding: 8px; }
+  .score { min-width: 64px; }
+  .score .muted { display: none; }
+  td.rs { font-size: 12px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Akım</h1>
+    <div class="sub">Steam &amp; Epic → Roblox fırsat radarı</div>
+  </div>
+  <span class="live"><span class="dot" id="live-dot"></span><span id="live-text">bağlanıyor…</span></span>
+  <button class="theme" id="theme-btn" title="Açık / koyu tema" aria-label="Tema değiştir">
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg>
+  </button>
+</header>
+<main>
+  <section class="kpis" id="kpis"></section>
+  <div class="grid">
+    <section class="card">
+      <h2>Fırsat tablosu <span class="muted small" id="board-meta"></span></h2>
+      <div class="toolbar" id="tabs"></div>
+      <div class="toolbar"><input type="search" id="q" placeholder="Oyun veya yayıncı ara…"></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Oyun</th><th>Karar</th><th>Roblox</th><th class="hide-sm">Liste</th><th>Skor</th><th class="hide-sm">Güncel</th></tr></thead>
+          <tbody id="board"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="board-empty" hidden>Henüz veri yok. İlk tarama birkaç dakika sürebilir.</div>
+    </section>
+    <aside class="side">
+      <section class="card">
+        <h2>Anlık Roblox kontrolü</h2>
+        <form class="toolbar" id="check-form">
+          <input type="text" id="check-title" placeholder="Örn. Schedule I" required maxlength="200">
+          <button class="primary" id="check-btn">Kontrol</button>
+        </form>
+        <div class="check-result" id="check-result"></div>
+      </section>
+      <section class="card">
+        <h2>Canlı bildirimler</h2>
+        <div class="feed" id="feed"></div>
+      </section>
+      <section class="card">
+        <h2>Sistem</h2>
+        <div class="check-result" id="system"></div>
+      </section>
+    </aside>
+  </div>
+</main>
+
+<dialog id="dlg"></dialog>
+
+<script>
+const DECISIONS = {
+  opportunity: "FIRSAT", rising_trend: "AKIM BAŞLADI", watch: "İZLE",
+  saturated: "DOYMUŞ", low: "ZAYIF", filtered: "ELENDİ"
+};
+const RSTATUS = {
+  none: "Roblox'ta YOK", early: "Erken aşama", rising: "Yükselişte",
+  competitive: "Rekabetçi", saturated: "Doymuş"
+};
+const CHARTS = {
+  steam_topsellers: "Steam Satış", steam_weekly: "Steam Haftalık", steam_mostplayed: "Steam Oynanan",
+  "epic_top-sellers": "Epic Satış", "epic_most-played": "Epic Oynanan", epic_trending: "Epic Trend",
+  "epic_most-popular": "Epic Popüler", "epic_top-new-releases": "Epic Yeni", "epic_top-wishlisted": "Epic İstek",
+  "epic_top-player-reviewed": "Epic Beğenilen", epic_free: "Epic Ücretsiz"
+};
+const TABS = [
+  ["actionable", "Aksiyon", "opportunity,rising_trend,watch"],
+  ["opportunity", "Fırsat", "opportunity"],
+  ["rising_trend", "Akım", "rising_trend"],
+  ["watch", "İzle", "watch"],
+  ["saturated", "Doymuş", "saturated"],
+  ["all", "Tümü", ""]
+];
+let state = { tab: "actionable", rows: [], q: "" };
+try { state.tab = localStorage.getItem("akim.tab") || state.tab; } catch (e) {}
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const safeUrl = (u) => /^https?:\/\//i.test(u || "") ? esc(u) : "#";
+const fmt = (n) => {
+  if (n == null) return "-";
+  n = Number(n);
+  if (Math.abs(n) >= 1e9) return (n / 1e9).toFixed(1) + "B";
+  if (Math.abs(n) >= 1e6) return (n / 1e6).toFixed(1) + "M";
+  if (Math.abs(n) >= 1e3) return (n / 1e3).toFixed(1) + "K";
+  return String(Math.round(n));
+};
+const ago = (ts) => {
+  if (!ts) return "-";
+  const s = Math.max(0, Date.now() / 1000 - ts);
+  if (s < 60) return "az önce";
+  if (s < 3600) return Math.floor(s / 60) + " dk önce";
+  if (s < 86400) return Math.floor(s / 3600) + " sa önce";
+  return Math.floor(s / 86400) + " gün önce";
+};
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || r.statusText);
+  return r.json();
+}
+
+/* ---------- tema ---------- */
+(function initTheme() {
+  let t = null;
+  try { t = localStorage.getItem("akim.theme"); } catch (e) {}
+  if (t) document.documentElement.dataset.theme = t;
+  $("theme-btn").onclick = () => {
+    const cur = document.documentElement.dataset.theme ||
+      (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    const next = cur === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem("akim.theme", next); } catch (e) {}
+  };
+})();
+
+/* ---------- tablo ---------- */
+function renderTabs() {
+  $("tabs").innerHTML = TABS.map(([id, label]) =>
+    `<button class="tab ${state.tab === id ? "active" : ""}" data-tab="${id}">${label}</button>`).join("");
+  $("tabs").querySelectorAll(".tab").forEach(b => b.onclick = () => {
+    state.tab = b.dataset.tab;
+    try { localStorage.setItem("akim.tab", state.tab); } catch (e) {}
+    renderTabs(); loadBoard();
+  });
+}
+function storesText(r) {
+  const names = [r.store, ...(r.also || []).map(a => a.store)].map(s => s === "steam" ? "Steam" : "Epic");
+  return esc([...new Set(names)].join(" + "));
+}
+function chartsText(s) {
+  if (!s) return "-";
+  return s.split(",").map(x => { const [c, r] = x.split(":"); return `${CHARTS[c] || c} #${r}`; }).slice(0, 3).join("<br>");
+}
+function renderBoard() {
+  const q = state.q.toLowerCase();
+  const rows = state.rows.filter(r => !q || (r.title + " " + (r.publishers || []).join(" ")).toLowerCase().includes(q));
+  $("board-empty").hidden = rows.length > 0;
+  $("board-meta").textContent = rows.length ? `· ${rows.length} oyun` : "";
+  $("board").innerHTML = rows.map(r => `
+    <tr data-key="${esc(r.key)}">
+      <td><div class="game">
+        ${r.image ? `<img src="${safeUrl(r.image)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : `<img alt="" style="visibility:hidden">`}
+        <div><div class="t">${esc(r.title)}</div>
+        <div class="p">${storesText(r)} · ${esc((r.publishers || []).slice(0, 2).join(", ") || "-")}</div></div>
+      </div></td>
+      <td><span class="badge b-${esc(r.decision)}">${DECISIONS[r.decision] || esc(r.decision)}</span></td>
+      <td class="rs rs-${esc(r.roblox_status)}">${RSTATUS[r.roblox_status] || esc(r.roblox_status)}</td>
+      <td class="hide-sm small nowrap">${chartsText([r.charts, ...(r.also || []).map(a => a.charts)].filter(Boolean).join(","))}</td>
+      <td class="score"><span class="num">${Number(r.score).toFixed(2)}</span>
+        <div class="bar"><span style="width:${Math.round(r.score * 100)}%"></span></div>
+        <div class="muted small num">B ${Number(r.indie).toFixed(2)} · M ${Number(r.momentum).toFixed(2)} · D ${Number(r.saturation).toFixed(2)}</div></td>
+      <td class="hide-sm muted small">${ago(r.updated_at)}</td>
+    </tr>`).join("");
+  $("board").querySelectorAll("tr").forEach(tr => tr.onclick = () => openGame(tr.dataset.key));
+}
+async function loadBoard() {
+  const tab = TABS.find(t => t[0] === state.tab) || TABS[0];
+  try {
+    state.rows = await api(`/api/board?limit=300${tab[2] ? "&decision=" + tab[2] : ""}`);
+    renderBoard();
+  } catch (e) { console.warn(e); }
+}
+$("q").oninput = (e) => { state.q = e.target.value; renderBoard(); };
+
+/* ---------- kpi + sistem ---------- */
+async function loadStatus() {
+  try {
+    const st = await api("/api/status");
+    const d = st.stats.decisions || {};
+    const k = [
+      ["FIRSAT", d.opportunity || 0], ["AKIM BAŞLADI", d.rising_trend || 0], ["İZLE", d.watch || 0],
+      ["Takip edilen oyun", st.stats.games], ["Roblox benzeri", st.stats.roblox_games], ["Roblox kuyruğu", st.queue]
+    ];
+    $("kpis").innerHTML = k.map(([l, v]) => `<div class="kpi"><div class="v">${fmt(v)}</div><div class="l">${l}</div></div>`).join("");
+    const runs = Object.entries(st.last_run || {}).map(([n, t]) => `<span class="chip">${esc(n)}: ${ago(t)}</span>`).join("");
+    const src = (st.sources || []).map(s =>
+      `<span class="chip">${esc(s.source)} ${s.consecutive_failures ? "⚠️ " + s.consecutive_failures + " hata" : "✅"}</span>`).join("");
+    const ch = (st.channels || []).map(c =>
+      `<span class="chip">${esc(c.name)} ≥${esc(c.min_priority)} ${c.last_error ? "⚠️" : ""}</span>`).join("");
+    $("system").innerHTML = `
+      <p class="small muted">Çalışma süresi: ${Math.floor(st.uptime / 3600)} sa ${Math.floor(st.uptime % 3600 / 60)} dk
+      ${st.bootstrapping ? " · <b>başlangıç taraması sürüyor</b>" : ""}</p>
+      <div class="chips">${src}</div><p class="small muted">Son çalışmalar</p><div class="chips">${runs || "-"}</div>
+      <p class="small muted">Bildirim kanalları</p><div class="chips">${ch || "-"}</div>`;
+  } catch (e) { console.warn(e); }
+}
+
+/* ---------- bildirim akışı ---------- */
+function alertHtml(a, isNew) {
+  return `<div class="alert p-${esc(a.priority)} ${isNew ? "new" : ""}">
+    <div class="at">${a.url ? `<a href="${safeUrl(a.url)}" target="_blank" rel="noopener">${esc(a.title)}</a>` : esc(a.title)}</div>
+    <div class="ab">${esc(a.body)}</div>
+    <div class="muted small">${ago(a.ts)}</div></div>`;
+}
+async function loadAlerts() {
+  try {
+    const list = await api("/api/alerts?limit=60");
+    $("feed").innerHTML = list.length ? list.map(a => alertHtml(a, false)).join("") : `<div class="empty">Henüz bildirim yok.</div>`;
+  } catch (e) { console.warn(e); }
+}
+
+/* ---------- canlı bağlantı ---------- */
+let reloadTimer = null;
+function scheduleReload() {
+  clearTimeout(reloadTimer);
+  reloadTimer = setTimeout(() => { loadBoard(); loadStatus(); }, 1500);
+}
+function connect() {
+  const es = new EventSource("/api/events");
+  es.onopen = () => { $("live-dot").classList.add("on"); $("live-text").textContent = "canlı"; };
+  es.onerror = () => { $("live-dot").classList.remove("on"); $("live-text").textContent = "yeniden bağlanıyor…"; };
+  es.addEventListener("alert", (ev) => {
+    const a = JSON.parse(ev.data);
+    const feed = $("feed");
+    if (feed.querySelector(".empty")) feed.innerHTML = "";
+    feed.insertAdjacentHTML("afterbegin", alertHtml(a, true));
+    if (["high", "critical"].includes(a.priority) && "Notification" in window && Notification.permission === "granted") {
+      new Notification(a.title, { body: a.body });
+    }
+    scheduleReload();
+  });
+  es.addEventListener("decision", scheduleReload);
+  es.addEventListener("charts", scheduleReload);
+}
+if ("Notification" in window && Notification.permission === "default") {
+  document.addEventListener("click", () => Notification.requestPermission(), { once: true });
+}
+
+/* ---------- anlık kontrol ---------- */
+$("check-form").onsubmit = async (e) => {
+  e.preventDefault();
+  const title = $("check-title").value.trim();
+  if (!title) return;
+  $("check-btn").disabled = true;
+  $("check-result").innerHTML = `<p class="muted">Roblox'ta aranıyor…</p>`;
+  try {
+    const r = await api("/api/check", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title }) });
+    const list = r.matches.slice(0, 8).map(m =>
+      `<li><a href="${safeUrl(m.url)}" target="_blank" rel="noopener">${esc(m.name)}</a> — ${fmt(m.playing)} oyuncu, ${fmt(m.visits)} ziyaret <span class="muted">(${esc(m.reason)})</span></li>`).join("");
+    const rel = r.related.slice(0, 5).map(m => esc(m.name)).join(", ");
+    $("check-result").innerHTML = `
+      <p><b>${esc(r.title)}</b> → <span class="rs-${esc(r.status)}"><b>${esc(r.status_label)}</b></span>
+      <span class="muted">(doygunluk ${Number(r.saturation).toFixed(2)})</span></p>
+      ${r.generic ? `<p class="small">⚠️ Genel bir isim; eşleşmeleri elle doğrula.</p>` : ""}
+      ${list ? `<ul>${list}</ul>` : `<p>Roblox'ta doğrudan karşılığı bulunamadı.</p>`}
+      ${rel ? `<p class="small muted">Roblox aramasının önerdikleri: ${rel}</p>` : ""}`;
+  } catch (err) {
+    $("check-result").innerHTML = `<p>⚠️ ${esc(err.message)}</p>`;
+  } finally { $("check-btn").disabled = false; }
+};
+
+/* ---------- detay ---------- */
+function spark(points, invert) {
+  if (!points || points.length < 2) return `<p class="muted small">Yeterli veri yok.</p>`;
+  const xs = points.map(p => p[0]), ys = points.map(p => p[1]);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const W = 400, H = 70, pad = 4;
+  const sx = x => pad + (x - x0) / ((x1 - x0) || 1) * (W - 2 * pad);
+  const sy = y => { const t = (y - y0) / ((y1 - y0) || 1); return pad + (invert ? t : 1 - t) * (H - 2 * pad); };
+  const d = points.map((p, i) => `${i ? "L" : "M"}${sx(p[0]).toFixed(1)},${sy(p[1]).toFixed(1)}`).join(" ");
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>
+    <div class="muted small num">min ${fmt(invert ? y1 : y0)} · max ${fmt(invert ? y0 : y1)} · son ${fmt(ys[ys.length - 1])}</div>`;
+}
+async function openGame(key) {
+  const dlg = $("dlg");
+  dlg.innerHTML = `<div class="dlg-body"><p class="muted">Yükleniyor…</p></div>`;
+  if (!dlg.open) dlg.showModal();
+  try {
+    const d = await api("/api/games/" + encodeURIComponent(key));
+    const g = d.game, dec = d.decision || {};
+    const byChart = {};
+    d.rank_history.forEach(h => (byChart[h.chart] = byChart[h.chart] || []).push([h.ts, h.rank]));
+    const rankCharts = Object.entries(byChart).map(([c, pts]) => `<div><b class="small">${esc(CHARTS[c] || c)}</b>${spark(pts, true)}</div>`).join("");
+    const clones = d.roblox.map(c => `<tr><td><a href="${safeUrl("https://www.roblox.com/games/" + c.root_place_id)}" target="_blank" rel="noopener">${esc(c.name)}</a>
+      <div class="muted small">${esc(c.reason)}</div></td><td class="num">${fmt(c.playing)}</td><td class="num">${fmt(c.visits)}</td>
+      <td class="muted small">${esc((c.created || "").slice(0, 10))}</td></tr>`).join("");
+    const related = (d.roblox_related || []).map(r => `<span class="chip"><a href="${safeUrl(r.url)}" target="_blank" rel="noopener">${esc(r.name)}</a> · ${fmt(r.playing)}</span>`).join("");
+    const robloxHist = spark(d.roblox_history.map(h => [h.ts, h.total_playing]));
+    dlg.innerHTML = `
+      <div class="dlg-head">
+        ${g.image ? `<img src="${safeUrl(g.image)}" alt="" onerror="this.style.display='none'">` : ""}
+        <div><div style="font-weight:650;font-size:16px">${esc(g.title)}</div>
+          <div class="muted small">${esc(g.store === "steam" ? "Steam" : "Epic")} · ${esc(g.publishers.join(", ") || "-")} · bağımsızlık ${Number(g.indie_score).toFixed(2)} (${esc(g.indie_tier)})</div>
+          <div class="small"><a href="${safeUrl(g.url)}" target="_blank" rel="noopener">Mağaza sayfası ↗</a></div></div>
+        <button class="close" onclick="document.getElementById('dlg').close()">Kapat</button>
+      </div>
+      <div class="dlg-body">
+        <div>
+          <span class="badge b-${esc(dec.decision)}">${DECISIONS[dec.decision] || "-"}</span>
+          <span class="rs-${esc(dec.roblox_status)}"> ${RSTATUS[dec.roblox_status] || ""}</span>
+          <span class="muted num"> · skor ${Number(dec.score || 0).toFixed(2)}</span>
+          <div class="chips" style="margin-top:8px">${(dec.reasons || []).map(r => `<span class="chip">${esc(r)}</span>`).join("")}</div>
+        </div>
+        <div class="two">
+          <div><h3>Liste sıraları (7 gün)</h3>${rankCharts || `<p class="muted small">Veri yok.</p>`}</div>
+          <div><h3>Steam anlık oyuncu</h3>${spark(d.ccu.map(p => [p.ts, p.value]))}
+               <h3 style="margin-top:12px">Roblox benzerleri toplam oyuncu</h3>${robloxHist}</div>
+        </div>
+        <div><h3>Roblox'taki benzerleri</h3>
+          ${clones ? `<div class="table-wrap"><table><thead><tr><th>Oyun</th><th>Oyuncu</th><th>Ziyaret</th><th>Oluşturma</th></tr></thead><tbody>${clones}</tbody></table></div>`
+                   : `<p class="rs-none">Roblox'ta doğrudan karşılığı bulunamadı.</p>`}
+        </div>
+        ${related ? `<div><h3>Roblox aramasının önerdikleri (eşleşme değil)</h3><div class="chips">${related}</div></div>` : ""}
+        <div><h3>Bu oyunla ilgili bildirimler</h3>${d.alerts.length ? d.alerts.map(a => alertHtml(a, false)).join("") : `<p class="muted small">Yok.</p>`}</div>
+      </div>`;
+  } catch (e) {
+    dlg.innerHTML = `<div class="dlg-body"><p>⚠️ ${esc(e.message)}</p><button class="close" onclick="document.getElementById('dlg').close()">Kapat</button></div>`;
+  }
+}
+$("dlg").addEventListener("click", (e) => { if (e.target.id === "dlg") e.target.close(); });
+
+renderTabs(); loadBoard(); loadStatus(); loadAlerts(); connect();
+setInterval(loadStatus, 30000);
+setInterval(loadBoard, 120000);
+</script>
+</body>
+</html>

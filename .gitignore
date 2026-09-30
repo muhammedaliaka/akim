@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+build/
+dist/
+
+# çalışma zamanı verisi ve gizli bilgiler
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+.env
+config.yaml

@@ -1,0 +1,115 @@
+# Akım yapılandırması
+# Bu dosyayı config.yaml olarak kopyala. Tüm ayarların varsayılanı vardır;
+# yalnızca değiştirmek istediklerini yazman yeterli.
+# ${DEGISKEN} ifadeleri ortam değişkeninden (.env) okunur; gizli bilgileri buraya yazma.
+
+general:
+  data_dir: ./data            # SQLite veritabanı burada tutulur
+  country: US                 # mağaza bölgesi (listeler bu ülkeye göre çekilir)
+  language: english
+  log_level: INFO
+  track_days: 7               # listeden düşen oyun kaç gün daha takip edilsin
+
+steam:
+  enabled: true
+  # topsellers: anlık en çok satanlar · weekly_topsellers: haftalık · most_played: anlık oyuncu
+  charts: [topsellers, weekly_topsellers, most_played]
+  top_n: 100
+  interval_minutes: 15
+  ccu_interval_minutes: 30    # takip edilen bağımsız oyunların anlık oyuncu ölçümü
+
+epic:
+  enabled: true
+  collections: [top-sellers, most-played, trending, most-popular, top-new-releases, top-wishlisted, top-player-reviewed]
+  include_free_games: false   # haftalık ücretsiz oyunları da izle
+  interval_minutes: 30
+
+roblox:
+  enabled: true
+  recheck_hours: 6            # normal takipteki oyunlar
+  hot_recheck_hours: 1.5      # FIRSAT / AKIM BAŞLADI durumundaki oyunlar
+  clone_refresh_minutes: 15   # bilinen Roblox benzerlerinin anlık oyuncu takibi
+  max_queries_per_game: 3
+  request_delay_seconds: 1.0
+  batch_size: 10
+
+filters:
+  min_indie_score: 0.5        # 0 = AAA, 1 = tamamen bağımsız
+  extra_major_publishers: []  # "büyük marka" sayılmasını istediğin ek yayıncılar
+  extra_midtier_publishers: []
+  allow_publishers: []        # listede olsa bile bağımsız sayılacak yayıncılar
+  # ignore_titles: ["(?i)soundtrack", "(?i)\\bdlc\\b"]   # regex listesi (varsayılanı ezer)
+
+scoring:
+  similarity_threshold: 0.72  # Roblox oyununu "benzer" saymak için isim/açıklama benzerliği
+  opportunity_threshold: 0.65
+  watch_threshold: 0.5
+  min_opportunity_momentum: 0.3
+  rising_ratio: 1.8           # Roblox benzerlerinin oyuncusu 24 saatte bu kat artarsa AKIM BAŞLADI
+  rising_min_playing: 150
+  rank_surge_positions: 15    # bu kadar sıra tırmanış = sinyal
+  ccu_surge_ratio: 1.5
+  ccu_surge_min_players: 1000
+
+notifications:
+  cooldown_hours: 12          # aynı oyun + aynı olay için tekrar bildirim bekleme süresi
+  digest_hours: 6             # periyodik özet (0 = kapalı)
+  digest_size: 10
+  startup_summary: true       # ilk açılışta bildirim yağmuru yerine tek özet
+  channels:
+    console:
+      enabled: true
+      min_priority: low
+
+    # Telegram: @BotFather ile bot oluştur, sohbet kimliğini @userinfobot ile öğren.
+    # commands: true ise /firsatlar, /kontrol <oyun>, /oyun <oyun>, /durum komutları çalışır.
+    telegram:
+      enabled: false
+      bot_token: ${AKIM_TELEGRAM_BOT_TOKEN}
+      chat_id: ${AKIM_TELEGRAM_CHAT_ID}
+      min_priority: medium
+      commands: true
+
+    # Telefona anında push: ntfy uygulamasını kur, aşağıdaki konuya abone ol.
+    # Konu adı tahmin edilemez olsun (ör. akim-4f9c2a7e), çünkü ntfy.sh herkese açıktır.
+    ntfy:
+      enabled: false
+      server: https://ntfy.sh
+      topic: ${AKIM_NTFY_TOPIC}
+      min_priority: high
+
+    discord:
+      enabled: false
+      webhook_url: ${AKIM_DISCORD_WEBHOOK_URL}
+      min_priority: medium
+
+    slack:
+      enabled: false
+      webhook_url: ${AKIM_SLACK_WEBHOOK_URL}
+      min_priority: high
+
+    # Herhangi bir sisteme JSON POST (n8n, Zapier, kendi sunucun...)
+    webhook:
+      enabled: false
+      url: ${AKIM_WEBHOOK_URL}
+      headers: {}
+      min_priority: medium
+
+    email:
+      enabled: false
+      smtp_host: smtp.gmail.com
+      smtp_port: 587
+      username: ${AKIM_SMTP_USER}
+      password: ${AKIM_SMTP_PASSWORD}
+      sender: ${AKIM_SMTP_USER}
+      recipients: []
+      min_priority: critical
+
+    # Aynı türden birden fazla kanal için "tür:ad" kullan:
+    # "discord:ekip": {enabled: true, webhook_url: "...", min_priority: high}
+
+web:
+  enabled: true
+  host: 0.0.0.0
+  port: 8080
+  token: ${AKIM_WEB_TOKEN}    # boş değilse panelden anlık kontrol için gerekli

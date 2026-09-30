@@ -1,0 +1,338 @@
+{
+ "Content Warning|❄️Scream Stream": {
+  "nli": 0.8808
+ },
+ "Content Warning|SEIZE 😂": {
+  "nli": 0.8843
+ },
+ "Content Warning|Senzai Nightmare Test The Mimic": {
+  "nli": 0.4952
+ },
+ "Content Warning|Scream And Run ": {
+  "nli": 0.3601
+ },
+ "Content Warning|sad scary story [warning: SAD] [u will SCREAM]": {
+  "nli": 0.9148
+ },
+ "Content Warning|Guess Sound Or Die🔊 ": {
+  "nli": 0.6983
+ },
+ "Content Warning|Deadly Company": {
+  "nli": 0.4534
+ },
+ "Content Warning|Backrooms": {
+  "nli": 0.7988
+ },
+ "Content Warning|Chained in Backrooms": {
+  "nli": 0.8767
+ },
+ "Content Warning|VR Hand Survival": {
+  "nli": 0.4813
+ },
+ "Content Warning|Cluck or Hide!🐔": {
+  "nli": 0.0584
+ },
+ "Content Warning|FALL BUT 100 PLAYERS": {
+  "nli": 0.8264
+ },
+ "Content Warning|Face Your Fears Obby": {
+  "nli": 0.5501
+ },
+ "Content Warning|[Verity Event] Bring Or DIE": {
+  "nli": 0.8053
+ },
+ "Buckshot Roulette|[RANKED] 💥 BUCKSHOT": {
+  "nli": 0.9107
+ },
+ "Buckshot Roulette|Buckshot Rampage": {
+  "nli": 0.914
+ },
+ "Buckshot Roulette|[🌟NEW] Shotgun Roulette": {
+  "nli": 0.735
+ },
+ "Buckshot Roulette|💣 Bomb Chip": {
+  "nli": 0.2835
+ },
+ "Buckshot Roulette|Untitled Buckshot [Custom Mode]": {
+  "nli": 0.8782
+ },
+ "Buckshot Roulette|[🎩] Knockout! 🐧": {
+  "nli": 0.8024
+ },
+ "Buckshot Roulette|Mukbang Game [Testing🍪🥤🧊!": {
+  "nli": 0.8416
+ },
+ "Buckshot Roulette|Cluck or Hide!🐔": {
+  "nli": 0.3537
+ },
+ "Buckshot Roulette|Spindown": {
+  "nli": 0.7718
+ },
+ "Buckshot Roulette|Hell Or Heaven": {
+  "nli": 0.9393
+ },
+ "Buckshot Roulette|[🎧] Guess My ASMR": {
+  "nli": 0.5108
+ },
+ "Buckshot Roulette|[FPS] One Tap": {
+  "nli": 0.8311
+ },
+ "Buckshot Roulette|Blind Timer ⏳": {
+  "nli": 0.6242
+ },
+ "Buckshot Roulette| Shoot or Die": {
+  "nli": 0.7676
+ },
+ "Liar's Bar|The Liar": {
+  "nli": 0.6415
+ },
+ "Liar's Bar|[RANKED] 💥 BUCKSHOT": {
+  "nli": 0.8587
+ },
+ "Liar's Bar|Who's Lying?": {
+  "nli": 0.5841
+ },
+ "Liar's Bar|Cheating During Testing [BETA]": {
+  "nli": 0.984
+ },
+ "Liar's Bar|Crack the Code!": {
+  "nli": 0.51
+ },
+ "Liar's Bar|Hell Or Heaven": {
+  "nli": 0.5581
+ },
+ "Liar's Bar|[☀️] Don't Ring the Bell! 🔔": {
+  "nli": 0.7021
+ },
+ "Liar's Bar|😂 Lying Challenge": {
+  "nli": 0.6428
+ },
+ "Liar's Bar|Blind Timer ⏳": {
+  "nli": 0.7276
+ },
+ "Liar's Bar|Cluck or Hide!🐔": {
+  "nli": 0.8026
+ },
+ "Liar's Bar|Find Who Slapped": {
+  "nli": 0.7144
+ },
+ "Liar's Bar|Imposter [💀]": {
+  "nli": 0.8929
+ },
+ "Liar's Bar|Truth or Dare [OFFICIAL]": {
+  "nli": 0.7265
+ },
+ "Liar's Bar|Escape Papa Pizza's Pizzeria! (SCARY OBBY)": {
+  "nli": 0.5456
+ },
+ "Balatro|Cards Matching 🃏": {
+  "nli": 0.8124
+ },
+ "Balatro|Card Chaos💥": {
+  "nli": 0.6741
+ },
+ "Balatro|Baldi's Basics but INFINITE BSODAs": {
+  "nli": 0.6184
+ },
+ "Balatro|Crazy Cards 🤣": {
+  "nli": 0.7012
+ },
+ "Balatro|Card Battles": {
+  "nli": 0.7794
+ },
+ "Balatro|Jenga Duel [🧱]": {
+  "nli": 0.8024
+ },
+ "Balatro|Hitman Card Game": {
+  "nli": 0.7166
+ },
+ "Balatro|🕷️ Spider-Man Simulator": {
+  "nli": 0.3069
+ },
+ "Balatro|LOCOfficial!": {
+  "nli": 0.7526
+ },
+ "Balatro|Trade Soccer Cards": {
+  "nli": 0.8506
+ },
+ "Balatro|♠ Twenty One": {
+  "nli": 0.7119
+ },
+ "Balatro|I Wanna Test The Game (Beta Test)": {
+  "nli": 0.3079
+ },
+ "Balatro|Card Collectors": {
+  "nli": 0.389
+ },
+ "Balatro|The Liar": {
+  "nli": 0.8045
+ },
+ "Deep Rock Galactic|Subterra ⛏️ [BETA]": {
+  "nli": 0.2006
+ },
+ "Deep Rock Galactic|Cave Diving Experience": {
+  "nli": 0.3542
+ },
+ "Deep Rock Galactic|Drill to Earth’s Core 🌎": {
+  "nli": 0.2345
+ },
+ "Deep Rock Galactic|Crush Depth 🌊": {
+  "nli": 0.3967
+ },
+ "Deep Rock Galactic|[⛰️] SUMMIT": {
+  "nli": 0.3539
+ },
+ "Deep Rock Galactic|CLIMB [⛰️]": {
+  "nli": 0.0743
+ },
+ "Deep Rock Galactic|⛏️ Dig to Earth's CORE!": {
+  "nli": 0.6184
+ },
+ "Deep Rock Galactic|Deep and Deeper": {
+  "nli": 0.0462
+ },
+ "Deep Rock Galactic|Abyss": {
+  "nli": 0.1799
+ },
+ "Deep Rock Galactic|Blackhole Simulator 🌀 [EAT PLANETS!]": {
+  "nli": 0.0019
+ },
+ "Deep Rock Galactic|🏔️Expedition Mount Everest BETA": {
+  "nli": 0.3179
+ },
+ "Deep Rock Galactic|[🚩] Expedition Cave Dive": {
+  "nli": 0.3155
+ },
+ "Deep Rock Galactic|Jump Into The Deepest Hole": {
+  "nli": 0.4565
+ },
+ "Deep Rock Galactic|Lost Currents [Alpha]  ": {
+  "nli": 0.3012
+ },
+ "Vampire Survivors|Robong Survivors [1-4 Player Co-Op]": {
+  "nli": 0.4144
+ },
+ "Vampire Survivors|[🐢] Bloodlines": {
+  "nli": 0.4686
+ },
+ "Vampire Survivors|[FACTIONS] Survive Zombie Arena": {
+  "nli": 0.3597
+ },
+ "Vampire Survivors|Thirsty Vampire": {
+  "nli": 0.1832
+ },
+ "Vampire Survivors|Climb Vampire Infection Tower": {
+  "nli": 0.703
+ },
+ "Vampire Survivors|[TVR] The Vampires Rewritten": {
+  "nli": 0.7621
+ },
+ "Vampire Survivors|Survivor Games": {
+  "nli": 0.5812
+ },
+ "Vampire Survivors|[ORIGINALS] Vampire Town": {
+  "nli": 0.5049
+ },
+ "Vampire Survivors|🧛🏻Vampire Infection": {
+  "nli": 0.467
+ },
+ "Vampire Survivors|[EVERYONE FREE] The Vampire Chronicles": {
+  "nli": 0.7518
+ },
+ "Vampire Survivors|SCP": {
+  "nli": 0.1637
+ },
+ "Vampire Survivors|Zombie Rush Survival 🧟‍♂️": {
+  "nli": 0.4368
+ },
+ "Vampire Survivors|🧛Vampire Test ": {
+  "nli": 0.696
+ },
+ "Vampire Survivors|[PUBLIC TEST!] Vampire life": {
+  "nli": 0.7175
+ },
+ "Raft|100 Days At Sea": {
+  "nli": 0.6071
+ },
+ "Raft|🐙 Raft 101 Survival": {
+  "nli": 0.8545
+ },
+ "Raft|Build and Defend Your Raft": {
+  "nli": 0.7909
+ },
+ "Raft|🌊 Raft Tycoon": {
+  "nli": 0.7593
+ },
+ "Raft|[💘] Survive on a Raft": {
+  "nli": 0.7851
+ },
+ "Raft|Roft: Raft Survival": {
+  "nli": 0.589
+ },
+ "Raft|Rusty Rafts": {
+  "nli": 0.8067
+ },
+ "Raft|🛠️ Build a Raft Creative 🛠️": {
+  "nli": 0.9621
+ },
+ "Raft|🔨Build a Raft🔨": {
+  "nli": 0.6437
+ },
+ "Raft|Raft Ride Down a Jungle Waterslide": {
+  "nli": 0.6397
+ },
+ "Raft|bote ried": {
+  "nli": 0.2979
+ },
+ "Raft|Roblox Titanic": {
+  "nli": 0.6077
+ },
+ "Raft|［🍣］Suship": {
+  "nli": 0.3039
+ },
+ "Raft|+1 Speed Boat Tsunami": {
+  "nli": 0.4351
+ },
+ "Overcooked! 2|Cooking Chaos": {
+  "nli": 0.7787
+ },
+ "Overcooked! 2|MAD CHEFS! 🧑‍🍳": {
+  "nli": 0.8996
+ },
+ "Overcooked! 2| [🧑‍🍳CLASSES] Generic Cooking Game [BETA]": {
+  "nli": 0.4518
+ },
+ "Overcooked! 2|CRAZY CHEFS! 👨‍🍳": {
+  "nli": 0.4487
+ },
+ "Overcooked! 2|🔥 Cooked!": {
+  "nli": 0.435
+ },
+ "Overcooked! 2|Cook Pizzas": {
+  "nli": 0.7575
+ },
+ "Overcooked! 2|[UPD] Cook Noobs 👨‍🍳": {
+  "nli": 0.6441
+ },
+ "Overcooked! 2|RV Cooked? [UPDATE]": {
+  "nli": 0.2289
+ },
+ "Overcooked! 2|COOKED (BETA)": {
+  "nli": 0.8168
+ },
+ "Overcooked! 2|🍪 Roll Your Cookie": {
+  "nli": 0.2052
+ },
+ "Overcooked! 2|Fast Food Simulator": {
+  "nli": 0.5216
+ },
+ "Overcooked! 2|Hell's Kitchen 2": {
+  "nli": 0.3982
+ },
+ "Overcooked! 2|🍗🍟 Eating in Jollibee [MUKBANG]": {
+  "nli": 0.8019
+ },
+ "Overcooked! 2|🥞Work at a Pancake Place": {
+  "nli": 0.5219
+ }
+}

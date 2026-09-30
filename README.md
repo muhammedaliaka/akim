@@ -88,6 +88,31 @@ Sezgisel skorlar %60-75 bandında "klon mu, aynı tür mü?" sorusunda belirsiz 
   - Kaba tahmin: yeni bir oyun için tek çağrı ≈ 2 bin girdi + 1 bin çıktı token'ı, yani Opus 5.5 fiyatıyla yaklaşık $0,03. İlk açılışta ~90 oyun ≈ $3; sonrasında yalnızca yeni oyunlar ve yeni adaylar ücretlendirilir. (Bu tahmin ölçülmedi; gerçek tüketimi Anthropic konsolundan takip et.)
 - **Güvenlik ağı:** API hatası, hız sınırı veya reddetme durumunda sistem sezgisel skorlarla devam eder. Reddetmede sunucu tarafı yedek model (`fallbacks: "default"`) devreye girer.
 
+### İsteğe bağlı Laya (yerel, ücretsiz)
+
+[Laya](https://github.com/NandhaKishorM/laya) (Convai Innovations, Apache 2.0) metin üretmeyen bir karar modelidir. Oyun çiftine "klon / esinlenme / aynı tür / ilgisiz" sorusunu sorar ve her seçenek için olasılık döner. Yerelde çalışır; API anahtarı ve ücret gerekmez.
+
+Entegrasyonu gerçek veriyle ölçtüm. Tam tablo ve yöntem [eval/README.md](eval/README.md) içinde. Hiç görülmemiş 8 oyunda (112 etiketli çift) sonuçlar:
+
+| | AUROC | Klon yakalama (duyarlılık) | Doğru "klon" oranı (kesinlik) |
+|---|---|---|---|
+| Akım sezgisel | 0.898 | 0.35 | 0.70 |
+| Laya tek başına (en iyi soru biçimi) | 0.667 | – | – |
+| **Akım + Laya (evidence modu)** | 0.897 | **0.50** | 0.53 |
+
+- **Hazır Laya bu görevde eğitimsiz kullanımda zayıf.** Beş farklı soru biçimi ve iki checkpoint denendi. Laya'nın kendi dokümantasyonu da ince ayar öneriyor.
+- **Evidence modu gerçek bir takas sunuyor.** Laya düşük güvenle diğer kanıtlara eklenir ve sezgisel motorun kaçırdığı yeni mekanikli klonların bir kısmını yakalar (duyarlılık 0.35 → 0.50). Karşılığında yanlış alarm artar.
+- **Varsayılan kapalı.** Kaçırılan klon (Roblox'ta olan oyuna "FIRSAT" denmesi) senin için daha pahalıysa aç.
+- **İnce ayar yolu.** Etiketli çiftler Laya'nın eğitim/ölçüm biçiminde hazır: `eval/laya_dataset_*.jsonl`. İnce ayarlanmış bir model `laya.model_path` + `mode: judge` ile doğrudan kullanılabilir.
+
+```bash
+pip install torch --index-url https://download.pytorch.org/whl/cpu   # CPU için
+pip install "akim[laya]"
+AKIM_LAYA_ENABLED=true akim check "Buckshot Roulette"
+```
+
+Docker'da `docker-compose.yml` içindeki `EXTRAS: "llm,laya"` ile derle. Model (~800 MB) ilk kullanımda `data/hf` altına iner. CPU'da oyun başına ~10-20 sn sürer; sonuçlar önbelleklenir.
+
 ### Bildirim türleri
 
 | Olay | Öncelik | Ne zaman |
@@ -225,9 +250,11 @@ akim/
               concepts.py   oynanış kavramları ve konsept benzerliği
               similarity.py kanıtların birleştirilmesi, klon / benzer sınıflandırması
               judge.py      isteğe bağlı Claude doğrulaması
+              laya_judge.py isteğe bağlı yerel Laya karar modeli
               scoring.py    momentum, Roblox doygunluğu, karar
   notify/     telegram.py · channels.py           bildirim kanalları + dağıtıcı
   web/        server.py · dashboard.html          canlı panel ve API
   engine.py   döngüler, karar geçişleri, bildirim üretimi
   storage.py  SQLite (sıra geçmişi, Roblox geçmişi, kararlar, bildirim tekrar koruması)
+eval/         etiketli gerçek veri, değerlendirme betiği ve sonuçlar (bkz. eval/README.md)
 ```

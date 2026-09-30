@@ -1,6 +1,9 @@
 services:
   akim:
-    build: .
+    build:
+      context: .
+      args:
+        EXTRAS: "llm"            # yerel Laya modeli için: "llm,laya" (bkz. README > Laya)
     container_name: akim
     restart: unless-stopped        # çökse veya sunucu yeniden başlasa bile tekrar ayağa kalkar
     env_file:

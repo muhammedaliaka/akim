@@ -1,0 +1,1641 @@
+{
+ "PEAK|CLIMB [⛰️]": {
+  "relation": {
+   "clone": 0.8412,
+   "inspired": 0.0584,
+   "same_genre": 0.0874,
+   "unrelated": 0.013
+  },
+  "same": 0.7385,
+  "closeness": 2.2097,
+  "emb": 0.9414835572242737
+ },
+ "PEAK|[⛰️] SUMMIT": {
+  "relation": {
+   "clone": 0.3449,
+   "inspired": 0.333,
+   "same_genre": 0.2743,
+   "unrelated": 0.0477
+  },
+  "same": 0.6794,
+  "closeness": 2.0538,
+  "emb": 0.9739264249801636
+ },
+ "PEAK|SEIZE 😂": {
+  "relation": {
+   "clone": 0.3529,
+   "inspired": 0.2498,
+   "same_genre": 0.3557,
+   "unrelated": 0.0416
+  },
+  "same": 0.6591,
+  "closeness": 2.1129,
+  "emb": 0.9622817635536194
+ },
+ "PEAK|🏔️The Climb": {
+  "relation": {
+   "clone": 0.4426,
+   "inspired": 0.1722,
+   "same_genre": 0.3337,
+   "unrelated": 0.0514
+  },
+  "same": 0.7094,
+  "closeness": 2.1309,
+  "emb": 0.954240620136261
+ },
+ "PEAK|Cave Diving Experience": {
+  "relation": {
+   "clone": 0.4399,
+   "inspired": 0.1973,
+   "same_genre": 0.3144,
+   "unrelated": 0.0484
+  },
+  "same": 0.5967,
+  "closeness": 2.1554,
+  "emb": 0.9495218396186829
+ },
+ "PEAK|Climb [1.8.9]": {
+  "relation": {
+   "clone": 0.508,
+   "inspired": 0.1507,
+   "same_genre": 0.3082,
+   "unrelated": 0.0331
+  },
+  "same": 0.7161,
+  "closeness": 2.2047,
+  "emb": 0.9565011262893677
+ },
+ "PEAK|[1CP] Mount Kara 🚩": {
+  "relation": {
+   "clone": 0.3908,
+   "inspired": 0.1781,
+   "same_genre": 0.386,
+   "unrelated": 0.0451
+  },
+  "same": 0.6931,
+  "closeness": 2.0573,
+  "emb": 0.9478400349617004
+ },
+ "PEAK|Getting Over it[Remastered]🔨": {
+  "relation": {
+   "clone": 0.5192,
+   "inspired": 0.1294,
+   "same_genre": 0.307,
+   "unrelated": 0.0444
+  },
+  "same": 0.5832,
+  "closeness": 2.1714,
+  "emb": 0.9593662619590759
+ },
+ "PEAK|RV Cooked? [UPDATE]": {
+  "relation": {
+   "clone": 0.2756,
+   "inspired": 0.1463,
+   "same_genre": 0.5252,
+   "unrelated": 0.0529
+  },
+  "same": 0.7133,
+  "closeness": 2.3468,
+  "emb": 0.9584712386131287
+ },
+ "PEAK|[🚲] GreenPeak | BIKE PARK [BETA]": {
+  "relation": {
+   "clone": 0.4044,
+   "inspired": 0.1697,
+   "same_genre": 0.3672,
+   "unrelated": 0.0588
+  },
+  "same": 0.7049,
+  "closeness": 2.0962,
+  "emb": 0.9677760004997253
+ },
+ "PEAK|bote ried": {
+  "relation": {
+   "clone": 0.6665,
+   "inspired": 0.0716,
+   "same_genre": 0.2362,
+   "unrelated": 0.0257
+  },
+  "same": 0.8057,
+  "closeness": 2.42,
+  "emb": 0.9250543713569641
+ },
+ "PEAK|Dig the Backyard": {
+  "relation": {
+   "clone": 0.077,
+   "inspired": 0.8366,
+   "same_genre": 0.0658,
+   "unrelated": 0.0206
+  },
+  "same": 0.656,
+  "closeness": 2.1842,
+  "emb": 0.9674872159957886
+ },
+ "PEAK|Dangerous Mountain Biking": {
+  "relation": {
+   "clone": 0.294,
+   "inspired": 0.1732,
+   "same_genre": 0.2863,
+   "unrelated": 0.2465
+  },
+  "same": 0.0547,
+  "closeness": 1.1171,
+  "emb": 0.9476038217544556
+ },
+ "PEAK|Climb Race Simulator": {
+  "relation": {
+   "clone": 0.5322,
+   "inspired": 0.1624,
+   "same_genre": 0.275,
+   "unrelated": 0.0304
+  },
+  "same": 0.5799,
+  "closeness": 2.1192,
+  "emb": 0.9623848795890808
+ },
+ "PEAK|🚩Expedition Antarctica": {
+  "relation": {
+   "clone": 0.2443,
+   "inspired": 0.2168,
+   "same_genre": 0.409,
+   "unrelated": 0.1299
+  },
+  "same": 0.5068,
+  "closeness": 2.1728,
+  "emb": 0.9668236374855042
+ },
+ "PEAK|RV Chaos? [UPD]": {
+  "relation": {
+   "clone": 0.1357,
+   "inspired": 0.7013,
+   "same_genre": 0.1328,
+   "unrelated": 0.0302
+  },
+  "same": 0.5344,
+  "closeness": 1.9687,
+  "emb": 0.9745197296142578
+ },
+ "Lethal Company|Lethal Business": {
+  "relation": {
+   "clone": 0.3664,
+   "inspired": 0.2383,
+   "same_genre": 0.3543,
+   "unrelated": 0.0411
+  },
+  "same": 0.5724,
+  "closeness": 2.0122,
+  "emb": 0.9176838994026184
+ },
+ "Lethal Company|Deadly Company": {
+  "relation": {
+   "clone": 0.14,
+   "inspired": 0.6573,
+   "same_genre": 0.1756,
+   "unrelated": 0.0271
+  },
+  "same": 0.5361,
+  "closeness": 1.9807,
+  "emb": 0.9233843684196472
+ },
+ "Lethal Company|Lethal Ape Experience": {
+  "relation": {
+   "clone": 0.3019,
+   "inspired": 0.1792,
+   "same_genre": 0.4585,
+   "unrelated": 0.0604
+  },
+  "same": 0.6554,
+  "closeness": 1.8341,
+  "emb": 0.9418218731880188
+ },
+ "Lethal Company|SEIZE 😂": {
+  "relation": {
+   "clone": 0.2968,
+   "inspired": 0.2734,
+   "same_genre": 0.3875,
+   "unrelated": 0.0422
+  },
+  "same": 0.7201,
+  "closeness": 2.0589,
+  "emb": 0.9320424199104309
+ },
+ "Lethal Company|Lethal Ape": {
+  "relation": {
+   "clone": 0.3506,
+   "inspired": 0.1751,
+   "same_genre": 0.3943,
+   "unrelated": 0.0799
+  },
+  "same": 0.587,
+  "closeness": 1.6718,
+  "emb": 0.9418025612831116
+ },
+ "Lethal Company|[UPDATE] Backrooms Company": {
+  "relation": {
+   "clone": 0.2498,
+   "inspired": 0.2056,
+   "same_genre": 0.494,
+   "unrelated": 0.0507
+  },
+  "same": 0.4976,
+  "closeness": 1.9873,
+  "emb": 0.9342958331108093
+ },
+ "Lethal Company|❄️Scream Stream": {
+  "relation": {
+   "clone": 0.2776,
+   "inspired": 0.2108,
+   "same_genre": 0.4537,
+   "unrelated": 0.0579
+  },
+  "same": 0.5144,
+  "closeness": 1.9004,
+  "emb": 0.8914332389831543
+ },
+ "Lethal Company|Underwater Company": {
+  "relation": {
+   "clone": 0.1629,
+   "inspired": 0.5781,
+   "same_genre": 0.2192,
+   "unrelated": 0.0398
+  },
+  "same": 0.4151,
+  "closeness": 1.9316,
+  "emb": 0.9191792011260986
+ },
+ "Lethal Company|(JUNE VER) LAOV [Lethal Ape Old Version]": {
+  "relation": {
+   "clone": 0.3338,
+   "inspired": 0.1684,
+   "same_genre": 0.4421,
+   "unrelated": 0.0556
+  },
+  "same": 0.5278,
+  "closeness": 1.7991,
+  "emb": 0.8771523237228394
+ },
+ "Lethal Company|[UPDATE] M.E.G. Endless Reality": {
+  "relation": {
+   "clone": 0.2805,
+   "inspired": 0.368,
+   "same_genre": 0.3098,
+   "unrelated": 0.0417
+  },
+  "same": 0.5524,
+  "closeness": 1.8042,
+  "emb": 0.9281505942344666
+ },
+ "Lethal Company|NPC or DIE! 💢": {
+  "relation": {
+   "clone": 0.4056,
+   "inspired": 0.1598,
+   "same_genre": 0.3671,
+   "unrelated": 0.0676
+  },
+  "same": 0.6928,
+  "closeness": 2.2124,
+  "emb": 0.9312862753868103
+ },
+ "Lethal Company|Lethal Ape 2 [🔥BIG UPDATE🔥]": {
+  "relation": {
+   "clone": 0.5631,
+   "inspired": 0.1952,
+   "same_genre": 0.2143,
+   "unrelated": 0.0274
+  },
+  "same": 0.5849,
+  "closeness": 2.1399,
+  "emb": 0.8476136922836304
+ },
+ "Lethal Company|Zombies vs Police": {
+  "relation": {
+   "clone": 0.4782,
+   "inspired": 0.19,
+   "same_genre": 0.2713,
+   "unrelated": 0.0605
+  },
+  "same": 0.5573,
+  "closeness": 1.6928,
+  "emb": 0.9533723592758179
+ },
+ "Lethal Company|Lethal Ape Ultimate": {
+  "relation": {
+   "clone": 0.3789,
+   "inspired": 0.1493,
+   "same_genre": 0.4211,
+   "unrelated": 0.0508
+  },
+  "same": 0.5425,
+  "closeness": 1.9133,
+  "emb": 0.9382727742195129
+ },
+ "Schedule I|Schedule 🥔": {
+  "relation": {
+   "clone": 0.5504,
+   "inspired": 0.1554,
+   "same_genre": 0.2336,
+   "unrelated": 0.0606
+  },
+  "same": 0.5434,
+  "closeness": 1.9106,
+  "emb": 0.9001536965370178
+ },
+ "Schedule I|Schedule X": {
+  "relation": {
+   "clone": 0.3006,
+   "inspired": 0.2496,
+   "same_genre": 0.37,
+   "unrelated": 0.0798
+  },
+  "same": 0.57,
+  "closeness": 1.7892,
+  "emb": 0.9289774298667908
+ },
+ "Schedule I|[🍎] Schedule Zero": {
+  "relation": {
+   "clone": 0.4213,
+   "inspired": 0.1722,
+   "same_genre": 0.3571,
+   "unrelated": 0.0495
+  },
+  "same": 0.589,
+  "closeness": 1.8679,
+  "emb": 0.9506502151489258
+ },
+ "Schedule I|Chicago Life 😈": {
+  "relation": {
+   "clone": 0.3733,
+   "inspired": 0.1665,
+   "same_genre": 0.3417,
+   "unrelated": 0.1186
+  },
+  "same": 0.3549,
+  "closeness": 1.5419,
+  "emb": 0.9394846558570862
+ },
+ "Schedule I|Fallen Survival🏹": {
+  "relation": {
+   "clone": 0.461,
+   "inspired": 0.1409,
+   "same_genre": 0.3512,
+   "unrelated": 0.0469
+  },
+  "same": 0.6142,
+  "closeness": 2.1528,
+  "emb": 0.9553258419036865
+ },
+ "Schedule I|[BEST DAY EVER] zyltex's animations": {
+  "relation": {
+   "clone": 0.1992,
+   "inspired": 0.201,
+   "same_genre": 0.5279,
+   "unrelated": 0.0719
+  },
+  "same": 0.6618,
+  "closeness": 1.4782,
+  "emb": 0.9390095472335815
+ },
+ "Schedule I|South London Remastered": {
+  "relation": {
+   "clone": 0.3159,
+   "inspired": 0.1434,
+   "same_genre": 0.5023,
+   "unrelated": 0.0385
+  },
+  "same": 0.7077,
+  "closeness": 2.0729,
+  "emb": 0.8988335728645325
+ },
+ "Schedule I| 🔥[UPDATE]🔥Central Streets": {
+  "relation": {
+   "clone": 0.3165,
+   "inspired": 0.1354,
+   "same_genre": 0.4689,
+   "unrelated": 0.0792
+  },
+  "same": 0.6352,
+  "closeness": 1.9495,
+  "emb": 0.9183332324028015
+ },
+ "Schedule I|Gang Life": {
+  "relation": {
+   "clone": 0.4566,
+   "inspired": 0.2146,
+   "same_genre": 0.2953,
+   "unrelated": 0.0334
+  },
+  "same": 0.4026,
+  "closeness": 1.7658,
+  "emb": 0.9399423003196716
+ },
+ "Schedule I|Westbound": {
+  "relation": {
+   "clone": 0.2517,
+   "inspired": 0.206,
+   "same_genre": 0.4242,
+   "unrelated": 0.118
+  },
+  "same": 0.4329,
+  "closeness": 1.7305,
+  "emb": 0.9479926228523254
+ },
+ "Schedule I|NO MORE SCHOOL [UPDATE!]": {
+  "relation": {
+   "clone": 0.5013,
+   "inspired": 0.1425,
+   "same_genre": 0.2892,
+   "unrelated": 0.067
+  },
+  "same": 0.4597,
+  "closeness": 1.6937,
+  "emb": 0.8980574607849121
+ },
+ "Schedule I|Cali Streets 💥": {
+  "relation": {
+   "clone": 0.4212,
+   "inspired": 0.1736,
+   "same_genre": 0.3419,
+   "unrelated": 0.0634
+  },
+  "same": 0.5977,
+  "closeness": 1.7636,
+  "emb": 0.9023812413215637
+ },
+ "Schedule I|Would you rather but it happens 2": {
+  "relation": {
+   "clone": 0.7747,
+   "inspired": 0.0872,
+   "same_genre": 0.1175,
+   "unrelated": 0.0207
+  },
+  "same": 0.658,
+  "closeness": 2.2122,
+  "emb": 0.8923676013946533
+ },
+ "Schedule I|Divaz 💄": {
+  "relation": {
+   "clone": 0.5823,
+   "inspired": 0.1256,
+   "same_genre": 0.2536,
+   "unrelated": 0.0386
+  },
+  "same": 0.5969,
+  "closeness": 2.1432,
+  "emb": 0.920005202293396
+ },
+ "R.E.P.O.|SEIZE 😂": {
+  "relation": {
+   "clone": 0.3338,
+   "inspired": 0.2712,
+   "same_genre": 0.3546,
+   "unrelated": 0.0404
+  },
+  "same": 0.5912,
+  "closeness": 1.7304,
+  "emb": 0.9686446189880371
+ },
+ "R.E.P.O.|REPO SANDBOX": {
+  "relation": {
+   "clone": 0.3018,
+   "inspired": 0.3997,
+   "same_genre": 0.2731,
+   "unrelated": 0.0254
+  },
+  "same": 0.5258,
+  "closeness": 1.8314,
+  "emb": 0.9625712633132935
+ },
+ "R.E.P.O.|REPO Game": {
+  "relation": {
+   "clone": 0.2376,
+   "inspired": 0.4048,
+   "same_genre": 0.3271,
+   "unrelated": 0.0304
+  },
+  "same": 0.5564,
+  "closeness": 1.7499,
+  "emb": 0.9674129486083984
+ },
+ "R.E.P.O.|[NEW] RETAKE": {
+  "relation": {
+   "clone": 0.4709,
+   "inspired": 0.2017,
+   "same_genre": 0.2979,
+   "unrelated": 0.0295
+  },
+  "same": 0.7027,
+  "closeness": 1.8641,
+  "emb": 0.9620635509490967
+ },
+ "R.E.P.O.|Survive Overnight in a Mega Store": {
+  "relation": {
+   "clone": 0.1433,
+   "inspired": 0.6553,
+   "same_genre": 0.1523,
+   "unrelated": 0.0491
+  },
+  "same": 0.1242,
+  "closeness": 1.4297,
+  "emb": 0.954269528388977
+ },
+ "R.E.P.O.|Hell Or Heaven": {
+  "relation": {
+   "clone": 0.4109,
+   "inspired": 0.3307,
+   "same_genre": 0.2352,
+   "unrelated": 0.0232
+  },
+  "same": 0.636,
+  "closeness": 2.0392,
+  "emb": 0.9484961032867432
+ },
+ "R.E.P.O.|eat the baseplate": {
+  "relation": {
+   "clone": 0.6042,
+   "inspired": 0.1375,
+   "same_genre": 0.233,
+   "unrelated": 0.0253
+  },
+  "same": 0.4377,
+  "closeness": 1.9626,
+  "emb": 0.8714613914489746
+ },
+ "R.E.P.O.|[Verity Event] Bring Or DIE": {
+  "relation": {
+   "clone": 0.5583,
+   "inspired": 0.1359,
+   "same_genre": 0.2831,
+   "unrelated": 0.0227
+  },
+  "same": 0.6598,
+  "closeness": 2.0751,
+  "emb": 0.9231760501861572
+ },
+ "R.E.P.O.|The Exit 8!": {
+  "relation": {
+   "clone": 0.3638,
+   "inspired": 0.2188,
+   "same_genre": 0.3362,
+   "unrelated": 0.0812
+  },
+  "same": 0.6514,
+  "closeness": 1.9133,
+  "emb": 0.952800452709198
+ },
+ "R.E.P.O.|Hungry Pig": {
+  "relation": {
+   "clone": 0.2511,
+   "inspired": 0.2292,
+   "same_genre": 0.4521,
+   "unrelated": 0.0675
+  },
+  "same": 0.2256,
+  "closeness": 1.8195,
+  "emb": 0.9596047401428223
+ },
+ "R.E.P.O.|💀Act Dead or OOF": {
+  "relation": {
+   "clone": 0.321,
+   "inspired": 0.177,
+   "same_genre": 0.4701,
+   "unrelated": 0.0319
+  },
+  "same": 0.6019,
+  "closeness": 1.9772,
+  "emb": 0.9376023411750793
+ },
+ "R.E.P.O.|Animal Hospital (Anomaly) 🧪": {
+  "relation": {
+   "clone": 0.2608,
+   "inspired": 0.165,
+   "same_genre": 0.4011,
+   "unrelated": 0.1732
+  },
+  "same": 0.1625,
+  "closeness": 1.4535,
+  "emb": 0.9397801756858826
+ },
+ "R.E.P.O.|[UPDATE] M.E.G. Endless Reality": {
+  "relation": {
+   "clone": 0.2097,
+   "inspired": 0.4486,
+   "same_genre": 0.3117,
+   "unrelated": 0.03
+  },
+  "same": 0.5655,
+  "closeness": 1.6765,
+  "emb": 0.9621279835700989
+ },
+ "R.E.P.O.|[🎨] Camo Troll Tower 4": {
+  "relation": {
+   "clone": 0.2446,
+   "inspired": 0.3371,
+   "same_genre": 0.3844,
+   "unrelated": 0.0339
+  },
+  "same": 0.5058,
+  "closeness": 1.5882,
+  "emb": 0.9658342003822327
+ },
+ "R.E.P.O.|Nightmare Run": {
+  "relation": {
+   "clone": 0.6953,
+   "inspired": 0.075,
+   "same_genre": 0.2166,
+   "unrelated": 0.0131
+  },
+  "same": 0.9106,
+  "closeness": 1.918,
+  "emb": 0.95887690782547
+ },
+ "Palworld|[NOW] Catch a Monster": {
+  "relation": {
+   "clone": 0.3447,
+   "inspired": 0.2477,
+   "same_genre": 0.3697,
+   "unrelated": 0.0379
+  },
+  "same": 0.4032,
+  "closeness": 1.8802,
+  "emb": 0.9214023351669312
+ },
+ "Palworld|Evomon[S3 TRADE]": {
+  "relation": {
+   "clone": 0.51,
+   "inspired": 0.1754,
+   "same_genre": 0.2822,
+   "unrelated": 0.0325
+  },
+  "same": 0.568,
+  "closeness": 1.9592,
+  "emb": 0.8856991529464722
+ },
+ "Palworld|Bugmon[RELEASE] ": {
+  "relation": {
+   "clone": 0.36,
+   "inspired": 0.229,
+   "same_genre": 0.3716,
+   "unrelated": 0.0394
+  },
+  "same": 0.5834,
+  "closeness": 1.9739,
+  "emb": 0.9283137917518616
+ },
+ "Palworld|HOW TO TRAIN YOUR DRAGON": {
+  "relation": {
+   "clone": 0.3205,
+   "inspired": 0.2107,
+   "same_genre": 0.4016,
+   "unrelated": 0.0672
+  },
+  "same": 0.4977,
+  "closeness": 1.802,
+  "emb": 0.9300576448440552
+ },
+ "Palworld|✨ Creatures of Sonaria 📜 Survive Kaiju Animals": {
+  "relation": {
+   "clone": 0.3004,
+   "inspired": 0.2819,
+   "same_genre": 0.3696,
+   "unrelated": 0.0481
+  },
+  "same": 0.5339,
+  "closeness": 1.9461,
+  "emb": 0.9366970658302307
+ },
+ "Palworld|[Evolve] Pet Capture Adventur": {
+  "relation": {
+   "clone": 0.4476,
+   "inspired": 0.1951,
+   "same_genre": 0.2983,
+   "unrelated": 0.059
+  },
+  "same": 0.408,
+  "closeness": 1.603,
+  "emb": 0.9393917322158813
+ },
+ "Palworld|[REBUILD🚧] Dragon Adventures 🐉": {
+  "relation": {
+   "clone": 0.4361,
+   "inspired": 0.2986,
+   "same_genre": 0.1938,
+   "unrelated": 0.0715
+  },
+  "same": 0.3722,
+  "closeness": 1.7134,
+  "emb": 0.93764328956604
+ },
+ "Palworld|[Dark]Blox Monsters": {
+  "relation": {
+   "clone": 0.4672,
+   "inspired": 0.2251,
+   "same_genre": 0.2222,
+   "unrelated": 0.0855
+  },
+  "same": 0.3105,
+  "closeness": 1.7914,
+  "emb": 0.929032027721405
+ },
+ "Palworld|Web Rush": {
+  "relation": {
+   "clone": 0.2998,
+   "inspired": 0.1927,
+   "same_genre": 0.4587,
+   "unrelated": 0.0488
+  },
+  "same": 0.5218,
+  "closeness": 2.0759,
+  "emb": 0.9081073999404907
+ },
+ "Palworld|World // Zero ⚔️ Anime RPG ": {
+  "relation": {
+   "clone": 0.3821,
+   "inspired": 0.2776,
+   "same_genre": 0.2668,
+   "unrelated": 0.0735
+  },
+  "same": 0.2863,
+  "closeness": 1.7004,
+  "emb": 0.9333640336990356
+ },
+ "Palworld|🌻 Dandy's World [ALPHA]": {
+  "relation": {
+   "clone": 0.2408,
+   "inspired": 0.2607,
+   "same_genre": 0.433,
+   "unrelated": 0.0654
+  },
+  "same": 0.3001,
+  "closeness": 1.7345,
+  "emb": 0.9243356585502625
+ },
+ "Palworld|Ben 10 Super Hero Time": {
+  "relation": {
+   "clone": 0.5792,
+   "inspired": 0.2018,
+   "same_genre": 0.1714,
+   "unrelated": 0.0475
+  },
+  "same": 0.3593,
+  "closeness": 1.8165,
+  "emb": 0.9320530891418457
+ },
+ "Palworld|Evolve 3D [ALPHA]": {
+  "relation": {
+   "clone": 0.3069,
+   "inspired": 0.253,
+   "same_genre": 0.3617,
+   "unrelated": 0.0784
+  },
+  "same": 0.3264,
+  "closeness": 1.9255,
+  "emb": 0.948698103427887
+ },
+ "Palworld|[🕰️] Catch And Tame!": {
+  "relation": {
+   "clone": 0.3283,
+   "inspired": 0.2465,
+   "same_genre": 0.3727,
+   "unrelated": 0.0525
+  },
+  "same": 0.5499,
+  "closeness": 2.0078,
+  "emb": 0.9003854990005493
+ },
+ "Palworld|[🌋SZN2] Monster Battles": {
+  "relation": {
+   "clone": 0.3229,
+   "inspired": 0.2724,
+   "same_genre": 0.3544,
+   "unrelated": 0.0503
+  },
+  "same": 0.5221,
+  "closeness": 2.0333,
+  "emb": 0.9353463053703308
+ },
+ "Counter-Strike 2|BloxStrike": {
+  "relation": {
+   "clone": 0.357,
+   "inspired": 0.2654,
+   "same_genre": 0.3403,
+   "unrelated": 0.0373
+  },
+  "same": 0.4781,
+  "closeness": 2.0804,
+  "emb": 0.9665684103965759
+ },
+ "Counter-Strike 2|KNIFE DUELS": {
+  "relation": {
+   "clone": 0.2763,
+   "inspired": 0.2114,
+   "same_genre": 0.4686,
+   "unrelated": 0.0437
+  },
+  "same": 0.5425,
+  "closeness": 2.0409,
+  "emb": 0.9572915434837341
+ },
+ "Counter-Strike 2|Defuse Division": {
+  "relation": {
+   "clone": 0.4279,
+   "inspired": 0.1301,
+   "same_genre": 0.3862,
+   "unrelated": 0.0558
+  },
+  "same": 0.7172,
+  "closeness": 1.6154,
+  "emb": 0.9409576654434204
+ },
+ "Counter-Strike 2|🔥Hypershot": {
+  "relation": {
+   "clone": 0.2724,
+   "inspired": 0.1819,
+   "same_genre": 0.5111,
+   "unrelated": 0.0346
+  },
+  "same": 0.4197,
+  "closeness": 1.9451,
+  "emb": 0.9669188261032104
+ },
+ "Counter-Strike 2|Counter Blox": {
+  "relation": {
+   "clone": 0.1701,
+   "inspired": 0.2415,
+   "same_genre": 0.5587,
+   "unrelated": 0.0297
+  },
+  "same": 0.5952,
+  "closeness": 2.0395,
+  "emb": 0.9560520052909851
+ },
+ "Counter-Strike 2|Strike: Warfare": {
+  "relation": {
+   "clone": 0.3208,
+   "inspired": 0.1989,
+   "same_genre": 0.4442,
+   "unrelated": 0.0361
+  },
+  "same": 0.5647,
+  "closeness": 2.0862,
+  "emb": 0.9708617329597473
+ },
+ "Counter-Strike 2|[🧤] Defusal": {
+  "relation": {
+   "clone": 0.1566,
+   "inspired": 0.3777,
+   "same_genre": 0.4291,
+   "unrelated": 0.0366
+  },
+  "same": 0.6244,
+  "closeness": 1.7603,
+  "emb": 0.9689443707466125
+ },
+ "Counter-Strike 2|PUBG 2.0": {
+  "relation": {
+   "clone": 0.2843,
+   "inspired": 0.2621,
+   "same_genre": 0.4092,
+   "unrelated": 0.0445
+  },
+  "same": 0.3352,
+  "closeness": 1.9849,
+  "emb": 0.9380860328674316
+ },
+ "Counter-Strike 2|FPS🔥AirDrop Arena [S5]🔥": {
+  "relation": {
+   "clone": 0.2971,
+   "inspired": 0.2324,
+   "same_genre": 0.4398,
+   "unrelated": 0.0308
+  },
+  "same": 0.7504,
+  "closeness": 2.079,
+  "emb": 0.9668672680854797
+ },
+ "Counter-Strike 2|[FPS] One Tap": {
+  "relation": {
+   "clone": 0.284,
+   "inspired": 0.1649,
+   "same_genre": 0.5267,
+   "unrelated": 0.0244
+  },
+  "same": 0.5574,
+  "closeness": 1.9397,
+  "emb": 0.9557337760925293
+ },
+ "Counter-Strike 2|Hooked! [TRAIT]": {
+  "relation": {
+   "clone": 0.2423,
+   "inspired": 0.1647,
+   "same_genre": 0.5581,
+   "unrelated": 0.0348
+  },
+  "same": 0.5,
+  "closeness": 1.8851,
+  "emb": 0.9507803320884705
+ },
+ "Counter-Strike 2|RIVALS": {
+  "relation": {
+   "clone": 0.2795,
+   "inspired": 0.1934,
+   "same_genre": 0.4828,
+   "unrelated": 0.0443
+  },
+  "same": 0.4736,
+  "closeness": 2.0171,
+  "emb": 0.9609347581863403
+ },
+ "Counter-Strike 2|[CLANS] Combat Arena": {
+  "relation": {
+   "clone": 0.2548,
+   "inspired": 0.2122,
+   "same_genre": 0.4859,
+   "unrelated": 0.0471
+  },
+  "same": 0.5842,
+  "closeness": 1.8495,
+  "emb": 0.9645076990127563
+ },
+ "Counter-Strike 2|Ground War": {
+  "relation": {
+   "clone": 0.2572,
+   "inspired": 0.2421,
+   "same_genre": 0.4454,
+   "unrelated": 0.0553
+  },
+  "same": 0.5193,
+  "closeness": 1.8421,
+  "emb": 0.9431594014167786
+ },
+ "Counter-Strike 2|MM2: PVP": {
+  "relation": {
+   "clone": 0.3251,
+   "inspired": 0.189,
+   "same_genre": 0.4137,
+   "unrelated": 0.0721
+  },
+  "same": 0.2943,
+  "closeness": 1.4051,
+  "emb": 0.9563732743263245
+ },
+ "DAVE THE DIVER|Abyss": {
+  "relation": {
+   "clone": 0.3218,
+   "inspired": 0.2665,
+   "same_genre": 0.3088,
+   "unrelated": 0.103
+  },
+  "same": 0.1904,
+  "closeness": 1.5916,
+  "emb": 0.926691472530365
+ },
+ "DAVE THE DIVER|Scuba Diving at Quill Lake🤿": {
+  "relation": {
+   "clone": 0.306,
+   "inspired": 0.2103,
+   "same_genre": 0.3964,
+   "unrelated": 0.0872
+  },
+  "same": 0.5628,
+  "closeness": 1.7125,
+  "emb": 0.8978537321090698
+ },
+ "DAVE THE DIVER|[🚩] Expedition Cave Dive": {
+  "relation": {
+   "clone": 0.2476,
+   "inspired": 0.2054,
+   "same_genre": 0.4733,
+   "unrelated": 0.0736
+  },
+  "same": 0.4949,
+  "closeness": 1.6106,
+  "emb": 0.9010927677154541
+ },
+ "DAVE THE DIVER|[🐟] Dive Down ": {
+  "relation": {
+   "clone": 0.2689,
+   "inspired": 0.1587,
+   "same_genre": 0.523,
+   "unrelated": 0.0494
+  },
+  "same": 0.5106,
+  "closeness": 1.4823,
+  "emb": 0.8704712986946106
+ },
+ "DAVE THE DIVER|Dive Into Water [NEW WORLD🌸] ": {
+  "relation": {
+   "clone": 0.431,
+   "inspired": 0.1669,
+   "same_genre": 0.3746,
+   "unrelated": 0.0276
+  },
+  "same": 0.5478,
+  "closeness": 2.1382,
+  "emb": 0.9062693119049072
+ },
+ "DAVE THE DIVER|Expert Skydiving": {
+  "relation": {
+   "clone": 0.3083,
+   "inspired": 0.1616,
+   "same_genre": 0.4022,
+   "unrelated": 0.1279
+  },
+  "same": 0.483,
+  "closeness": 1.7035,
+  "emb": 0.9070227146148682
+ },
+ "DAVE THE DIVER|Cave Diving Experience": {
+  "relation": {
+   "clone": 0.2598,
+   "inspired": 0.2042,
+   "same_genre": 0.4966,
+   "unrelated": 0.0393
+  },
+  "same": 0.5269,
+  "closeness": 1.8972,
+  "emb": 0.9657994508743286
+ },
+ "DAVE THE DIVER|The Diving Experience 🤿": {
+  "relation": {
+   "clone": 0.3187,
+   "inspired": 0.2691,
+   "same_genre": 0.2977,
+   "unrelated": 0.1145
+  },
+  "same": 0.5345,
+  "closeness": 1.7839,
+  "emb": 0.9048800468444824
+ },
+ "DAVE THE DIVER|🦈 Shark Dive Line": {
+  "relation": {
+   "clone": 0.3515,
+   "inspired": 0.1463,
+   "same_genre": 0.4406,
+   "unrelated": 0.0616
+  },
+  "same": 0.5577,
+  "closeness": 1.6611,
+  "emb": 0.8773388862609863
+ },
+ "DAVE THE DIVER|Deep Abyss": {
+  "relation": {
+   "clone": 0.2244,
+   "inspired": 0.4053,
+   "same_genre": 0.2962,
+   "unrelated": 0.0741
+  },
+  "same": 0.3109,
+  "closeness": 1.8926,
+  "emb": 0.9480452537536621
+ },
+ "DAVE THE DIVER|Swim Down The Deepest Pool!": {
+  "relation": {
+   "clone": 0.3478,
+   "inspired": 0.1475,
+   "same_genre": 0.4487,
+   "unrelated": 0.056
+  },
+  "same": 0.2724,
+  "closeness": 1.5589,
+  "emb": 0.8964701294898987
+ },
+ "DAVE THE DIVER|Dive into a Pool 💧": {
+  "relation": {
+   "clone": 0.2154,
+   "inspired": 0.1877,
+   "same_genre": 0.5097,
+   "unrelated": 0.0873
+  },
+  "same": 0.5909,
+  "closeness": 1.7606,
+  "emb": 0.8993828296661377
+ },
+ "DAVE THE DIVER|[NEW] R15 Wayside Swim 🌊 RP": {
+  "relation": {
+   "clone": 0.4401,
+   "inspired": 0.1637,
+   "same_genre": 0.337,
+   "unrelated": 0.0591
+  },
+  "same": 0.6294,
+  "closeness": 2.0484,
+  "emb": 0.9189733266830444
+ },
+ "DAVE THE DIVER|Diving Legends": {
+  "relation": {
+   "clone": 0.3272,
+   "inspired": 0.2563,
+   "same_genre": 0.3586,
+   "unrelated": 0.0579
+  },
+  "same": 0.4115,
+  "closeness": 1.9795,
+  "emb": 0.9327579736709595
+ },
+ "DAVE THE DIVER|bote ried": {
+  "relation": {
+   "clone": 0.6196,
+   "inspired": 0.0793,
+   "same_genre": 0.2575,
+   "unrelated": 0.0437
+  },
+  "same": 0.591,
+  "closeness": 1.9312,
+  "emb": 0.8037554621696472
+ },
+ "Among Us|[⚡] Imposters & Roles | Among us": {
+  "relation": {
+   "clone": 0.4576,
+   "inspired": 0.2234,
+   "same_genre": 0.2757,
+   "unrelated": 0.0432
+  },
+  "same": 0.7635,
+  "closeness": 2.1474,
+  "emb": 0.8777400851249695
+ },
+ "Among Us|Amon Us": {
+  "relation": {
+   "clone": 0.4068,
+   "inspired": 0.1839,
+   "same_genre": 0.3795,
+   "unrelated": 0.0299
+  },
+  "same": 0.7335,
+  "closeness": 1.9323,
+  "emb": 0.8166811466217041
+ },
+ "Among Us|🚀 Crewmates | Among us": {
+  "relation": {
+   "clone": 0.3131,
+   "inspired": 0.2607,
+   "same_genre": 0.3663,
+   "unrelated": 0.0599
+  },
+  "same": 0.6868,
+  "closeness": 1.9033,
+  "emb": 0.8709400296211243
+ },
+ "Among Us|Impostor | Among us": {
+  "relation": {
+   "clone": 0.3146,
+   "inspired": 0.2379,
+   "same_genre": 0.4071,
+   "unrelated": 0.0404
+  },
+  "same": 0.6591,
+  "closeness": 1.7064,
+  "emb": 0.9335831999778748
+ },
+ "Among Us|Hide or Die | Among us": {
+  "relation": {
+   "clone": 0.2191,
+   "inspired": 0.2065,
+   "same_genre": 0.5047,
+   "unrelated": 0.0698
+  },
+  "same": 0.7286,
+  "closeness": 1.8163,
+  "emb": 0.927879273891449
+ },
+ "Among Us|Impostor [Beta]": {
+  "relation": {
+   "clone": 0.1153,
+   "inspired": 0.8193,
+   "same_genre": 0.0504,
+   "unrelated": 0.015
+  },
+  "same": 0.6023,
+  "closeness": 1.9988,
+  "emb": 0.9178956747055054
+ },
+ "Among Us|Survival Among Us Impostor The Killer!": {
+  "relation": {
+   "clone": 0.5486,
+   "inspired": 0.1042,
+   "same_genre": 0.3173,
+   "unrelated": 0.0299
+  },
+  "same": 0.7478,
+  "closeness": 1.6822,
+  "emb": 0.9233316779136658
+ },
+ "Among Us|🚨Suspect": {
+  "relation": {
+   "clone": 0.2027,
+   "inspired": 0.5923,
+   "same_genre": 0.1496,
+   "unrelated": 0.0554
+  },
+  "same": 0.6181,
+  "closeness": 2.0599,
+  "emb": 0.8795758485794067
+ },
+ "Among Us|Invader 🚀": {
+  "relation": {
+   "clone": 0.4054,
+   "inspired": 0.1495,
+   "same_genre": 0.3623,
+   "unrelated": 0.0829
+  },
+  "same": 0.628,
+  "closeness": 1.7388,
+  "emb": 0.87852942943573
+ },
+ "Among Us|Among Us Hide: And Seek": {
+  "relation": {
+   "clone": 0.2786,
+   "inspired": 0.1856,
+   "same_genre": 0.4693,
+   "unrelated": 0.0665
+  },
+  "same": 0.5736,
+  "closeness": 2.006,
+  "emb": 0.8964860439300537
+ },
+ "Among Us|The $1,000,000 Red Light Green Light": {
+  "relation": {
+   "clone": 0.4421,
+   "inspired": 0.2057,
+   "same_genre": 0.2898,
+   "unrelated": 0.0625
+  },
+  "same": 0.5322,
+  "closeness": 1.9245,
+  "emb": 0.8866933584213257
+ },
+ "Among Us|Among Us Obby (Speed Runs!)": {
+  "relation": {
+   "clone": 0.3028,
+   "inspired": 0.1792,
+   "same_genre": 0.4657,
+   "unrelated": 0.0523
+  },
+  "same": 0.8125,
+  "closeness": 1.9524,
+  "emb": 0.8970606923103333
+ },
+ "Among Us|🌎 World.io": {
+  "relation": {
+   "clone": 0.4361,
+   "inspired": 0.177,
+   "same_genre": 0.3379,
+   "unrelated": 0.049
+  },
+  "same": 0.7133,
+  "closeness": 2.0754,
+  "emb": 0.8449439406394958
+ },
+ "Among Us|PAINT OR DIE!": {
+  "relation": {
+   "clone": 0.2256,
+   "inspired": 0.4444,
+   "same_genre": 0.2973,
+   "unrelated": 0.0327
+  },
+  "same": 0.7172,
+  "closeness": 2.2132,
+  "emb": 0.9385667443275452
+ },
+ "Phasmophobia|[UPD] Demonology🕯️": {
+  "relation": {
+   "clone": 0.271,
+   "inspired": 0.2123,
+   "same_genre": 0.4711,
+   "unrelated": 0.0456
+  },
+  "same": 0.6501,
+  "closeness": 2.0553,
+  "emb": 0.9496771097183228
+ },
+ "Phasmophobia|Phasmophobia": {
+  "relation": {
+   "clone": 0.3112,
+   "inspired": 0.236,
+   "same_genre": 0.4223,
+   "unrelated": 0.0305
+  },
+  "same": 0.7033,
+  "closeness": 2.098,
+  "emb": 0.9558990597724915
+ },
+ "Phasmophobia|[🖼️ MUSEUM] Chameleon": {
+  "relation": {
+   "clone": 0.2577,
+   "inspired": 0.2887,
+   "same_genre": 0.4139,
+   "unrelated": 0.0398
+  },
+  "same": 0.6782,
+  "closeness": 1.8249,
+  "emb": 0.9606475830078125
+ },
+ "Phasmophobia|SEIZE 😂": {
+  "relation": {
+   "clone": 0.2291,
+   "inspired": 0.2559,
+   "same_genre": 0.4755,
+   "unrelated": 0.0395
+  },
+  "same": 0.3301,
+  "closeness": 1.6744,
+  "emb": 0.9592984914779663
+ },
+ "Phasmophobia|🎃 SPECTER": {
+  "relation": {
+   "clone": 0.2929,
+   "inspired": 0.2352,
+   "same_genre": 0.4263,
+   "unrelated": 0.0456
+  },
+  "same": 0.7095,
+  "closeness": 2.1985,
+  "emb": 0.962090253829956
+ },
+ "Phasmophobia|Backrooms": {
+  "relation": {
+   "clone": 0.225,
+   "inspired": 0.2554,
+   "same_genre": 0.4599,
+   "unrelated": 0.0597
+  },
+  "same": 0.4436,
+  "closeness": 1.5193,
+  "emb": 0.947388231754303
+ },
+ "Phasmophobia|All of Us Are Dead": {
+  "relation": {
+   "clone": 0.2348,
+   "inspired": 0.2364,
+   "same_genre": 0.4939,
+   "unrelated": 0.035
+  },
+  "same": 0.6782,
+  "closeness": 1.7646,
+  "emb": 0.9468523859977722
+ },
+ "Phasmophobia|Face Your Fears - A Phobia Game": {
+  "relation": {
+   "clone": 0.2364,
+   "inspired": 0.2289,
+   "same_genre": 0.4505,
+   "unrelated": 0.0841
+  },
+  "same": 0.5151,
+  "closeness": 1.6479,
+  "emb": 0.9691802263259888
+ },
+ "Phasmophobia|Night At The Infirmary (Anomaly)": {
+  "relation": {
+   "clone": 0.208,
+   "inspired": 0.4689,
+   "same_genre": 0.289,
+   "unrelated": 0.0341
+  },
+  "same": 0.5143,
+  "closeness": 1.7937,
+  "emb": 0.9751721024513245
+ },
+ "Phasmophobia|Home Alone: Anomalies": {
+  "relation": {
+   "clone": 0.2617,
+   "inspired": 0.2579,
+   "same_genre": 0.4272,
+   "unrelated": 0.0532
+  },
+  "same": 0.5458,
+  "closeness": 2.0552,
+  "emb": 0.9506359696388245
+ },
+ "Phasmophobia|The Exit 8!": {
+  "relation": {
+   "clone": 0.2577,
+   "inspired": 0.2436,
+   "same_genre": 0.4233,
+   "unrelated": 0.0754
+  },
+  "same": 0.6345,
+  "closeness": 1.8706,
+  "emb": 0.9647620916366577
+ },
+ "Phasmophobia|Cluck or Hide!🐔": {
+  "relation": {
+   "clone": 0.434,
+   "inspired": 0.1448,
+   "same_genre": 0.3803,
+   "unrelated": 0.0409
+  },
+  "same": 0.2097,
+  "closeness": 1.6422,
+  "emb": 0.9541425704956055
+ },
+ "Phasmophobia|The Ghost Hunter Experience 👻": {
+  "relation": {
+   "clone": 0.219,
+   "inspired": 0.4323,
+   "same_genre": 0.3014,
+   "unrelated": 0.0473
+  },
+  "same": 0.5456,
+  "closeness": 1.7091,
+  "emb": 0.9772737622261047
+ },
+ "Phasmophobia|The Morgue Shift": {
+  "relation": {
+   "clone": 0.2866,
+   "inspired": 0.2313,
+   "same_genre": 0.4256,
+   "unrelated": 0.0565
+  },
+  "same": 0.3789,
+  "closeness": 2.0697,
+  "emb": 0.9668290019035339
+ },
+ "Phasmophobia|Animal Hospital (Anomaly) 🧪": {
+  "relation": {
+   "clone": 0.2252,
+   "inspired": 0.2222,
+   "same_genre": 0.3021,
+   "unrelated": 0.2504
+  },
+  "same": 0.0917,
+  "closeness": 1.4332,
+  "emb": 0.9470275044441223
+ },
+ "Supermarket Simulator|Supermarket Simulator": {
+  "relation": {
+   "clone": 0.5397,
+   "inspired": 0.1543,
+   "same_genre": 0.2658,
+   "unrelated": 0.0401
+  },
+  "same": 0.8404,
+  "closeness": 2.1647,
+  "emb": 0.9294130802154541
+ },
+ "Supermarket Simulator|Supermarket Together": {
+  "relation": {
+   "clone": 0.2649,
+   "inspired": 0.197,
+   "same_genre": 0.5076,
+   "unrelated": 0.0305
+  },
+  "same": 0.7491,
+  "closeness": 2.0253,
+  "emb": 0.927240252494812
+ },
+ "Supermarket Simulator|Survive Overnight in a Mega Store": {
+  "relation": {
+   "clone": 0.1078,
+   "inspired": 0.5786,
+   "same_genre": 0.2873,
+   "unrelated": 0.0263
+  },
+  "same": 0.757,
+  "closeness": 1.8801,
+  "emb": 0.9010186195373535
+ },
+ "Supermarket Simulator|Megastore Simulator": {
+  "relation": {
+   "clone": 0.3317,
+   "inspired": 0.2125,
+   "same_genre": 0.3895,
+   "unrelated": 0.0663
+  },
+  "same": 0.6906,
+  "closeness": 1.9403,
+  "emb": 0.9363597631454468
+ },
+ "Supermarket Simulator|🏪 Japanese Supermarket Simulator": {
+  "relation": {
+   "clone": 0.2509,
+   "inspired": 0.2312,
+   "same_genre": 0.4838,
+   "unrelated": 0.034
+  },
+  "same": 0.7102,
+  "closeness": 2.0175,
+  "emb": 0.9397100210189819
+ },
+ "Supermarket Simulator|Secure the Supermarket": {
+  "relation": {
+   "clone": 0.2106,
+   "inspired": 0.428,
+   "same_genre": 0.3265,
+   "unrelated": 0.0349
+  },
+  "same": 0.5611,
+  "closeness": 2.054,
+  "emb": 0.9324026107788086
+ },
+ "Supermarket Simulator|My Squishy Box Store🥟": {
+  "relation": {
+   "clone": 0.2644,
+   "inspired": 0.2127,
+   "same_genre": 0.4741,
+   "unrelated": 0.0488
+  },
+  "same": 0.6963,
+  "closeness": 1.917,
+  "emb": 0.9175538420677185
+ },
+ "Supermarket Simulator|Superstore Simulator": {
+  "relation": {
+   "clone": 0.2965,
+   "inspired": 0.1997,
+   "same_genre": 0.4629,
+   "unrelated": 0.0409
+  },
+  "same": 0.7293,
+  "closeness": 1.9587,
+  "emb": 0.954963743686676
+ },
+ "Supermarket Simulator|Run Fashion Store Together": {
+  "relation": {
+   "clone": 0.2268,
+   "inspired": 0.2459,
+   "same_genre": 0.4733,
+   "unrelated": 0.0541
+  },
+  "same": 0.6111,
+  "closeness": 1.9798,
+  "emb": 0.9446020722389221
+ },
+ "Supermarket Simulator|Makeup Store Simulator": {
+  "relation": {
+   "clone": 0.488,
+   "inspired": 0.1678,
+   "same_genre": 0.295,
+   "unrelated": 0.0491
+  },
+  "same": 0.463,
+  "closeness": 1.3838,
+  "emb": 0.9390842318534851
+ },
+ "Supermarket Simulator|[Update12!]My Supermarket": {
+  "relation": {
+   "clone": 0.4804,
+   "inspired": 0.1793,
+   "same_genre": 0.3075,
+   "unrelated": 0.0328
+  },
+  "same": 0.6935,
+  "closeness": 1.918,
+  "emb": 0.8647587895393372
+ },
+ "Supermarket Simulator|Retail Tycoon 2": {
+  "relation": {
+   "clone": 0.2225,
+   "inspired": 0.1738,
+   "same_genre": 0.5628,
+   "unrelated": 0.0409
+  },
+  "same": 0.6468,
+  "closeness": 1.6337,
+  "emb": 0.8869190216064453
+ },
+ "Supermarket Simulator|My Boba Store": {
+  "relation": {
+   "clone": 0.5115,
+   "inspired": 0.1641,
+   "same_genre": 0.2981,
+   "unrelated": 0.0263
+  },
+  "same": 0.6483,
+  "closeness": 1.9236,
+  "emb": 0.8515305519104004
+ },
+ "Supermarket Simulator|Clothing Store Simulator": {
+  "relation": {
+   "clone": 0.2847,
+   "inspired": 0.3008,
+   "same_genre": 0.3508,
+   "unrelated": 0.0637
+  },
+  "same": 0.6546,
+  "closeness": 2.0215,
+  "emb": 0.9294363260269165
+ },
+ "Supermarket Simulator|Superpower Simulator: Chakra": {
+  "relation": {
+   "clone": 0.2382,
+   "inspired": 0.2096,
+   "same_genre": 0.5069,
+   "unrelated": 0.0452
+  },
+  "same": 0.5787,
+  "closeness": 2.0619,
+  "emb": 0.9550744295120239
+ },
+ "Supermarket Simulator|Store Empire [ Summer ]": {
+  "relation": {
+   "clone": 0.365,
+   "inspired": 0.2556,
+   "same_genre": 0.3369,
+   "unrelated": 0.0425
+  },
+  "same": 0.6714,
+  "closeness": 1.9439,
+  "emb": 0.9401797652244568
+ }
+}

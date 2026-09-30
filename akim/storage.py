@@ -73,6 +73,11 @@ CREATE TABLE IF NOT EXISTS source_health (
     consecutive_failures INTEGER DEFAULT 0, alerted INTEGER DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS kv (k TEXT PRIMARY KEY, v TEXT);
+CREATE TABLE IF NOT EXISTS laya_scores (
+    title_key TEXT NOT NULL, universe_id INTEGER NOT NULL, fingerprint TEXT, similarity REAL, relation TEXT,
+    probabilities TEXT, confidence REAL, embedding REAL, checkpoint TEXT, ts REAL,
+    PRIMARY KEY (title_key, universe_id)
+);
 CREATE TABLE IF NOT EXISTS llm_verdicts (
     title_key TEXT NOT NULL, universe_id INTEGER NOT NULL, fingerprint TEXT, similarity REAL, relation TEXT,
     reason TEXT, model TEXT, ts REAL,
@@ -352,6 +357,23 @@ class Storage:
                    similarity=excluded.similarity, relation=excluded.relation, reason=excluded.reason,
                    model=excluded.model, ts=excluded.ts""",
             (tkey, universe_id, fingerprint, similarity, relation, reason, model, now),
+        )
+
+    def get_laya_score(self, tkey: str, universe_id: int) -> dict | None:
+        return self._one("SELECT * FROM laya_scores WHERE title_key=? AND universe_id=?", (tkey, universe_id))
+
+    def save_laya_score(
+        self, tkey: str, universe_id: int, fingerprint: str, similarity: float, relation: str, probabilities: str,
+        confidence: float, embedding: float | None, checkpoint: str, now: float,
+    ) -> None:
+        self.db.execute(
+            """INSERT INTO laya_scores(title_key, universe_id, fingerprint, similarity, relation, probabilities,
+                   confidence, embedding, checkpoint, ts) VALUES(?,?,?,?,?,?,?,?,?,?)
+               ON CONFLICT(title_key, universe_id) DO UPDATE SET fingerprint=excluded.fingerprint,
+                   similarity=excluded.similarity, relation=excluded.relation, probabilities=excluded.probabilities,
+                   confidence=excluded.confidence, embedding=excluded.embedding, checkpoint=excluded.checkpoint,
+                   ts=excluded.ts""",
+            (tkey, universe_id, fingerprint, similarity, relation, probabilities, confidence, embedding, checkpoint, now),
         )
 
     def enrich_game(self, key: str, tags: list[str], description: str) -> None:

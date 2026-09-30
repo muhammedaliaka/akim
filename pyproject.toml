@@ -16,6 +16,8 @@ dependencies = [
 [project.optional-dependencies]
 # İsteğe bağlı Claude doğrulaması (config: llm.enabled, ANTHROPIC_API_KEY)
 llm = ["anthropic>=1.9"]
+# İsteğe bağlı yerel Laya karar modeli (config: laya.enabled). PyTorch gerektirir.
+laya = ["laya>=0.3.22"]
 dev = ["pytest>=8"]
 
 [project.scripts]

@@ -51,6 +51,8 @@ class Evidence:
     llm: float | None = None
     llm_relation: str | None = None
     llm_reason: str | None = None
+    laya: float | None = None
+    laya_relation: str | None = None
     score: float = 0.0
     kind: str = "none"  # clone | similar | none
     weight: float = 0.0
@@ -61,6 +63,9 @@ class Evidence:
         if self.llm is not None:
             rel = RELATION_LABELS.get(self.llm_relation or "", self.llm_relation or "")
             parts.append(f"Claude %{round(self.llm * 100)} {rel}" + (f": {self.llm_reason}" if self.llm_reason else ""))
+        if self.laya is not None:
+            rel = RELATION_LABELS.get(self.laya_relation or "", self.laya_relation or "")
+            parts.append(f"Laya %{round(self.laya * 100)} {rel}")
         if self.name >= 0.4:
             parts.append(f"isim %{round(self.name * 100)}")
         if self.reference >= 0.4:
@@ -78,6 +83,7 @@ class Evidence:
             "reference": self.reference, "concept": self.concept,
             "shared_concepts": [CONCEPT_LABELS.get(c, c) for c in self.shared_concepts],
             "llm": self.llm, "llm_relation": self.llm_relation, "llm_reason": self.llm_reason,
+            "laya": self.laya, "laya_relation": self.laya_relation,
             "reason": self.reason(),
         }
 
@@ -98,7 +104,7 @@ def heuristic_evidence(ctx: GameContext, candidates: list[CandidateText]) -> lis
 RELIABILITY = {"name": 0.85, "reference": 1.0, "concept": 0.95}
 
 
-def fuse(ev: Evidence) -> float:
+def fuse(ev: Evidence, laya_reliability: float = 0.0) -> float:
     """Bağımsız kanıtları noisy-OR ile birleştirir: her biri "klon olma" ihtimalini artırır.
 
     Ör. Counter Blox: isim %57 + oynanış %84 -> birlikte %82.
@@ -110,22 +116,37 @@ def fuse(ev: Evidence) -> float:
     for value, key in ((name_p, "name"), (ev.reference, "reference"), (ev.concept, "concept")):
         if value >= (0.1 if key == "name" else 0.45):
             miss *= 1.0 - value * RELIABILITY[key]
+    # Laya (evidence modu): yalnızca "klon/esinlenme" tarafına yatan kararlar, düşük güvenle
+    if ev.laya is not None and laya_reliability > 0 and ev.laya >= 0.5:
+        miss *= 1.0 - ev.laya * laya_reliability
     return 1.0 - miss
 
 
-def classify(ev: Evidence, cfg: ScoringConfig, *, has_context: bool, has_description: bool) -> Evidence:
-    """Kanıtları tek bir benzerlik oranı ve sınıfa indirger (yerinde günceller)."""
+def _judge_kind(score: float, relation: str | None, cfg: ScoringConfig) -> str:
+    if relation in ("clone", "inspired") and score >= cfg.clone_threshold - 0.12:
+        return "clone"
+    if relation != "unrelated" and score >= cfg.similar_threshold:
+        return "similar"
+    return "none"
+
+
+def classify(
+    ev: Evidence, cfg: ScoringConfig, *, has_context: bool, has_description: bool,
+    laya_mode: str = "evidence", laya_reliability: float = 0.0,
+) -> Evidence:
+    """Kanıtları tek bir benzerlik oranı ve sınıfa indirger (yerinde günceller).
+
+    Öncelik: Claude kararı > Laya (judge modu) > sezgisel birleştirme (+ Laya evidence modu).
+    """
     if ev.llm is not None:
         # Claude oynanışı bütün bağlamıyla değerlendirdi; son söz onun
         ev.score = round(ev.llm, 3)
-        if ev.llm_relation in ("clone", "inspired") and ev.llm >= cfg.clone_threshold - 0.12:
-            ev.kind = "clone"
-        elif ev.llm_relation != "unrelated" and ev.llm >= cfg.similar_threshold:
-            ev.kind = "similar"
-        else:
-            ev.kind = "none"
+        ev.kind = _judge_kind(ev.llm, ev.llm_relation, cfg)
+    elif ev.laya is not None and laya_mode == "judge":
+        ev.score = round(ev.laya, 3)
+        ev.kind = _judge_kind(ev.laya, ev.laya_relation, cfg)
     else:
-        ev.score = round(fuse(ev), 3)
+        ev.score = round(fuse(ev, laya_reliability if laya_mode == "evidence" else 0.0), 3)
         # Aynı isim ama bambaşka oynanış: bağlam varsa isim tek başına klon kanıtı sayılmaz
         name_only = (
             ev.name >= cfg.clone_threshold and ev.reference < 0.4 and ev.concept < 0.3

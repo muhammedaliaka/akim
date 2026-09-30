@@ -1,0 +1,1234 @@
+{
+ "Content Warning|❄️Scream Stream": {
+  "relation": {
+   "clone": 0.3336,
+   "inspired": 0.2357,
+   "same_genre": 0.3671,
+   "unrelated": 0.0636
+  },
+  "same": 0.6319,
+  "closeness": 1.8435,
+  "emb": 0.8962444067001343
+ },
+ "Content Warning|SEIZE 😂": {
+  "relation": {
+   "clone": 0.2795,
+   "inspired": 0.3629,
+   "same_genre": 0.2989,
+   "unrelated": 0.0586
+  },
+  "same": 0.4225,
+  "closeness": 1.677,
+  "emb": 0.9548926949501038
+ },
+ "Content Warning|Senzai Nightmare Test The Mimic": {
+  "relation": {
+   "clone": 0.2551,
+   "inspired": 0.2083,
+   "same_genre": 0.4165,
+   "unrelated": 0.12
+  },
+  "same": 0.5748,
+  "closeness": 1.7622,
+  "emb": 0.9557867050170898
+ },
+ "Content Warning|Scream And Run ": {
+  "relation": {
+   "clone": 0.2436,
+   "inspired": 0.2515,
+   "same_genre": 0.425,
+   "unrelated": 0.0799
+  },
+  "same": 0.4211,
+  "closeness": 1.9154,
+  "emb": 0.9318804144859314
+ },
+ "Content Warning|sad scary story [warning: SAD] [u will SCREAM]": {
+  "relation": {
+   "clone": 0.3771,
+   "inspired": 0.1896,
+   "same_genre": 0.3091,
+   "unrelated": 0.1243
+  },
+  "same": 0.2139,
+  "closeness": 1.4952,
+  "emb": 0.8400462865829468
+ },
+ "Content Warning|Guess Sound Or Die🔊 ": {
+  "relation": {
+   "clone": 0.3607,
+   "inspired": 0.1699,
+   "same_genre": 0.3543,
+   "unrelated": 0.1151
+  },
+  "same": 0.5842,
+  "closeness": 1.6166,
+  "emb": 0.9631193280220032
+ },
+ "Content Warning|Deadly Company": {
+  "relation": {
+   "clone": 0.1988,
+   "inspired": 0.5031,
+   "same_genre": 0.2443,
+   "unrelated": 0.0539
+  },
+  "same": 0.4506,
+  "closeness": 1.8674,
+  "emb": 0.909883439540863
+ },
+ "Content Warning|Backrooms": {
+  "relation": {
+   "clone": 0.2903,
+   "inspired": 0.2532,
+   "same_genre": 0.3672,
+   "unrelated": 0.0893
+  },
+  "same": 0.5904,
+  "closeness": 1.4943,
+  "emb": 0.9621158242225647
+ },
+ "Content Warning|Chained in Backrooms": {
+  "relation": {
+   "clone": 0.0997,
+   "inspired": 0.6301,
+   "same_genre": 0.2253,
+   "unrelated": 0.0449
+  },
+  "same": 0.4999,
+  "closeness": 1.751,
+  "emb": 0.9484429955482483
+ },
+ "Content Warning|VR Hand Survival": {
+  "relation": {
+   "clone": 0.2978,
+   "inspired": 0.2073,
+   "same_genre": 0.3905,
+   "unrelated": 0.1044
+  },
+  "same": 0.309,
+  "closeness": 1.5347,
+  "emb": 0.9187687039375305
+ },
+ "Content Warning|Cluck or Hide!🐔": {
+  "relation": {
+   "clone": 0.6416,
+   "inspired": 0.0999,
+   "same_genre": 0.2105,
+   "unrelated": 0.048
+  },
+  "same": 0.4685,
+  "closeness": 1.8296,
+  "emb": 0.9339768886566162
+ },
+ "Content Warning|FALL BUT 100 PLAYERS": {
+  "relation": {
+   "clone": 0.5702,
+   "inspired": 0.1648,
+   "same_genre": 0.2132,
+   "unrelated": 0.0518
+  },
+  "same": 0.5798,
+  "closeness": 1.6678,
+  "emb": 0.9632911682128906
+ },
+ "Content Warning|Face Your Fears Obby": {
+  "relation": {
+   "clone": 0.3639,
+   "inspired": 0.3083,
+   "same_genre": 0.2666,
+   "unrelated": 0.0612
+  },
+  "same": 0.254,
+  "closeness": 1.6444,
+  "emb": 0.9044025540351868
+ },
+ "Content Warning|[Verity Event] Bring Or DIE": {
+  "relation": {
+   "clone": 0.5609,
+   "inspired": 0.1319,
+   "same_genre": 0.2568,
+   "unrelated": 0.0504
+  },
+  "same": 0.6675,
+  "closeness": 2.1769,
+  "emb": 0.9157980680465698
+ },
+ "Buckshot Roulette|[RANKED] 💥 BUCKSHOT": {
+  "relation": {
+   "clone": 0.2975,
+   "inspired": 0.1831,
+   "same_genre": 0.445,
+   "unrelated": 0.0743
+  },
+  "same": 0.7261,
+  "closeness": 2.241,
+  "emb": 0.9449965953826904
+ },
+ "Buckshot Roulette|Buckshot Rampage": {
+  "relation": {
+   "clone": 0.6136,
+   "inspired": 0.1581,
+   "same_genre": 0.1968,
+   "unrelated": 0.0316
+  },
+  "same": 0.5226,
+  "closeness": 2.1326,
+  "emb": 0.8533852696418762
+ },
+ "Buckshot Roulette|[🌟NEW] Shotgun Roulette": {
+  "relation": {
+   "clone": 0.3168,
+   "inspired": 0.1944,
+   "same_genre": 0.4153,
+   "unrelated": 0.0735
+  },
+  "same": 0.3778,
+  "closeness": 1.9376,
+  "emb": 0.9293035864830017
+ },
+ "Buckshot Roulette|💣 Bomb Chip": {
+  "relation": {
+   "clone": 0.3952,
+   "inspired": 0.1567,
+   "same_genre": 0.3566,
+   "unrelated": 0.0915
+  },
+  "same": 0.1753,
+  "closeness": 1.6384,
+  "emb": 0.896071195602417
+ },
+ "Buckshot Roulette|Untitled Buckshot [Custom Mode]": {
+  "relation": {
+   "clone": 0.0878,
+   "inspired": 0.7871,
+   "same_genre": 0.1043,
+   "unrelated": 0.0207
+  },
+  "same": 0.5423,
+  "closeness": 1.9455,
+  "emb": 0.9366650581359863
+ },
+ "Buckshot Roulette|[🎩] Knockout! 🐧": {
+  "relation": {
+   "clone": 0.283,
+   "inspired": 0.2512,
+   "same_genre": 0.3954,
+   "unrelated": 0.0704
+  },
+  "same": 0.4757,
+  "closeness": 2.2182,
+  "emb": 0.90252286195755
+ },
+ "Buckshot Roulette|Mukbang Game [Testing🍪🥤🧊!": {
+  "relation": {
+   "clone": 0.3721,
+   "inspired": 0.1805,
+   "same_genre": 0.4009,
+   "unrelated": 0.0466
+  },
+  "same": 0.4006,
+  "closeness": 2.0543,
+  "emb": 0.934065043926239
+ },
+ "Buckshot Roulette|Cluck or Hide!🐔": {
+  "relation": {
+   "clone": 0.6937,
+   "inspired": 0.0896,
+   "same_genre": 0.1779,
+   "unrelated": 0.0388
+  },
+  "same": 0.4914,
+  "closeness": 1.8996,
+  "emb": 0.9299881458282471
+ },
+ "Buckshot Roulette|Spindown": {
+  "relation": {
+   "clone": 0.345,
+   "inspired": 0.2284,
+   "same_genre": 0.3805,
+   "unrelated": 0.0461
+  },
+  "same": 0.7051,
+  "closeness": 2.1799,
+  "emb": 0.919891893863678
+ },
+ "Buckshot Roulette|Hell Or Heaven": {
+  "relation": {
+   "clone": 0.2505,
+   "inspired": 0.4289,
+   "same_genre": 0.2212,
+   "unrelated": 0.0994
+  },
+  "same": 0.4903,
+  "closeness": 2.0721,
+  "emb": 0.8921173214912415
+ },
+ "Buckshot Roulette|[🎧] Guess My ASMR": {
+  "relation": {
+   "clone": 0.4893,
+   "inspired": 0.1632,
+   "same_genre": 0.2728,
+   "unrelated": 0.0746
+  },
+  "same": 0.52,
+  "closeness": 2.0904,
+  "emb": 0.9064722061157227
+ },
+ "Buckshot Roulette|[FPS] One Tap": {
+  "relation": {
+   "clone": 0.4122,
+   "inspired": 0.1637,
+   "same_genre": 0.3822,
+   "unrelated": 0.0419
+  },
+  "same": 0.3903,
+  "closeness": 1.9417,
+  "emb": 0.9585431814193726
+ },
+ "Buckshot Roulette|Blind Timer ⏳": {
+  "relation": {
+   "clone": 0.3904,
+   "inspired": 0.2085,
+   "same_genre": 0.3561,
+   "unrelated": 0.045
+  },
+  "same": 0.6907,
+  "closeness": 2.1494,
+  "emb": 0.8742201924324036
+ },
+ "Buckshot Roulette| Shoot or Die": {
+  "relation": {
+   "clone": 0.436,
+   "inspired": 0.198,
+   "same_genre": 0.2986,
+   "unrelated": 0.0674
+  },
+  "same": 0.4433,
+  "closeness": 2.0704,
+  "emb": 0.9499855637550354
+ },
+ "Liar's Bar|The Liar": {
+  "relation": {
+   "clone": 0.4512,
+   "inspired": 0.171,
+   "same_genre": 0.332,
+   "unrelated": 0.0459
+  },
+  "same": 0.694,
+  "closeness": 1.7829,
+  "emb": 0.9545373916625977
+ },
+ "Liar's Bar|[RANKED] 💥 BUCKSHOT": {
+  "relation": {
+   "clone": 0.3082,
+   "inspired": 0.1887,
+   "same_genre": 0.4505,
+   "unrelated": 0.0527
+  },
+  "same": 0.7488,
+  "closeness": 2.1344,
+  "emb": 0.963543713092804
+ },
+ "Liar's Bar|Who's Lying?": {
+  "relation": {
+   "clone": 0.3107,
+   "inspired": 0.3162,
+   "same_genre": 0.3371,
+   "unrelated": 0.0361
+  },
+  "same": 0.7257,
+  "closeness": 2.2795,
+  "emb": 0.9416645765304565
+ },
+ "Liar's Bar|Cheating During Testing [BETA]": {
+  "relation": {
+   "clone": 0.5215,
+   "inspired": 0.1609,
+   "same_genre": 0.2812,
+   "unrelated": 0.0364
+  },
+  "same": 0.5524,
+  "closeness": 2.0247,
+  "emb": 0.9544839262962341
+ },
+ "Liar's Bar|Crack the Code!": {
+  "relation": {
+   "clone": 0.2456,
+   "inspired": 0.179,
+   "same_genre": 0.5241,
+   "unrelated": 0.0513
+  },
+  "same": 0.6354,
+  "closeness": 1.8948,
+  "emb": 0.9419039487838745
+ },
+ "Liar's Bar|Hell Or Heaven": {
+  "relation": {
+   "clone": 0.394,
+   "inspired": 0.2821,
+   "same_genre": 0.2727,
+   "unrelated": 0.0512
+  },
+  "same": 0.6192,
+  "closeness": 2.0166,
+  "emb": 0.9309436082839966
+ },
+ "Liar's Bar|[☀️] Don't Ring the Bell! 🔔": {
+  "relation": {
+   "clone": 0.5918,
+   "inspired": 0.1487,
+   "same_genre": 0.219,
+   "unrelated": 0.0404
+  },
+  "same": 0.6395,
+  "closeness": 2.2096,
+  "emb": 0.9266092777252197
+ },
+ "Liar's Bar|😂 Lying Challenge": {
+  "relation": {
+   "clone": 0.5814,
+   "inspired": 0.1759,
+   "same_genre": 0.2036,
+   "unrelated": 0.0391
+  },
+  "same": 0.4861,
+  "closeness": 1.9389,
+  "emb": 0.9332639575004578
+ },
+ "Liar's Bar|Blind Timer ⏳": {
+  "relation": {
+   "clone": 0.3284,
+   "inspired": 0.1856,
+   "same_genre": 0.4373,
+   "unrelated": 0.0487
+  },
+  "same": 0.6058,
+  "closeness": 1.9614,
+  "emb": 0.9386263489723206
+ },
+ "Liar's Bar|Cluck or Hide!🐔": {
+  "relation": {
+   "clone": 0.5597,
+   "inspired": 0.1358,
+   "same_genre": 0.2649,
+   "unrelated": 0.0396
+  },
+  "same": 0.4567,
+  "closeness": 1.9273,
+  "emb": 0.9599680304527283
+ },
+ "Liar's Bar|Find Who Slapped": {
+  "relation": {
+   "clone": 0.4062,
+   "inspired": 0.1793,
+   "same_genre": 0.3412,
+   "unrelated": 0.0733
+  },
+  "same": 0.3368,
+  "closeness": 1.8249,
+  "emb": 0.9302873611450195
+ },
+ "Liar's Bar|Imposter [💀]": {
+  "relation": {
+   "clone": 0.2529,
+   "inspired": 0.2061,
+   "same_genre": 0.4788,
+   "unrelated": 0.0622
+  },
+  "same": 0.7153,
+  "closeness": 2.0166,
+  "emb": 0.9477753639221191
+ },
+ "Liar's Bar|Truth or Dare [OFFICIAL]": {
+  "relation": {
+   "clone": 0.288,
+   "inspired": 0.2847,
+   "same_genre": 0.3627,
+   "unrelated": 0.0647
+  },
+  "same": 0.7012,
+  "closeness": 2.1204,
+  "emb": 0.9714370965957642
+ },
+ "Liar's Bar|Escape Papa Pizza's Pizzeria! (SCARY OBBY)": {
+  "relation": {
+   "clone": 0.3026,
+   "inspired": 0.2618,
+   "same_genre": 0.3701,
+   "unrelated": 0.0655
+  },
+  "same": 0.4993,
+  "closeness": 2.0678,
+  "emb": 0.9389861226081848
+ },
+ "Balatro|Cards Matching 🃏": {
+  "relation": {
+   "clone": 0.3336,
+   "inspired": 0.1747,
+   "same_genre": 0.4601,
+   "unrelated": 0.0315
+  },
+  "same": 0.5737,
+  "closeness": 1.9468,
+  "emb": 0.938328742980957
+ },
+ "Balatro|Card Chaos💥": {
+  "relation": {
+   "clone": 0.4092,
+   "inspired": 0.2315,
+   "same_genre": 0.3125,
+   "unrelated": 0.0468
+  },
+  "same": 0.5224,
+  "closeness": 1.8856,
+  "emb": 0.951077938079834
+ },
+ "Balatro|Baldi's Basics but INFINITE BSODAs": {
+  "relation": {
+   "clone": 0.3018,
+   "inspired": 0.2167,
+   "same_genre": 0.4309,
+   "unrelated": 0.0506
+  },
+  "same": 0.5117,
+  "closeness": 1.7725,
+  "emb": 0.9436182975769043
+ },
+ "Balatro|Crazy Cards 🤣": {
+  "relation": {
+   "clone": 0.4333,
+   "inspired": 0.2145,
+   "same_genre": 0.2967,
+   "unrelated": 0.0554
+  },
+  "same": 0.4997,
+  "closeness": 1.7326,
+  "emb": 0.9509425163269043
+ },
+ "Balatro|Card Battles": {
+  "relation": {
+   "clone": 0.475,
+   "inspired": 0.179,
+   "same_genre": 0.2641,
+   "unrelated": 0.0819
+  },
+  "same": 0.2832,
+  "closeness": 1.7904,
+  "emb": 0.9542651176452637
+ },
+ "Balatro|Jenga Duel [🧱]": {
+  "relation": {
+   "clone": 0.3356,
+   "inspired": 0.1739,
+   "same_genre": 0.446,
+   "unrelated": 0.0445
+  },
+  "same": 0.6257,
+  "closeness": 1.9798,
+  "emb": 0.9316045045852661
+ },
+ "Balatro|Hitman Card Game": {
+  "relation": {
+   "clone": 0.1797,
+   "inspired": 0.5752,
+   "same_genre": 0.2126,
+   "unrelated": 0.0325
+  },
+  "same": 0.3075,
+  "closeness": 1.8271,
+  "emb": 0.9718533158302307
+ },
+ "Balatro|🕷️ Spider-Man Simulator": {
+  "relation": {
+   "clone": 0.3901,
+   "inspired": 0.1779,
+   "same_genre": 0.3428,
+   "unrelated": 0.0892
+  },
+  "same": 0.1007,
+  "closeness": 1.8993,
+  "emb": 0.9518570899963379
+ },
+ "Balatro|LOCOfficial!": {
+  "relation": {
+   "clone": 0.3372,
+   "inspired": 0.1846,
+   "same_genre": 0.4175,
+   "unrelated": 0.0608
+  },
+  "same": 0.4902,
+  "closeness": 1.7887,
+  "emb": 0.9472054839134216
+ },
+ "Balatro|Trade Soccer Cards": {
+  "relation": {
+   "clone": 0.3781,
+   "inspired": 0.1481,
+   "same_genre": 0.42,
+   "unrelated": 0.0537
+  },
+  "same": 0.7061,
+  "closeness": 1.7385,
+  "emb": 0.9498356580734253
+ },
+ "Balatro|♠ Twenty One": {
+  "relation": {
+   "clone": 0.3294,
+   "inspired": 0.3302,
+   "same_genre": 0.2966,
+   "unrelated": 0.0438
+  },
+  "same": 0.5484,
+  "closeness": 1.8809,
+  "emb": 0.9646972417831421
+ },
+ "Balatro|I Wanna Test The Game (Beta Test)": {
+  "relation": {
+   "clone": 0.3181,
+   "inspired": 0.2296,
+   "same_genre": 0.3897,
+   "unrelated": 0.0626
+  },
+  "same": 0.5319,
+  "closeness": 1.599,
+  "emb": 0.9637420773506165
+ },
+ "Balatro|Card Collectors": {
+  "relation": {
+   "clone": 0.4189,
+   "inspired": 0.1664,
+   "same_genre": 0.3649,
+   "unrelated": 0.0498
+  },
+  "same": 0.5829,
+  "closeness": 1.6853,
+  "emb": 0.9392555356025696
+ },
+ "Balatro|The Liar": {
+  "relation": {
+   "clone": 0.3875,
+   "inspired": 0.1747,
+   "same_genre": 0.3928,
+   "unrelated": 0.045
+  },
+  "same": 0.6443,
+  "closeness": 1.8345,
+  "emb": 0.9247778058052063
+ },
+ "Deep Rock Galactic|Subterra ⛏️ [BETA]": {
+  "relation": {
+   "clone": 0.4157,
+   "inspired": 0.2486,
+   "same_genre": 0.2961,
+   "unrelated": 0.0396
+  },
+  "same": 0.4692,
+  "closeness": 1.9531,
+  "emb": 0.9470421671867371
+ },
+ "Deep Rock Galactic|Cave Diving Experience": {
+  "relation": {
+   "clone": 0.2861,
+   "inspired": 0.2912,
+   "same_genre": 0.3814,
+   "unrelated": 0.0413
+  },
+  "same": 0.5823,
+  "closeness": 2.0531,
+  "emb": 0.9769657850265503
+ },
+ "Deep Rock Galactic|Drill to Earth’s Core 🌎": {
+  "relation": {
+   "clone": 0.2202,
+   "inspired": 0.3369,
+   "same_genre": 0.3354,
+   "unrelated": 0.1076
+  },
+  "same": 0.2629,
+  "closeness": 1.9499,
+  "emb": 0.9035964608192444
+ },
+ "Deep Rock Galactic|Crush Depth 🌊": {
+  "relation": {
+   "clone": 0.1429,
+   "inspired": 0.6333,
+   "same_genre": 0.1848,
+   "unrelated": 0.0389
+  },
+  "same": 0.3743,
+  "closeness": 1.6533,
+  "emb": 0.9632560014724731
+ },
+ "Deep Rock Galactic|[⛰️] SUMMIT": {
+  "relation": {
+   "clone": 0.3451,
+   "inspired": 0.3125,
+   "same_genre": 0.2465,
+   "unrelated": 0.0959
+  },
+  "same": 0.5894,
+  "closeness": 1.9004,
+  "emb": 0.9397010803222656
+ },
+ "Deep Rock Galactic|CLIMB [⛰️]": {
+  "relation": {
+   "clone": 0.5018,
+   "inspired": 0.1658,
+   "same_genre": 0.2635,
+   "unrelated": 0.0689
+  },
+  "same": 0.4966,
+  "closeness": 1.877,
+  "emb": 0.8543899655342102
+ },
+ "Deep Rock Galactic|⛏️ Dig to Earth's CORE!": {
+  "relation": {
+   "clone": 0.295,
+   "inspired": 0.3117,
+   "same_genre": 0.3373,
+   "unrelated": 0.056
+  },
+  "same": 0.4459,
+  "closeness": 1.9743,
+  "emb": 0.9024484753608704
+ },
+ "Deep Rock Galactic|Deep and Deeper": {
+  "relation": {
+   "clone": 0.3756,
+   "inspired": 0.2871,
+   "same_genre": 0.2953,
+   "unrelated": 0.042
+  },
+  "same": 0.2326,
+  "closeness": 1.7182,
+  "emb": 0.8962971568107605
+ },
+ "Deep Rock Galactic|Abyss": {
+  "relation": {
+   "clone": 0.2901,
+   "inspired": 0.2698,
+   "same_genre": 0.3355,
+   "unrelated": 0.1046
+  },
+  "same": 0.3231,
+  "closeness": 1.8487,
+  "emb": 0.9382683038711548
+ },
+ "Deep Rock Galactic|Blackhole Simulator 🌀 [EAT PLANETS!]": {
+  "relation": {
+   "clone": 0.4834,
+   "inspired": 0.2028,
+   "same_genre": 0.237,
+   "unrelated": 0.0768
+  },
+  "same": 0.4416,
+  "closeness": 2.1356,
+  "emb": 0.9240313172340393
+ },
+ "Deep Rock Galactic|🏔️Expedition Mount Everest BETA": {
+  "relation": {
+   "clone": 0.3169,
+   "inspired": 0.2667,
+   "same_genre": 0.3355,
+   "unrelated": 0.0808
+  },
+  "same": 0.5499,
+  "closeness": 1.9335,
+  "emb": 0.9180170893669128
+ },
+ "Deep Rock Galactic|[🚩] Expedition Cave Dive": {
+  "relation": {
+   "clone": 0.2913,
+   "inspired": 0.2717,
+   "same_genre": 0.3775,
+   "unrelated": 0.0595
+  },
+  "same": 0.4508,
+  "closeness": 1.7574,
+  "emb": 0.9092183709144592
+ },
+ "Deep Rock Galactic|Jump Into The Deepest Hole": {
+  "relation": {
+   "clone": 0.3146,
+   "inspired": 0.2328,
+   "same_genre": 0.3985,
+   "unrelated": 0.0541
+  },
+  "same": 0.5335,
+  "closeness": 2.1912,
+  "emb": 0.8865072131156921
+ },
+ "Deep Rock Galactic|Lost Currents [Alpha]  ": {
+  "relation": {
+   "clone": 0.2813,
+   "inspired": 0.2433,
+   "same_genre": 0.3826,
+   "unrelated": 0.0928
+  },
+  "same": 0.4312,
+  "closeness": 2.0525,
+  "emb": 0.9208625555038452
+ },
+ "Vampire Survivors|Robong Survivors [1-4 Player Co-Op]": {
+  "relation": {
+   "clone": 0.2846,
+   "inspired": 0.2177,
+   "same_genre": 0.4514,
+   "unrelated": 0.0462
+  },
+  "same": 0.6441,
+  "closeness": 2.2398,
+  "emb": 0.9632229208946228
+ },
+ "Vampire Survivors|[🐢] Bloodlines": {
+  "relation": {
+   "clone": 0.2001,
+   "inspired": 0.2491,
+   "same_genre": 0.4677,
+   "unrelated": 0.083
+  },
+  "same": 0.5767,
+  "closeness": 1.8186,
+  "emb": 0.9572772979736328
+ },
+ "Vampire Survivors|[FACTIONS] Survive Zombie Arena": {
+  "relation": {
+   "clone": 0.3312,
+   "inspired": 0.1922,
+   "same_genre": 0.4292,
+   "unrelated": 0.0473
+  },
+  "same": 0.5753,
+  "closeness": 2.1628,
+  "emb": 0.94939786195755
+ },
+ "Vampire Survivors|Thirsty Vampire": {
+  "relation": {
+   "clone": 0.2108,
+   "inspired": 0.2188,
+   "same_genre": 0.4789,
+   "unrelated": 0.0915
+  },
+  "same": 0.7127,
+  "closeness": 2.121,
+  "emb": 0.9456567764282227
+ },
+ "Vampire Survivors|Climb Vampire Infection Tower": {
+  "relation": {
+   "clone": 0.1968,
+   "inspired": 0.2164,
+   "same_genre": 0.5378,
+   "unrelated": 0.0491
+  },
+  "same": 0.67,
+  "closeness": 2.0909,
+  "emb": 0.9434576630592346
+ },
+ "Vampire Survivors|[TVR] The Vampires Rewritten": {
+  "relation": {
+   "clone": 0.3678,
+   "inspired": 0.2212,
+   "same_genre": 0.3543,
+   "unrelated": 0.0567
+  },
+  "same": 0.675,
+  "closeness": 1.9688,
+  "emb": 0.9751115441322327
+ },
+ "Vampire Survivors|Survivor Games": {
+  "relation": {
+   "clone": 0.3052,
+   "inspired": 0.4303,
+   "same_genre": 0.2328,
+   "unrelated": 0.0317
+  },
+  "same": 0.5516,
+  "closeness": 1.8859,
+  "emb": 0.9735995531082153
+ },
+ "Vampire Survivors|[ORIGINALS] Vampire Town": {
+  "relation": {
+   "clone": 0.2163,
+   "inspired": 0.2387,
+   "same_genre": 0.4892,
+   "unrelated": 0.0558
+  },
+  "same": 0.782,
+  "closeness": 2.2563,
+  "emb": 0.9728411436080933
+ },
+ "Vampire Survivors|🧛🏻Vampire Infection": {
+  "relation": {
+   "clone": 0.156,
+   "inspired": 0.2889,
+   "same_genre": 0.5103,
+   "unrelated": 0.0448
+  },
+  "same": 0.6243,
+  "closeness": 1.8349,
+  "emb": 0.9267853498458862
+ },
+ "Vampire Survivors|[EVERYONE FREE] The Vampire Chronicles": {
+  "relation": {
+   "clone": 0.2832,
+   "inspired": 0.1853,
+   "same_genre": 0.4659,
+   "unrelated": 0.0656
+  },
+  "same": 0.7904,
+  "closeness": 2.1852,
+  "emb": 0.9677646160125732
+ },
+ "Vampire Survivors|SCP": {
+  "relation": {
+   "clone": 0.2701,
+   "inspired": 0.2136,
+   "same_genre": 0.4636,
+   "unrelated": 0.0526
+  },
+  "same": 0.8188,
+  "closeness": 2.1968,
+  "emb": 0.9662384390830994
+ },
+ "Vampire Survivors|Zombie Rush Survival 🧟‍♂️": {
+  "relation": {
+   "clone": 0.2337,
+   "inspired": 0.2405,
+   "same_genre": 0.457,
+   "unrelated": 0.0688
+  },
+  "same": 0.4477,
+  "closeness": 1.8637,
+  "emb": 0.9673472046852112
+ },
+ "Vampire Survivors|🧛Vampire Test ": {
+  "relation": {
+   "clone": 0.2543,
+   "inspired": 0.2207,
+   "same_genre": 0.4575,
+   "unrelated": 0.0674
+  },
+  "same": 0.5724,
+  "closeness": 2.2344,
+  "emb": 0.9533941745758057
+ },
+ "Vampire Survivors|[PUBLIC TEST!] Vampire life": {
+  "relation": {
+   "clone": 0.1735,
+   "inspired": 0.2868,
+   "same_genre": 0.4817,
+   "unrelated": 0.058
+  },
+  "same": 0.7121,
+  "closeness": 2.0519,
+  "emb": 0.9645132422447205
+ },
+ "Raft|100 Days At Sea": {
+  "relation": {
+   "clone": 0.3599,
+   "inspired": 0.361,
+   "same_genre": 0.2377,
+   "unrelated": 0.0414
+  },
+  "same": 0.6771,
+  "closeness": 1.9736,
+  "emb": 0.9674606323242188
+ },
+ "Raft|🐙 Raft 101 Survival": {
+  "relation": {
+   "clone": 0.1908,
+   "inspired": 0.6824,
+   "same_genre": 0.1079,
+   "unrelated": 0.019
+  },
+  "same": 0.6401,
+  "closeness": 2.1244,
+  "emb": 0.9579147696495056
+ },
+ "Raft|Build and Defend Your Raft": {
+  "relation": {
+   "clone": 0.4344,
+   "inspired": 0.1506,
+   "same_genre": 0.3661,
+   "unrelated": 0.0489
+  },
+  "same": 0.6102,
+  "closeness": 1.9576,
+  "emb": 0.9395081400871277
+ },
+ "Raft|🌊 Raft Tycoon": {
+  "relation": {
+   "clone": 0.3344,
+   "inspired": 0.1933,
+   "same_genre": 0.3923,
+   "unrelated": 0.08
+  },
+  "same": 0.586,
+  "closeness": 1.8944,
+  "emb": 0.9543365836143494
+ },
+ "Raft|[💘] Survive on a Raft": {
+  "relation": {
+   "clone": 0.4632,
+   "inspired": 0.141,
+   "same_genre": 0.3442,
+   "unrelated": 0.0517
+  },
+  "same": 0.7432,
+  "closeness": 1.886,
+  "emb": 0.8991813063621521
+ },
+ "Raft|Roft: Raft Survival": {
+  "relation": {
+   "clone": 0.3313,
+   "inspired": 0.1953,
+   "same_genre": 0.389,
+   "unrelated": 0.0844
+  },
+  "same": 0.6983,
+  "closeness": 1.8967,
+  "emb": 0.9728901386260986
+ },
+ "Raft|Rusty Rafts": {
+  "relation": {
+   "clone": 0.4347,
+   "inspired": 0.1856,
+   "same_genre": 0.3253,
+   "unrelated": 0.0544
+  },
+  "same": 0.7549,
+  "closeness": 1.9505,
+  "emb": 0.9457470774650574
+ },
+ "Raft|🛠️ Build a Raft Creative 🛠️": {
+  "relation": {
+   "clone": 0.243,
+   "inspired": 0.4586,
+   "same_genre": 0.2556,
+   "unrelated": 0.0428
+  },
+  "same": 0.4971,
+  "closeness": 1.9505,
+  "emb": 0.9299998879432678
+ },
+ "Raft|🔨Build a Raft🔨": {
+  "relation": {
+   "clone": 0.275,
+   "inspired": 0.1803,
+   "same_genre": 0.4869,
+   "unrelated": 0.0578
+  },
+  "same": 0.6625,
+  "closeness": 1.9216,
+  "emb": 0.9398958683013916
+ },
+ "Raft|Raft Ride Down a Jungle Waterslide": {
+  "relation": {
+   "clone": 0.3746,
+   "inspired": 0.1725,
+   "same_genre": 0.3891,
+   "unrelated": 0.0639
+  },
+  "same": 0.6155,
+  "closeness": 1.7909,
+  "emb": 0.9497796893119812
+ },
+ "Raft|bote ried": {
+  "relation": {
+   "clone": 0.662,
+   "inspired": 0.0862,
+   "same_genre": 0.2047,
+   "unrelated": 0.0471
+  },
+  "same": 0.8268,
+  "closeness": 2.1217,
+  "emb": 0.8585558533668518
+ },
+ "Raft|Roblox Titanic": {
+  "relation": {
+   "clone": 0.3422,
+   "inspired": 0.2237,
+   "same_genre": 0.3918,
+   "unrelated": 0.0424
+  },
+  "same": 0.5906,
+  "closeness": 1.9154,
+  "emb": 0.9657802581787109
+ },
+ "Raft|［🍣］Suship": {
+  "relation": {
+   "clone": 0.3987,
+   "inspired": 0.2004,
+   "same_genre": 0.325,
+   "unrelated": 0.0759
+  },
+  "same": 0.5407,
+  "closeness": 1.9017,
+  "emb": 0.9493163824081421
+ },
+ "Raft|+1 Speed Boat Tsunami": {
+  "relation": {
+   "clone": 0.348,
+   "inspired": 0.1497,
+   "same_genre": 0.4527,
+   "unrelated": 0.0495
+  },
+  "same": 0.6345,
+  "closeness": 1.8202,
+  "emb": 0.9218223690986633
+ },
+ "Overcooked! 2|Cooking Chaos": {
+  "relation": {
+   "clone": 0.4244,
+   "inspired": 0.2202,
+   "same_genre": 0.2998,
+   "unrelated": 0.0556
+  },
+  "same": 0.6081,
+  "closeness": 2.068,
+  "emb": 0.9669559597969055
+ },
+ "Overcooked! 2|MAD CHEFS! 🧑‍🍳": {
+  "relation": {
+   "clone": 0.5431,
+   "inspired": 0.1468,
+   "same_genre": 0.266,
+   "unrelated": 0.0441
+  },
+  "same": 0.7538,
+  "closeness": 2.1848,
+  "emb": 0.922793447971344
+ },
+ "Overcooked! 2| [🧑‍🍳CLASSES] Generic Cooking Game [BETA]": {
+  "relation": {
+   "clone": 0.3675,
+   "inspired": 0.245,
+   "same_genre": 0.3296,
+   "unrelated": 0.0578
+  },
+  "same": 0.451,
+  "closeness": 2.0076,
+  "emb": 0.9393366575241089
+ },
+ "Overcooked! 2|CRAZY CHEFS! 👨‍🍳": {
+  "relation": {
+   "clone": 0.5973,
+   "inspired": 0.1919,
+   "same_genre": 0.1566,
+   "unrelated": 0.0541
+  },
+  "same": 0.6347,
+  "closeness": 1.8907,
+  "emb": 0.8894372582435608
+ },
+ "Overcooked! 2|🔥 Cooked!": {
+  "relation": {
+   "clone": 0.4285,
+   "inspired": 0.1808,
+   "same_genre": 0.3363,
+   "unrelated": 0.0544
+  },
+  "same": 0.582,
+  "closeness": 2.0239,
+  "emb": 0.9437379837036133
+ },
+ "Overcooked! 2|Cook Pizzas": {
+  "relation": {
+   "clone": 0.4905,
+   "inspired": 0.163,
+   "same_genre": 0.3077,
+   "unrelated": 0.0388
+  },
+  "same": 0.6935,
+  "closeness": 2.0766,
+  "emb": 0.928838312625885
+ },
+ "Overcooked! 2|[UPD] Cook Noobs 👨‍🍳": {
+  "relation": {
+   "clone": 0.5666,
+   "inspired": 0.1622,
+   "same_genre": 0.2296,
+   "unrelated": 0.0415
+  },
+  "same": 0.5982,
+  "closeness": 2.1748,
+  "emb": 0.9144362807273865
+ },
+ "Overcooked! 2|RV Cooked? [UPDATE]": {
+  "relation": {
+   "clone": 0.3848,
+   "inspired": 0.1829,
+   "same_genre": 0.3713,
+   "unrelated": 0.061
+  },
+  "same": 0.6199,
+  "closeness": 2.165,
+  "emb": 0.9326137900352478
+ },
+ "Overcooked! 2|COOKED (BETA)": {
+  "relation": {
+   "clone": 0.2512,
+   "inspired": 0.4976,
+   "same_genre": 0.1846,
+   "unrelated": 0.0666
+  },
+  "same": 0.4856,
+  "closeness": 1.9236,
+  "emb": 0.9326493740081787
+ },
+ "Overcooked! 2|🍪 Roll Your Cookie": {
+  "relation": {
+   "clone": 0.4214,
+   "inspired": 0.1737,
+   "same_genre": 0.347,
+   "unrelated": 0.0579
+  },
+  "same": 0.4241,
+  "closeness": 2.0062,
+  "emb": 0.9448019862174988
+ },
+ "Overcooked! 2|Fast Food Simulator": {
+  "relation": {
+   "clone": 0.4523,
+   "inspired": 0.1651,
+   "same_genre": 0.3232,
+   "unrelated": 0.0594
+  },
+  "same": 0.6331,
+  "closeness": 1.9378,
+  "emb": 0.9620568752288818
+ },
+ "Overcooked! 2|Hell's Kitchen 2": {
+  "relation": {
+   "clone": 0.4864,
+   "inspired": 0.1959,
+   "same_genre": 0.2486,
+   "unrelated": 0.069
+  },
+  "same": 0.5962,
+  "closeness": 1.9124,
+  "emb": 0.9714024662971497
+ },
+ "Overcooked! 2|🍗🍟 Eating in Jollibee [MUKBANG]": {
+  "relation": {
+   "clone": 0.2896,
+   "inspired": 0.3145,
+   "same_genre": 0.342,
+   "unrelated": 0.0539
+  },
+  "same": 0.4493,
+  "closeness": 1.9683,
+  "emb": 0.9552706480026245
+ },
+ "Overcooked! 2|🥞Work at a Pancake Place": {
+  "relation": {
+   "clone": 0.4838,
+   "inspired": 0.2019,
+   "same_genre": 0.2746,
+   "unrelated": 0.0397
+  },
+  "same": 0.7038,
+  "closeness": 2.0966,
+  "emb": 0.9617871642112732
+ }
+}

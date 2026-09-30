@@ -129,6 +129,23 @@ class LLMConfig:
 
 
 @dataclass
+class LayaConfig:
+    """İsteğe bağlı Laya karar modeli (yerel, ücretsiz; PyTorch gerekir). Bkz. eval/README.md."""
+
+    enabled: bool = False
+    # evidence: Laya diğer kanıtlara düşük güvenle eklenir | judge: son söz Laya'da (ince ayarlı model için)
+    mode: str = "evidence"
+    checkpoint: str = ""  # "" = İngilizce kök, "typed-decisions", "multilingual"
+    model_path: str = ""  # kendi ince ayarlı checkpoint'in (yerel klasör veya HF deposu)
+    device: str = ""  # "" = otomatik, "cpu", "cuda", "mps"
+    reliability: float = 0.35  # evidence modunda Laya kanıtının ağırlığı
+    max_candidates: int = 8
+    min_prescore: float = 0.2
+    batch_size: int = 8
+    use_embeddings: bool = False
+
+
+@dataclass
 class ChannelConfig:
     enabled: bool = False
     min_priority: str = "medium"
@@ -186,6 +203,7 @@ class Config:
     filters: FilterConfig = field(default_factory=FilterConfig)
     scoring: ScoringConfig = field(default_factory=ScoringConfig)
     llm: LLMConfig = field(default_factory=LLMConfig)
+    laya: LayaConfig = field(default_factory=LayaConfig)
     notifications: NotificationConfig = field(default_factory=NotificationConfig)
     web: WebConfig = field(default_factory=WebConfig)
 
@@ -291,5 +309,7 @@ def _apply_env_shortcuts(cfg: Config) -> None:
         cfg.web.token = env["AKIM_WEB_TOKEN"]
     if env.get("AKIM_LLM_ENABLED"):
         cfg.llm.enabled = env["AKIM_LLM_ENABLED"].strip().lower() in {"1", "true", "yes", "on", "evet"}
+    if env.get("AKIM_LAYA_ENABLED"):
+        cfg.laya.enabled = env["AKIM_LAYA_ENABLED"].strip().lower() in {"1", "true", "yes", "on", "evet"}
     if env.get("AKIM_DATA_DIR"):
         cfg.general.data_dir = env["AKIM_DATA_DIR"]

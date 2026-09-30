@@ -1,0 +1,449 @@
+{
+ "PEAK|CLIMB [⛰️]": {
+  "nli": 0.116
+ },
+ "PEAK|[⛰️] SUMMIT": {
+  "nli": 0.4444
+ },
+ "PEAK|SEIZE 😂": {
+  "nli": 0.1637
+ },
+ "PEAK|🏔️The Climb": {
+  "nli": 0.4114
+ },
+ "PEAK|Cave Diving Experience": {
+  "nli": 0.3161
+ },
+ "PEAK|Climb [1.8.9]": {
+  "nli": 0.359
+ },
+ "PEAK|[1CP] Mount Kara 🚩": {
+  "nli": 0.1461
+ },
+ "PEAK|Getting Over it[Remastered]🔨": {
+  "nli": 0.3715
+ },
+ "PEAK|RV Cooked? [UPDATE]": {
+  "nli": 0.1272
+ },
+ "PEAK|[🚲] GreenPeak | BIKE PARK [BETA]": {
+  "nli": 0.1374
+ },
+ "PEAK|bote ried": {
+  "nli": 0.2726
+ },
+ "PEAK|Dig the Backyard": {
+  "nli": 0.6219
+ },
+ "PEAK|Dangerous Mountain Biking": {
+  "nli": 0.1819
+ },
+ "PEAK|Climb Race Simulator": {
+  "nli": 0.1176
+ },
+ "PEAK|🚩Expedition Antarctica": {
+  "nli": 0.4353
+ },
+ "PEAK|RV Chaos? [UPD]": {
+  "nli": 0.8853
+ },
+ "Lethal Company|Lethal Business": {
+  "nli": 0.2003
+ },
+ "Lethal Company|Deadly Company": {
+  "nli": 0.5844
+ },
+ "Lethal Company|Lethal Ape Experience": {
+  "nli": 0.6362
+ },
+ "Lethal Company|SEIZE 😂": {
+  "nli": 0.599
+ },
+ "Lethal Company|Lethal Ape": {
+  "nli": 0.7521
+ },
+ "Lethal Company|[UPDATE] Backrooms Company": {
+  "nli": 0.4359
+ },
+ "Lethal Company|❄️Scream Stream": {
+  "nli": 0.7364
+ },
+ "Lethal Company|Underwater Company": {
+  "nli": 0.5301
+ },
+ "Lethal Company|(JUNE VER) LAOV [Lethal Ape Old Version]": {
+  "nli": 0.0679
+ },
+ "Lethal Company|[UPDATE] M.E.G. Endless Reality": {
+  "nli": 0.4163
+ },
+ "Lethal Company|NPC or DIE! 💢": {
+  "nli": 0.6101
+ },
+ "Lethal Company|Lethal Ape 2 [🔥BIG UPDATE🔥]": {
+  "nli": 0.8871
+ },
+ "Lethal Company|Zombies vs Police": {
+  "nli": 0.5412
+ },
+ "Lethal Company|Lethal Ape Ultimate": {
+  "nli": 0.681
+ },
+ "Schedule I|Schedule 🥔": {
+  "nli": 0.1852
+ },
+ "Schedule I|Schedule X": {
+  "nli": 0.4141
+ },
+ "Schedule I|[🍎] Schedule Zero": {
+  "nli": 0.6718
+ },
+ "Schedule I|Chicago Life 😈": {
+  "nli": 0.1481
+ },
+ "Schedule I|Fallen Survival🏹": {
+  "nli": 0.4842
+ },
+ "Schedule I|[BEST DAY EVER] zyltex's animations": {
+  "nli": 0.1397
+ },
+ "Schedule I|South London Remastered": {
+  "nli": 0.6636
+ },
+ "Schedule I| 🔥[UPDATE]🔥Central Streets": {
+  "nli": 0.2972
+ },
+ "Schedule I|Gang Life": {
+  "nli": 0.6066
+ },
+ "Schedule I|Westbound": {
+  "nli": 0.6233
+ },
+ "Schedule I|NO MORE SCHOOL [UPDATE!]": {
+  "nli": 0.501
+ },
+ "Schedule I|Cali Streets 💥": {
+  "nli": 0.7252
+ },
+ "Schedule I|Would you rather but it happens 2": {
+  "nli": 0.6367
+ },
+ "Schedule I|Divaz 💄": {
+  "nli": 0.7244
+ },
+ "R.E.P.O.|SEIZE 😂": {
+  "nli": 0.8261
+ },
+ "R.E.P.O.|REPO SANDBOX": {
+  "nli": 0.8162
+ },
+ "R.E.P.O.|REPO Game": {
+  "nli": 0.8083
+ },
+ "R.E.P.O.|[NEW] RETAKE": {
+  "nli": 0.9403
+ },
+ "R.E.P.O.|Survive Overnight in a Mega Store": {
+  "nli": 0.5053
+ },
+ "R.E.P.O.|Hell Or Heaven": {
+  "nli": 0.914
+ },
+ "R.E.P.O.|eat the baseplate": {
+  "nli": 0.7153
+ },
+ "R.E.P.O.|[Verity Event] Bring Or DIE": {
+  "nli": 0.8812
+ },
+ "R.E.P.O.|The Exit 8!": {
+  "nli": 0.7266
+ },
+ "R.E.P.O.|Hungry Pig": {
+  "nli": 0.3317
+ },
+ "R.E.P.O.|💀Act Dead or OOF": {
+  "nli": 0.6511
+ },
+ "R.E.P.O.|Animal Hospital (Anomaly) 🧪": {
+  "nli": 0.6639
+ },
+ "R.E.P.O.|[UPDATE] M.E.G. Endless Reality": {
+  "nli": 0.6138
+ },
+ "R.E.P.O.|[🎨] Camo Troll Tower 4": {
+  "nli": 0.3847
+ },
+ "R.E.P.O.|Nightmare Run": {
+  "nli": 0.4081
+ },
+ "Palworld|[NOW] Catch a Monster": {
+  "nli": 0.3827
+ },
+ "Palworld|Evomon[S3 TRADE]": {
+  "nli": 0.68
+ },
+ "Palworld|Bugmon[RELEASE] ": {
+  "nli": 0.2501
+ },
+ "Palworld|HOW TO TRAIN YOUR DRAGON": {
+  "nli": 0.5943
+ },
+ "Palworld|✨ Creatures of Sonaria 📜 Survive Kaiju Animals": {
+  "nli": 0.6656
+ },
+ "Palworld|[Evolve] Pet Capture Adventur": {
+  "nli": 0.2362
+ },
+ "Palworld|[REBUILD🚧] Dragon Adventures 🐉": {
+  "nli": 0.2035
+ },
+ "Palworld|[Dark]Blox Monsters": {
+  "nli": 0.2944
+ },
+ "Palworld|Web Rush": {
+  "nli": 0.3393
+ },
+ "Palworld|World // Zero ⚔️ Anime RPG ": {
+  "nli": 0.3501
+ },
+ "Palworld|🌻 Dandy's World [ALPHA]": {
+  "nli": 0.5538
+ },
+ "Palworld|Ben 10 Super Hero Time": {
+  "nli": 0.1049
+ },
+ "Palworld|Evolve 3D [ALPHA]": {
+  "nli": 0.5117
+ },
+ "Palworld|[🕰️] Catch And Tame!": {
+  "nli": 0.4061
+ },
+ "Palworld|[🌋SZN2] Monster Battles": {
+  "nli": 0.2836
+ },
+ "Counter-Strike 2|BloxStrike": {
+  "nli": 0.7093
+ },
+ "Counter-Strike 2|KNIFE DUELS": {
+  "nli": 0.7202
+ },
+ "Counter-Strike 2|Defuse Division": {
+  "nli": 0.1155
+ },
+ "Counter-Strike 2|🔥Hypershot": {
+  "nli": 0.8274
+ },
+ "Counter-Strike 2|Counter Blox": {
+  "nli": 0.7898
+ },
+ "Counter-Strike 2|Strike: Warfare": {
+  "nli": 0.7242
+ },
+ "Counter-Strike 2|[🧤] Defusal": {
+  "nli": 0.5779
+ },
+ "Counter-Strike 2|PUBG 2.0": {
+  "nli": 0.5171
+ },
+ "Counter-Strike 2|FPS🔥AirDrop Arena [S5]🔥": {
+  "nli": 0.895
+ },
+ "Counter-Strike 2|[FPS] One Tap": {
+  "nli": 0.8447
+ },
+ "Counter-Strike 2|Hooked! [TRAIT]": {
+  "nli": 0.5876
+ },
+ "Counter-Strike 2|RIVALS": {
+  "nli": 0.7835
+ },
+ "Counter-Strike 2|[CLANS] Combat Arena": {
+  "nli": 0.8533
+ },
+ "Counter-Strike 2|Ground War": {
+  "nli": 0.6406
+ },
+ "Counter-Strike 2|MM2: PVP": {
+  "nli": 0.3487
+ },
+ "DAVE THE DIVER|Abyss": {
+  "nli": 0.275
+ },
+ "DAVE THE DIVER|Scuba Diving at Quill Lake🤿": {
+  "nli": 0.4038
+ },
+ "DAVE THE DIVER|[🚩] Expedition Cave Dive": {
+  "nli": 0.2819
+ },
+ "DAVE THE DIVER|[🐟] Dive Down ": {
+  "nli": 0.2389
+ },
+ "DAVE THE DIVER|Dive Into Water [NEW WORLD🌸] ": {
+  "nli": 0.4687
+ },
+ "DAVE THE DIVER|Expert Skydiving": {
+  "nli": 0.1363
+ },
+ "DAVE THE DIVER|Cave Diving Experience": {
+  "nli": 0.5052
+ },
+ "DAVE THE DIVER|The Diving Experience 🤿": {
+  "nli": 0.5804
+ },
+ "DAVE THE DIVER|🦈 Shark Dive Line": {
+  "nli": 0.2821
+ },
+ "DAVE THE DIVER|Deep Abyss": {
+  "nli": 0.2822
+ },
+ "DAVE THE DIVER|Swim Down The Deepest Pool!": {
+  "nli": 0.1703
+ },
+ "DAVE THE DIVER|Dive into a Pool 💧": {
+  "nli": 0.3709
+ },
+ "DAVE THE DIVER|[NEW] R15 Wayside Swim 🌊 RP": {
+  "nli": 0.3499
+ },
+ "DAVE THE DIVER|Diving Legends": {
+  "nli": 0.396
+ },
+ "DAVE THE DIVER|bote ried": {
+  "nli": 0.2551
+ },
+ "Among Us|[⚡] Imposters & Roles | Among us": {
+  "nli": 0.5857
+ },
+ "Among Us|Amon Us": {
+  "nli": 0.7816
+ },
+ "Among Us|🚀 Crewmates | Among us": {
+  "nli": 0.6811
+ },
+ "Among Us|Impostor | Among us": {
+  "nli": 0.7958
+ },
+ "Among Us|Hide or Die | Among us": {
+  "nli": 0.613
+ },
+ "Among Us|Impostor [Beta]": {
+  "nli": 0.7938
+ },
+ "Among Us|Survival Among Us Impostor The Killer!": {
+  "nli": 0.8031
+ },
+ "Among Us|🚨Suspect": {
+  "nli": 0.8346
+ },
+ "Among Us|Invader 🚀": {
+  "nli": 0.6578
+ },
+ "Among Us|Among Us Hide: And Seek": {
+  "nli": 0.4559
+ },
+ "Among Us|The $1,000,000 Red Light Green Light": {
+  "nli": 0.5763
+ },
+ "Among Us|Among Us Obby (Speed Runs!)": {
+  "nli": 0.603
+ },
+ "Among Us|🌎 World.io": {
+  "nli": 0.8478
+ },
+ "Among Us|PAINT OR DIE!": {
+  "nli": 0.8859
+ },
+ "Phasmophobia|[UPD] Demonology🕯️": {
+  "nli": 0.0719
+ },
+ "Phasmophobia|Phasmophobia": {
+  "nli": 0.6789
+ },
+ "Phasmophobia|[🖼️ MUSEUM] Chameleon": {
+  "nli": 0.8099
+ },
+ "Phasmophobia|SEIZE 😂": {
+  "nli": 0.1763
+ },
+ "Phasmophobia|🎃 SPECTER": {
+  "nli": 0.1102
+ },
+ "Phasmophobia|Backrooms": {
+  "nli": 0.2829
+ },
+ "Phasmophobia|All of Us Are Dead": {
+  "nli": 0.2567
+ },
+ "Phasmophobia|Face Your Fears - A Phobia Game": {
+  "nli": 0.6367
+ },
+ "Phasmophobia|Night At The Infirmary (Anomaly)": {
+  "nli": 0.1939
+ },
+ "Phasmophobia|Home Alone: Anomalies": {
+  "nli": 0.2933
+ },
+ "Phasmophobia|The Exit 8!": {
+  "nli": 0.384
+ },
+ "Phasmophobia|Cluck or Hide!🐔": {
+  "nli": 0.0577
+ },
+ "Phasmophobia|The Ghost Hunter Experience 👻": {
+  "nli": 0.7209
+ },
+ "Phasmophobia|The Morgue Shift": {
+  "nli": 0.2253
+ },
+ "Phasmophobia|Animal Hospital (Anomaly) 🧪": {
+  "nli": 0.2434
+ },
+ "Supermarket Simulator|Supermarket Simulator": {
+  "nli": 0.8895
+ },
+ "Supermarket Simulator|Supermarket Together": {
+  "nli": 0.7019
+ },
+ "Supermarket Simulator|Survive Overnight in a Mega Store": {
+  "nli": 0.1848
+ },
+ "Supermarket Simulator|Megastore Simulator": {
+  "nli": 0.7848
+ },
+ "Supermarket Simulator|🏪 Japanese Supermarket Simulator": {
+  "nli": 0.9034
+ },
+ "Supermarket Simulator|Secure the Supermarket": {
+  "nli": 0.8068
+ },
+ "Supermarket Simulator|My Squishy Box Store🥟": {
+  "nli": 0.2786
+ },
+ "Supermarket Simulator|Superstore Simulator": {
+  "nli": 0.7175
+ },
+ "Supermarket Simulator|Run Fashion Store Together": {
+  "nli": 0.4334
+ },
+ "Supermarket Simulator|Makeup Store Simulator": {
+  "nli": 0.3855
+ },
+ "Supermarket Simulator|[Update12!]My Supermarket": {
+  "nli": 0.4065
+ },
+ "Supermarket Simulator|Retail Tycoon 2": {
+  "nli": 0.554
+ },
+ "Supermarket Simulator|My Boba Store": {
+  "nli": 0.486
+ },
+ "Supermarket Simulator|Clothing Store Simulator": {
+  "nli": 0.4669
+ },
+ "Supermarket Simulator|Superpower Simulator: Chakra": {
+  "nli": 0.6437
+ },
+ "Supermarket Simulator|Store Empire [ Summer ]": {
+  "nli": 0.3223
+ }
+}

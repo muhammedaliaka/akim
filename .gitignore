@@ -15,3 +15,5 @@ data/
 *.db-shm
 .env
 config.yaml
+eval/__pycache__/
+eval/_*.log

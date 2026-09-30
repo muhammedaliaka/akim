@@ -22,6 +22,7 @@ from dataclasses import dataclass, field
 from .analysis.concepts import CandidateText
 from .analysis.indie import IndieClassifier
 from .analysis.judge import LLMJudge
+from .analysis.laya_judge import LayaJudge
 from .analysis.matching import match_score, search_queries, title_key
 from .analysis.similarity import Evidence, GameContext, classify, heuristic_evidence
 from .analysis.scoring import MomentumSignals, RobloxAssessment, assess_roblox, decide, momentum_score
@@ -124,6 +125,7 @@ class Engine:
         )
         self._ignore = [re.compile(p) for p in cfg.filters.ignore_titles]
         self.judge = LLMJudge(cfg.llm, store)
+        self.laya = LayaJudge(cfg.laya, store)
         self.notifier = None  # __main__ tarafından atanır (kanallar engine.command'a ihtiyaç duyar)
         self._pending: dict[str, list[Signal]] = {}
         # title_key -> (zaman, sorgulayan oyun anahtarı, sonuç)
@@ -283,11 +285,31 @@ class Engine:
                 d.description = d.description or s.description
                 found[uid] = d
 
-        games = list(found.values())
+        games = list(found.values())  # Roblox arama sırasıyla
         evidences = heuristic_evidence(ctx, [CandidateText(g.name, g.description, g.genre) for g in games])
         has_ctx = not ctx.concept_profile.empty
-        for g, ev in zip(games, evidences):
-            classify(ev, sc, has_context=has_ctx, has_description=bool(g.description))
+        lc = self.cfg.laya
+        laya_kw = {"laya_mode": lc.mode, "laya_reliability": lc.reliability if self.laya.available else 0.0}
+
+        def reclassify() -> None:
+            for g, ev in zip(games, evidences):
+                classify(ev, sc, has_context=has_ctx, has_description=bool(g.description), **laya_kw)
+
+        reclassify()
+
+        if self.laya.available:
+            # Yarısı sezgisel en iyiler, yarısı aramanın üst sıraları: sözlükte olmayan yeni mekaniklerde
+            # sezgisel skor sıfır kalabilir; Laya'nın bu adayları da görmesi gerekir.
+            half = max(1, lc.max_candidates // 2)
+            by_score = [g for g, ev in sorted(zip(games, evidences), key=lambda x: -x[1].score) if ev.score >= lc.min_prescore]
+            ask = list({g.universe_id: g for g in by_score[:half] + games[: lc.max_candidates]}.values())
+            ask = ask[: lc.max_candidates]
+            verdicts = await self.laya.judge(ctx, ask)
+            for g, ev in zip(games, evidences):
+                v = verdicts.get(g.universe_id)
+                if v:
+                    ev.laya, ev.laya_relation = v.similarity, v.relation
+            reclassify()
 
         if self.judge.available:
             ranked = sorted(zip(games, evidences), key=lambda x: -x[1].score)
@@ -297,7 +319,7 @@ class Engine:
                 v = verdicts.get(g.universe_id)
                 if v:
                     ev.llm, ev.llm_relation, ev.llm_reason = v.similarity, v.relation, v.reason
-                    classify(ev, sc, has_context=has_ctx, has_description=bool(g.description))
+            reclassify()
 
         pairs = list(zip(games, evidences))
         matches = sorted(
@@ -783,6 +805,7 @@ class Engine:
         return {
             "title": title, "resolved_title": ctx.title, "context_source": source, "tags": ctx.tags[:10],
             "queries": result.queries, "generic": result.generic, "llm": self.judge.available,
+            "laya": self.laya.available,
             "status": a.status.value, "status_label": a.status.label, "saturation": a.saturation,
             "total_playing": a.total_playing, "clone_count": a.clone_count, "similar_count": a.similar_count,
             "matches": [as_dict(*m) for m in result.matches],
@@ -817,6 +840,11 @@ class Engine:
             "stats": self.store.stats(),
             "sources": self.store.source_health(),
             "channels": self.notifier.channel_health() if self.notifier else [],
+            "judges": {
+                "claude": {"enabled": self.judge.available, "last_error": self.judge.last_error},
+                "laya": {"enabled": self.laya.available, "mode": self.cfg.laya.mode, "model": self.laya.checkpoint,
+                         "last_error": self.laya.last_error},
+            },
             "queue": len(self._due_games()),
         }
 

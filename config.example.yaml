@@ -66,6 +66,20 @@ llm:
   max_calls_per_hour: 30
   cache_days: 14
 
+# İsteğe bağlı Laya karar modeli (Convai, Apache 2.0): yerel, ücretsiz, API anahtarı gerekmez.
+# pip install "akim[laya]" (PyTorch gerekir). Ölçüm sonuçları ve öneriler: eval/README.md
+laya:
+  enabled: false
+  mode: evidence            # evidence: diğer kanıtlara düşük güvenle eklenir | judge: son söz Laya'da
+  checkpoint: ""            # "" = İngilizce kök model, "typed-decisions", "multilingual"
+  model_path: ""            # bu göreve ince ayarladığın kendi checkpoint'in (judge moduyla önerilir)
+  device: ""                # "" otomatik, "cpu", "cuda", "mps"
+  reliability: 0.35         # evidence modunda Laya kanıtının ağırlığı
+  max_candidates: 8         # oyun başına Laya'ya sorulacak aday (CPU'da her biri ~1-3 sn)
+  min_prescore: 0.2
+  batch_size: 8
+  use_embeddings: false
+
 notifications:
   cooldown_hours: 12          # aynı oyun + aynı olay için tekrar bildirim bekleme süresi
   digest_hours: 6             # periyodik özet (0 = kapalı)

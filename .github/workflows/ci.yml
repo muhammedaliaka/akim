@@ -52,6 +52,14 @@ jobs:
         run: |
           .\deploy\windows\autostart.ps1 -TaskName AkimCi
           .\deploy\windows\autostart.ps1 -TaskName AkimCi -Status
+          # Görev konsolsuz (pythonw) gerçekten çalışıyor ve varsayılan log dosyasına yazıyor mu?
+          $log = "data\akim.log"
+          $started = $false
+          for ($i = 0; $i -lt 40 -and -not $started; $i++) {
+            if ((Test-Path $log) -and (Select-String -Path $log -Pattern "veri:" -Quiet)) { $started = $true } else { Start-Sleep 1 }
+          }
+          if (-not $started) { if (Test-Path $log) { Get-Content $log }; throw "görev çalışmadı veya log yazmadı" }
+          if (-not (Get-Process pythonw -ErrorAction SilentlyContinue)) { throw "pythonw süreci yok" }
           if (-not (Get-ScheduledTask -TaskName AkimCi -ErrorAction SilentlyContinue)) { throw "görev kaydedilmedi" }
           $task = Get-ScheduledTask -TaskName AkimCi
           if ($task.Settings.RestartCount -ne 999 -or -not $task.Settings.RunOnlyIfNetworkAvailable) { throw "görev ayarları eksik" }

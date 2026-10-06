@@ -291,6 +291,8 @@ Tüm API çağrılarında yeniden deneme, üstel geri çekilme ve host bazlı h�
 
 ## Geliştirme
 
+Projeye yeni başlayan geliştirici ya da yapay zeka oturumu için mimari, tasarım gerekçeleri, doğrulanmış dış servis olguları ve açık işler: [CLAUDE.md](CLAUDE.md).
+
 ```bash
 pip install -e ".[dev]"
 pytest

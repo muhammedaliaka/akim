@@ -188,6 +188,8 @@ dialog { max-height: calc(100vh - 48px); max-height: calc(100dvh - 48px); }
         </table>
       </div>
       <div class="empty" id="board-empty" hidden>Henüz veri yok. İlk tarama birkaç dakika sürebilir.</div>
+      <div id="upcoming" hidden></div>
+      <div class="empty" id="upcoming-empty" hidden>Şu an fragmandan yakalanan çıkmamış oyun yok. YouTube fragmanları saatte bir taranır.</div>
     </section>
     <aside class="side">
       <section class="card">
@@ -233,7 +235,8 @@ const TABS = [
   ["rising_trend", "Akım", "rising_trend"],
   ["watch", "İzle", "watch"],
   ["saturated", "Doymuş", "saturated"],
-  ["all", "Tümü", ""]
+  ["all", "Tümü", ""],
+  ["upcoming", "🎬 Yaklaşanlar", ""]
 ];
 let state = { tab: "actionable", rows: [], q: "" };
 try { state.tab = localStorage.getItem("akim.tab") || state.tab; } catch (e) {}
@@ -322,8 +325,30 @@ function renderBoard() {
     </tr>`).join("");
   $("board").querySelectorAll("tr").forEach(tr => tr.onclick = () => openGame(tr.dataset.key));
 }
+const UP_STATE = { upcoming: "Steam'de yakında", unlisted: "Mağaza sayfası yok" };
+function renderUpcoming(rows) {
+  $("upcoming-empty").hidden = rows.length > 0;
+  $("board-meta").textContent = rows.length ? `· ${rows.length} oyun` : "";
+  $("upcoming").innerHTML = rows.map(u => `
+    <div class="alert">
+      <div class="at"><a href="${safeUrl(u.video_url)}" target="_blank" rel="noopener">🎬 ${esc(u.title)}</a>
+        <span class="badge b-watch">${esc(UP_STATE[u.state] || u.state)}</span></div>
+      <div class="ab">${esc(u.channel)} · ${fmt(u.views)} izlenme · ses getirme ${Number(u.buzz || 0).toFixed(2)} · çıkış: ${u.release_ts ? new Date(u.release_ts * 1000).toLocaleDateString("tr-TR") : "açıklanmadı"}${u.roblox_note ? " · Roblox: " + esc(u.roblox_note) : ""}</div>
+      ${u.store_url ? `<div class="small"><a href="${safeUrl(u.store_url)}" target="_blank" rel="noopener">Mağaza sayfası ↗</a></div>` : ""}
+    </div>`).join("");
+}
 async function loadBoard() {
   const tab = TABS.find(t => t[0] === state.tab) || TABS[0];
+  const up = tab[0] === "upcoming";
+  document.querySelector(".table-wrap").hidden = up;
+  $("upcoming").hidden = !up;
+  $("q").hidden = up;
+  if (up) {
+    $("board-empty").hidden = true;
+    try { renderUpcoming(await api("/api/upcoming?limit=100")); } catch (e) { console.warn(e); }
+    return;
+  }
+  $("upcoming-empty").hidden = true;
   try {
     state.rows = await api(`/api/board?limit=300${tab[2] ? "&decision=" + tab[2] : ""}`);
     renderBoard();
@@ -405,6 +430,7 @@ function connect() {
   });
   es.addEventListener("decision", scheduleReload);
   es.addEventListener("charts", scheduleReload);
+  es.addEventListener("upcoming", scheduleReload);
 }
 // Telefonda ekran kilitlenince / sekme arka plana gidince tarayıcı canlı bağlantıyı dondurur veya koparır:
 // sayfa yeniden görünür olduğunda bağlantıyı yenile ve kaçırılanları çek

@@ -104,6 +104,7 @@ def store_item_to_game(item: dict, tag_names: dict[int, str] | None = None) -> S
         # GetItems 'type': 0 = oyun; diğerleri yazılım/araç (ör. Wallpaper Engine = 6)
         kind="game" if int(item.get("type") or 0) == 0 else "software",
         discount_pct=int(purchase.get("discount_pct") or 0),
+        coming_soon=bool(release.get("is_coming_soon")),
     )
 
 

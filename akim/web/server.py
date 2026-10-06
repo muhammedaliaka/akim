@@ -74,6 +74,10 @@ def create_app(engine: Engine, cfg: WebConfig) -> web.Application:
         detail = engine.game_detail(request.match_info["key"])
         return _json(detail) if detail else _json({"error": "bulunamadı"}, 404)
 
+    async def upcoming(request: web.Request) -> web.Response:
+        limit = min(200, int(request.query.get("limit", "50")))
+        return _json(engine.upcoming_board(limit))
+
     async def alerts(request: web.Request) -> web.Response:
         limit = min(500, int(request.query.get("limit", "100")))
         return _json(engine.store.recent_alerts(limit))
@@ -133,6 +137,7 @@ def create_app(engine: Engine, cfg: WebConfig) -> web.Application:
     app.router.add_get("/api/status", status)
     app.router.add_get("/api/board", board)
     app.router.add_get("/api/games/{key:.+}", game)
+    app.router.add_get("/api/upcoming", upcoming)
     app.router.add_get("/api/alerts", alerts)
     app.router.add_get("/api/events", events)
     app.router.add_post("/api/check", check)

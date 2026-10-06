@@ -73,5 +73,6 @@ def html_text(alert: Alert) -> str:
         lines.append("")
         lines += [f"• <b>{e(k)}:</b> {e(v)}" for k, v in alert.fields]
     if alert.url:
-        lines += ["", f'<a href="{e(alert.url, quote=True)}">Mağaza sayfası</a>']
+        label = "Fragman" if "youtube.com" in alert.url else "Mağaza sayfası"
+        lines += ["", f'<a href="{e(alert.url, quote=True)}">{label}</a>']
     return "\n".join(lines).strip()

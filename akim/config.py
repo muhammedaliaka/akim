@@ -120,7 +120,7 @@ class YouTubeConfig:
     channels: list[str] = field(default_factory=lambda: list(DEFAULT_YOUTUBE_CHANNELS))
     max_age_days: float = 10  # bundan eski videolar yok sayılır
     min_views: int = 2000  # bunun altındaki fragmanlar gürültü sayılır
-    alert_buzz: float = 0.5  # bildirim için en düşük "ses getirme" puanı (0..1)
+    alert_buzz: float = 0.4  # bildirim için en düşük "ses getirme" puanı (0..1); 0.65 üstü yüksek öncelik
     # Steam'de sayfası olmayan (konsol/Epic/yeni duyuru) oyunlar için bildirim; daha yüksek eşik ve orta öncelik
     alert_unlisted: bool = True
     unlisted_max_views: int = 1_500_000  # bundan çok izlenen mağazasız fragmanlar büyük yapım sayılır

@@ -73,6 +73,21 @@ CREATE TABLE IF NOT EXISTS source_health (
     consecutive_failures INTEGER DEFAULT 0, alerted INTEGER DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS kv (k TEXT PRIMARY KEY, v TEXT);
+CREATE TABLE IF NOT EXISTS trailers (
+    video_id TEXT PRIMARY KEY, channel_id TEXT, channel TEXT, title TEXT, game TEXT, title_key TEXT, kind TEXT,
+    published_ts REAL, url TEXT, image TEXT, views INTEGER, first_seen REAL, last_seen REAL
+);
+CREATE INDEX IF NOT EXISTS ix_trailers_tkey ON trailers(title_key);
+CREATE TABLE IF NOT EXISTS trailer_metrics (video_id TEXT NOT NULL, views INTEGER, ts REAL);
+CREATE INDEX IF NOT EXISTS ix_trailer_metrics ON trailer_metrics(video_id, ts);
+CREATE TABLE IF NOT EXISTS upcoming (
+    title_key TEXT PRIMARY KEY, title TEXT, state TEXT, steam_key TEXT, store_url TEXT, release_ts REAL,
+    indie REAL, publishers TEXT, tags TEXT, description TEXT, image TEXT,
+    best_video TEXT, video_url TEXT, video_ts REAL, channel TEXT, kind TEXT, views INTEGER, vph REAL, buzz REAL,
+    roblox_status TEXT, roblox_note TEXT, roblox_ts REAL,
+    first_seen REAL, updated_at REAL, resolved_at REAL, alerted_at REAL
+);
+CREATE INDEX IF NOT EXISTS ix_upcoming_state ON upcoming(state, buzz);
 CREATE TABLE IF NOT EXISTS outages (
     id INTEGER PRIMARY KEY AUTOINCREMENT, source TEXT NOT NULL, started_at REAL, ended_at REAL, reason TEXT
 );
@@ -501,6 +516,66 @@ class Storage:
     def source_health(self) -> list[dict]:
         return self._all("SELECT * FROM source_health ORDER BY source")
 
+    # ------------------------------------------------------------------ fragmanlar / yaklaşan oyunlar
+    def upsert_trailer(self, v: dict, now: float) -> None:
+        self.db.execute(
+            """INSERT INTO trailers(video_id, channel_id, channel, title, game, title_key, kind, published_ts, url, image,
+                   views, first_seen, last_seen) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)
+               ON CONFLICT(video_id) DO UPDATE SET views=excluded.views, last_seen=excluded.last_seen,
+                   title=excluded.title""",
+            (v["video_id"], v["channel_id"], v["channel"], v["title"], v["game"], v["title_key"], v["kind"],
+             v["published_ts"], v["url"], v["image"], v["views"], now, now),
+        )
+
+    def add_trailer_metric(self, video_id: str, views: int, now: float) -> None:
+        self.db.execute("INSERT INTO trailer_metrics(video_id, views, ts) VALUES(?,?,?)", (video_id, views, now))
+
+    def trailer_metric_before(self, video_id: str, before_ts: float) -> dict | None:
+        """Verilen zamandan önceki en yeni ölçüm (hız hesabı için)."""
+        return self._one(
+            "SELECT views, ts FROM trailer_metrics WHERE video_id=? AND ts<=? ORDER BY ts DESC LIMIT 1",
+            (video_id, before_ts),
+        )
+
+    def get_upcoming(self, tkey: str) -> dict | None:
+        row = self._one("SELECT * FROM upcoming WHERE title_key=?", (tkey,))
+        return self._decode_upcoming(row)
+
+    @staticmethod
+    def _decode_upcoming(row: dict | None) -> dict | None:
+        if row:
+            for col in ("publishers", "tags"):
+                row[col] = json.loads(row[col] or "[]")
+        return row
+
+    def save_upcoming(self, u: dict) -> None:
+        cols = (
+            "title_key", "title", "state", "steam_key", "store_url", "release_ts", "indie", "publishers", "tags",
+            "description", "image", "best_video", "video_url", "video_ts", "channel", "kind", "views", "vph", "buzz",
+            "roblox_status", "roblox_note", "roblox_ts", "first_seen", "updated_at", "resolved_at", "alerted_at",
+        )
+        row = {c: u.get(c) for c in cols}
+        row["publishers"] = json.dumps(u.get("publishers") or [], ensure_ascii=False)
+        row["tags"] = json.dumps(u.get("tags") or [], ensure_ascii=False)
+        updates = ", ".join(f"{c}=excluded.{c}" for c in cols if c not in ("title_key", "first_seen"))
+        self.db.execute(
+            f"INSERT INTO upcoming({', '.join(cols)}) VALUES({', '.join('?' * len(cols))}) "
+            f"ON CONFLICT(title_key) DO UPDATE SET {updates}",
+            tuple(row[c] for c in cols),
+        )
+
+    def mark_upcoming_alerted(self, tkey: str, now: float) -> None:
+        self.db.execute("UPDATE upcoming SET alerted_at=? WHERE title_key=?", (now, tkey))
+
+    def list_upcoming(self, states: Iterable[str] = ("upcoming", "unlisted"), limit: int = 50, min_buzz: float = 0.0) -> list[dict]:
+        states = list(states)
+        q = ",".join("?" * len(states))
+        rows = self._all(
+            f"SELECT * FROM upcoming WHERE state IN ({q}) AND COALESCE(buzz,0)>=? ORDER BY buzz DESC, views DESC LIMIT ?",
+            states + [min_buzz, limit],
+        )
+        return [self._decode_upcoming(r) for r in rows]
+
     # ------------------------------------------------------------------ kesintiler (rapor için)
     def open_outage(self, source: str, now: float, reason: str) -> None:
         if self._one("SELECT id FROM outages WHERE source=? AND ended_at IS NULL", (source,)):
@@ -530,6 +605,7 @@ class Storage:
             "roblox_games": one("SELECT COUNT(DISTINCT universe_id) AS c FROM roblox_links"),
             "roblox_clones": one("SELECT COUNT(DISTINCT universe_id) AS c FROM roblox_links WHERE kind='clone'"),
             "alerts": one("SELECT COUNT(*) AS c FROM alerts"),
+            "upcoming": one("SELECT COUNT(*) AS c FROM upcoming WHERE state IN ('upcoming','unlisted')"),
             "decisions": {r["decision"]: r["c"] for r in self._all("SELECT decision, COUNT(*) AS c FROM decisions GROUP BY decision")},
         }
 
@@ -537,5 +613,8 @@ class Storage:
         for table in ("chart_snapshots", "game_metrics", "roblox_metrics", "roblox_checks"):
             self.db.execute(f"DELETE FROM {table} WHERE ts<?", (older_than,))
         self.db.execute("DELETE FROM alerts WHERE ts<?", (older_than,))
+        self.db.execute("DELETE FROM trailer_metrics WHERE ts<?", (older_than,))
+        self.db.execute("DELETE FROM trailers WHERE last_seen<?", (older_than,))
+        self.db.execute("DELETE FROM upcoming WHERE updated_at<? AND state IN ('released','filtered')", (older_than,))
         self.db.execute("DELETE FROM outages WHERE COALESCE(ended_at, started_at)<?", (older_than - 60 * 86400,))
 

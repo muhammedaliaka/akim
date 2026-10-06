@@ -29,6 +29,7 @@ class StoreGame:
     description: str = ""
     kind: str = "game"  # "game" | "software" (Steam'de uygulama türü)
     discount_pct: int = 0  # anlık indirim; indirim kaynaklı sıra tırmanışını ayırt etmek için
+    coming_soon: bool = False  # mağaza sayfası var ama oyun henüz çıkmadı ("Yakında")
 
 
 @dataclass

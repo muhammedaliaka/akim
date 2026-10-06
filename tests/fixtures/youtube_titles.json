@@ -1,0 +1,769 @@
+{
+ "_note": "Gerçek YouTube başlıkları (Steam, IGN, GameSpot, GameTrailers, PC Gamer, Game Informer, GamesRadar, Day of the Devs, Indie Game Trailers, Devolver, Annapurna, Hooded Horse; Ekim 2026). expect=null: fragman değil.",
+ "cases": [
+  {
+   "title": "At Fate's End: Official Gameplay Trailer",
+   "expect": [
+    "At Fate's End",
+    "gameplay",
+    false
+   ]
+  },
+  {
+   "title": "Warhammer Survivors - Official Release Date Trailer",
+   "expect": [
+    "Warhammer Survivors",
+    "release_date",
+    false
+   ]
+  },
+  {
+   "title": "Warhammer 40,000: Dark Heresy - Official Detective System Overview Trailer",
+   "expect": [
+    "Warhammer 40,000: Dark Heresy",
+    "gameplay",
+    false
+   ]
+  },
+  {
+   "title": "Star Wars: Galactic Racer - Official Launch Trailer",
+   "expect": [
+    "Star Wars: Galactic Racer",
+    "launch",
+    true
+   ]
+  },
+  {
+   "title": "Hunger - Official Closed Beta Overview Trailer",
+   "expect": [
+    "Hunger",
+    "demo",
+    false
+   ]
+  },
+  {
+   "title": "World of Warcraft: Forever - Official Skyborne Lore & Abilities Overview Trailer",
+   "expect": [
+    "World of Warcraft: Forever",
+    "gameplay",
+    false
+   ]
+  },
+  {
+   "title": "CoD: Modern Warfare 4 - DMZ Worldbuilder Cinematic Trailer",
+   "expect": [
+    "CoD: Modern Warfare 4",
+    "trailer",
+    false
+   ]
+  },
+  {
+   "title": "Oniria - Official Trailer | Out of Bounds Showcase 2026",
+   "expect": [
+    "Oniria",
+    "trailer",
+    false
+   ]
+  },
+  {
+   "title": "Infamous Keepers - Official Trailer | Out of Bounds Showcase 2026",
+   "expect": [
+    "Infamous Keepers",
+    "trailer",
+    false
+   ]
+  },
+  {
+   "title": "Fear Tall Grass - Official Playtest Trailer | Out of Bounds Showcase 2026",
+   "expect": [
+    "Fear Tall Grass",
+    "demo",
+    false
+   ]
+  },
+  {
+   "title": "Bingone - Official Announcement Trailer | Out of Bounds Showcase 2026",
+   "expect": [
+    "Bingone",
+    "announce",
+    false
+   ]
+  },
+  {
+   "title": "Wundertrench - Official Trailer | Out of Bounds Showcase 2026",
+   "expect": [
+    "Wundertrench",
+    "trailer",
+    false
+   ]
+  },
+  {
+   "title": "Midgardr - Official Trailer | Out of Bounds Showcase 2026",
+   "expect": [
+    "Midgardr",
+    "trailer",
+    false
+   ]
+  },
+  {
+   "title": "Precious Nightmare - Official Announcement Trailer | Out of Bounds Showcase 2026",
+   "expect": [
+    "Precious Nightmare",
+    "announce",
+    false
+   ]
+  },
+  {
+   "title": "Blade and Madness - Official Gameplay Trailer | Out of Bounds Showcase 2026",
+   "expect": [
+    "Blade and Madness",
+    "gameplay",
+    false
+   ]
+  },
+  {
+   "title": "Fugue Shot: Minigame Roguelike - Official Demo Trailer | Out of Bounds Showcase 2026",
+   "expect": [
+    "Fugue Shot: Minigame Roguelike",
+    "demo",
+    false
+   ]
+  },
+  {
+   "title": "Sheeps - Official Reveal Trailer",
+   "expect": [
+    "Sheeps",
+    "announce",
+    false
+   ]
+  },
+  {
+   "title": "Void Reaver - Official Gameplay Trailer | Out of Bounds Showcase 2026",
+   "expect": [
+    "Void Reaver",
+    "gameplay",
+    false
+   ]
+  },
+  {
+   "title": "Sombras: Negative Frames - Official Demo Launch Trailer | Out of Bounds Showcase 2026",
+   "expect": [
+    "Sombras: Negative Frames",
+    "demo",
+    false
+   ]
+  },
+  {
+   "title": "Draftula - Official Demo Launch Trailer | Out of Bounds Showcase 2026",
+   "expect": [
+    "Draftula",
+    "demo",
+    false
+   ]
+  },
+  {
+   "title": "Pecado - Official Announcement Trailer | Out of Bounds Showcase 2026",
+   "expect": [
+    "Pecado",
+    "announce",
+    false
+   ]
+  },
+  {
+   "title": "Drivers of the Apocalypse - Official Alpha Gameplay Trailer",
+   "expect": [
+    "Drivers of the Apocalypse",
+    "demo",
+    false
+   ]
+  },
+  {
+   "title": "Disc Golf Masters - Demo Gameplay Trailer",
+   "expect": [
+    "Disc Golf Masters",
+    "demo",
+    false
+   ]
+  },
+  {
+   "title": "Lost Lures - Teaser Trailer",
+   "expect": [
+    "Lost Lures",
+    "teaser",
+    false
+   ]
+  },
+  {
+   "title": "Shadow of the Guild [OFFICIAL TRAILER]",
+   "expect": [
+    "Shadow of the Guild",
+    "trailer",
+    false
+   ]
+  },
+  {
+   "title": "BALL x PIT: Risen Ballbylon | Reveal Trailer | Launching on November 12",
+   "expect": [
+    "BALL x PIT: Risen Ballbylon",
+    "release_date",
+    false
+   ]
+  },
+  {
+   "title": "SILENT HILL: Townfall | Launch Trailer",
+   "expect": [
+    "SILENT HILL: Townfall",
+    "launch",
+    true
+   ]
+  },
+  {
+   "title": "Uncanyon | Reveal Trailer",
+   "expect": [
+    "Uncanyon",
+    "announce",
+    false
+   ]
+  },
+  {
+   "title": "Blacksmith Master - 1.0 Release Date Trailer | Medieval Sim Management",
+   "expect": [
+    "Blacksmith Master",
+    "release_date",
+    false
+   ]
+  },
+  {
+   "title": "ENDLESS Legend 2 - 1.0 Launch Trailer | Turn-Based Fantasy Strategy",
+   "expect": [
+    "ENDLESS Legend 2",
+    "launch",
+    true
+   ]
+  },
+  {
+   "title": "9 Kings - 1.0 Release Date Trailer | Roguelike Deckbuilder",
+   "expect": [
+    "9 Kings",
+    "release_date",
+    false
+   ]
+  },
+  {
+   "title": "Steam Autumn Sale 2026: Official Trailer",
+   "expect": null
+  },
+  {
+   "title": "Steam Party-Based RPG Fest 2026: Official Trailer",
+   "expect": null
+  },
+  {
+   "title": "Steam Programming Fest 2026: Official Trailer",
+   "expect": null
+  },
+  {
+   "title": "Steam PvE Survival Crafting Fest 2026: Official Trailer",
+   "expect": null
+  },
+  {
+   "title": "Steam Pins & Pegs Fest 2026: Official Trailer",
+   "expect": null
+  },
+  {
+   "title": "Steam Cyberpunk Fest 2026: Official Trailer",
+   "expect": null
+  },
+  {
+   "title": "Steam Train Fest 2026: Official Trailer",
+   "expect": null
+  },
+  {
+   "title": "Steam Social Deduction Fest 2026: Official Trailer",
+   "expect": null
+  },
+  {
+   "title": "Steam Summer Sale 2026: Official Trailer",
+   "expect": null
+  },
+  {
+   "title": "Steam Next Fest - June 2026 Edition: Intro Video",
+   "expect": null
+  },
+  {
+   "title": "Steam Next Fest - June 2026 Edition: Official Trailer",
+   "expect": null
+  },
+  {
+   "title": "Steam Bullet Fest 2026: Official Trailer",
+   "expect": null
+  },
+  {
+   "title": "Steam Ocean Fest 2026: Official Trailer",
+   "expect": null
+  },
+  {
+   "title": "Steam Deckbuilders Fest 2026: Official Trailer",
+   "expect": null
+  },
+  {
+   "title": "Steam Medieval Fest 2026: Official Trailer",
+   "expect": null
+  },
+  {
+   "title": "10 Things to Know Before You Play Star Wars: Galactic Racer",
+   "expect": null
+  },
+  {
+   "title": "Warhammer Survivors Aims to Be a Celebration of Both Warhammer and Vampire Survivors | IGN Preview",
+   "expect": null
+  },
+  {
+   "title": "James Gunn texted DCU's Frank Grillo after sharing a fake poster with Wonder Woman on it. #dcu #ign",
+   "expect": null
+  },
+  {
+   "title": "Everyone loves Kyle Chandler as Hal Jordan in Lanterns",
+   "expect": null
+  },
+  {
+   "title": "The Batman Part 2 hit with another unfortunate delay",
+   "expect": null
+  },
+  {
+   "title": "Lanterns is GREAT",
+   "expect": null
+  },
+  {
+   "title": "The Witcher 3 Remastered - Best Weapon Tier List",
+   "expect": null
+  },
+  {
+   "title": "The Batman 2 Halts Production as Director Matt Reeves Steps Away - IGN Daily Fix",
+   "expect": null
+  },
+  {
+   "title": "Gears of War: E-Day - Best Weapon Mods (And Where to Find Them)",
+   "expect": null
+  },
+  {
+   "title": "The Triple-i Initiative October 2026 Showcase",
+   "expect": null
+  },
+  {
+   "title": "Naoki Hamaguchi has Played Through Final Fantasy Revelation 46 Times?!",
+   "expect": null
+  },
+  {
+   "title": "Steam Frame Is VR Gaming's Swan Song Moment",
+   "expect": null
+  },
+  {
+   "title": "Control Resonant Tips You Need To Know",
+   "expect": null
+  },
+  {
+   "title": "The Nitro Deck II For Switch 2 Is A MASSIVE Upgrade",
+   "expect": null
+  },
+  {
+   "title": "I Can't Believe A Silly Star Wars Racing Roguelite Is One Of My Favorite Games This Year - Review",
+   "expect": null
+  },
+  {
+   "title": "Gears Of War: E-Day's Campaign Is Buried In The Past - Campaign Review",
+   "expect": null
+  },
+  {
+   "title": "How To Get The Witcher 3 For Free On Switch 2",
+   "expect": null
+  },
+  {
+   "title": "GTA 6 - 10 Details We Learned From The Game Informer Cover Story",
+   "expect": null
+  },
+  {
+   "title": "Gears Of War: E-Day Quick Review",
+   "expect": null
+  },
+  {
+   "title": "007 First Light – Extended Operations Free DLC Overview Trailer",
+   "expect": null
+  },
+  {
+   "title": "Street Fighter 6 Arjun High Level Gameplay (CPU Level 7)",
+   "expect": null
+  },
+  {
+   "title": "Ocarina Of Time Switch 2, Accessories And Amiibo",
+   "expect": null
+  },
+  {
+   "title": "Helicopter jump scare in Wardogs 😅",
+   "expect": null
+  },
+  {
+   "title": "Dwarf Fortress Myth & Magic – what's actually coming? 🧙",
+   "expect": null
+  },
+  {
+   "title": "The longest Battlefield 6 headshot we've seen 🎯",
+   "expect": null
+  },
+  {
+   "title": "Dwarf Fortress, originality, simulation and AI",
+   "expect": null
+  },
+  {
+   "title": "Alien Isolation 2's protagonist is supposed to be relatable according to Creative Assembly 🙋‍♀️",
+   "expect": null
+  },
+  {
+   "title": "Dwarf Fortress: Myth & Magic – What is actually coming?",
+   "expect": null
+  },
+  {
+   "title": "Will GTA 6 usher in higher game prices? 🤔",
+   "expect": null
+  },
+  {
+   "title": "PC Gamer was wrong: The Witcher 3 will always be 2015's GOTY 😍",
+   "expect": null
+  },
+  {
+   "title": "Star Wars: Galactic Racer review | Wipeout meets Burnout! 🏁",
+   "expect": null
+  },
+  {
+   "title": "This Scentbar lets you smell games while playing them 👃",
+   "expect": null
+  },
+  {
+   "title": "Everything you need to know about Lords of the End Times ⚔️",
+   "expect": null
+  },
+  {
+   "title": "Valve says Deadlock is still too unfinished to release publicly 🙃",
+   "expect": null
+  },
+  {
+   "title": "Titan Quest 2's new Spirit Mastery helped me create a WILD mash-up",
+   "expect": null
+  },
+  {
+   "title": "Deadlock players just got one hell of a map update 🤩",
+   "expect": null
+  },
+  {
+   "title": "The Alien \"won't behave the same way twice\" in Alien Isolation 2 😱",
+   "expect": null
+  },
+  {
+   "title": "Rockstar Is Recreating Florida Weather In Grand Theft Auto VI #rockstar #gta",
+   "expect": null
+  },
+  {
+   "title": "Metal Gear Solid 4: Guns Of The Patriots: Part 5 –Meccha Octopus | Super Replay",
+   "expect": null
+  },
+  {
+   "title": "Star Wars: Galactic Racer review in 1 minute #starwars #podracer #racinggame #gamereview",
+   "expect": null
+  },
+  {
+   "title": "The Coolest Details From Our Grand Theft Auto VI Cover Story | The Game Informer Show",
+   "expect": null
+  },
+  {
+   "title": "We got an End of Abyss press package #gameinformer #endofabyssvideo",
+   "expect": null
+  },
+  {
+   "title": "Star Wars: Galactic Racer Review | Game Informer",
+   "expect": null
+  },
+  {
+   "title": "Exclusive Exodus Gameplay - Traveler Launch Center Mission | New Gameplay Today",
+   "expect": null
+  },
+  {
+   "title": "Diving Into Wardogs Early Access, Plus Control Resonant | The Game Informer Show",
+   "expect": null
+  },
+  {
+   "title": "StarCraft Devs Answer Our Biggest Questions at BlizzCon (Developer Interview)",
+   "expect": null
+  },
+  {
+   "title": "How Suliman Became Exodus' Bad Boy Spy #exodus",
+   "expect": null
+  },
+  {
+   "title": "Exclusive: Meet Suliman, Exodus' Bad Boy Spy | GI Cover Story",
+   "expect": null
+  },
+  {
+   "title": "Fire Emblem: Fortune's Weave Review, Plus Control Resonant | The Game Informer Show",
+   "expect": null
+  },
+  {
+   "title": "Metal Gear Solid 4: Guns Of The Patriots: Part 4 - Rosemary's Return | Super Replay",
+   "expect": null
+  },
+  {
+   "title": "World of Warcraft: Forever Devs Answer Our Biggest Questions at BlizzCon",
+   "expect": null
+  },
+  {
+   "title": "Fire Emblem: Fortune's Weave Review | Game Informer",
+   "expect": null
+  },
+  {
+   "title": "Vehicular mayhem and oblivious NPCs | Replay September 2026",
+   "expect": null
+  },
+  {
+   "title": "Star Wars: Galactic Racer has some serious sauce",
+   "expect": null
+  },
+  {
+   "title": "Gears of War: E-Day is an ode to big-screen action",
+   "expect": null
+  },
+  {
+   "title": "Minecraft Dungeons 2 is one of the best-made loot-based dungeon crawlers you can buy",
+   "expect": null
+  },
+  {
+   "title": "Toem 2 is effortlessly charming and teeming with clever puzzles",
+   "expect": null
+  },
+  {
+   "title": "Ace Combat 8 is fantastic",
+   "expect": null
+  },
+  {
+   "title": "Cissy Jones (Baldur's Gate 3, Starfield) on the power of storytelling in games | G+RLS Ep 6",
+   "expect": null
+  },
+  {
+   "title": "Persona 5 was a make-or-break point in my career | Erica Lindbeck interview",
+   "expect": null
+  },
+  {
+   "title": "Silent Hill: Townfall is an unrelentingly dark and disturbing horror game",
+   "expect": null
+  },
+  {
+   "title": "PC Gaming Show Tokyo Direct 2026: Co-stream",
+   "expect": null
+  },
+  {
+   "title": "Control Resonant is a weird game, and not always in a good way",
+   "expect": null
+  },
+  {
+   "title": "Fire Emblem: Fortune's Weave could've been the series' high",
+   "expect": null
+  },
+  {
+   "title": "Planes, Trains and Orbital Bombardments | Replay August 2026",
+   "expect": null
+  },
+  {
+   "title": "Never outright bad, but missing that crucial X-Factor | Marvel's Wolverine review",
+   "expect": null
+  },
+  {
+   "title": "Have women's roles in video games actually evolved? | G+RLS EP5",
+   "expect": null
+  },
+  {
+   "title": "Day Of The Devs: Summer Game Fest Edition 2026",
+   "expect": null
+  },
+  {
+   "title": "Day of the Devs x San Francisco Edition 2026 – ROSTER REVEAL",
+   "expect": null
+  },
+  {
+   "title": "Day of the Devs: The Game Awards Edition 2025 - Indie Game Showcase",
+   "expect": null
+  },
+  {
+   "title": "Day Of The Devs: Summer Game Fest Edition 2025",
+   "expect": null
+  },
+  {
+   "title": "Day of the Devs 2025 - San Francisco Edition!",
+   "expect": null
+  },
+  {
+   "title": "Day of the Devs: The Game Awards Edition 2024",
+   "expect": null
+  },
+  {
+   "title": "Day of the Devs Presents Fantastic Games @ Fantastic Fest 2024!",
+   "expect": null
+  },
+  {
+   "title": "Day of the Devs: Summer Game Fest Edition 2024 - FULL SHOWCASE",
+   "expect": null
+  },
+  {
+   "title": "Day of the Devs: Summer Game Fest Edition 2024 - Tune-In LIVE on June 7",
+   "expect": null
+  },
+  {
+   "title": "Day of the Devs 2024 San Francisco Edition - ROSTER REVEAL",
+   "expect": null
+  },
+  {
+   "title": "Day of the Devs Fundraiser Announcement 2024",
+   "expect": null
+  },
+  {
+   "title": "The LAMB becomes an INFLUENCER?! #cultofthelamb #animation #hotlinemiami #steamsale #devolverdigital",
+   "expect": null
+  },
+  {
+   "title": "The ULTIMATE Tier List #cultofthelamb #animation #tierlist #steamsale #devolverdigital #cotl",
+   "expect": null
+  },
+  {
+   "title": "Devolver Digital Jumps on The Bandwagon | Steam Autumn Sale 2026",
+   "expect": null
+  },
+  {
+   "title": "The WORST job EVER #stickman #stickittothestickman #devolverdigital #indiegame",
+   "expect": null
+  },
+  {
+   "title": "CO-OP Multiplayer FPS RELEASE DATE #mycopunk #coop #fps #multiplayer #devolverdigital",
+   "expect": null
+  },
+  {
+   "title": "FINALLY FULL Game Released #stickman #stickittothestickman #indiegame #devolverdigital",
+   "expect": null
+  },
+  {
+   "title": "Physics-Based Corporate Combat Just Peaked | Stick it to the Stickman 1.0 is OUT NOW on Steam",
+   "expect": null
+  },
+  {
+   "title": "ZOMBIES in Miami?! #quarantinezone #miamizero #dlc #zombie #zombiegame #devolverdigital #update",
+   "expect": null
+  },
+  {
+   "title": "HUGE NEW EXPANSION COMING SOON #ballxpit #indiegame #mobilegame #devolverdigital #cozygame #ballpit",
+   "expect": null
+  },
+  {
+   "title": "Blasting OUT of Early Access on October 20 | Mycopunk 1.0 Release Date Trailer",
+   "expect": null
+  },
+  {
+   "title": "Smash Your Past in Virtue and a Sledgehammer | October 27 on Steam",
+   "expect": null
+  },
+  {
+   "title": "Quarantine Zone: Miami Zero | Free DLC Arrives October 15",
+   "expect": null
+  },
+  {
+   "title": "HOW ITS MADE #shroomandgloom #roguelike #behindthescenes #devolverdigital #deckbuilder #indiegame",
+   "expect": null
+  },
+  {
+   "title": "Shroom and Gloom and shrooms #shroomandgloom #deckbuilder #roguelike #devolverdigital",
+   "expect": null
+  },
+  {
+   "title": "3 days left! And a new Forever Ago cutscene",
+   "expect": null
+  },
+  {
+   "title": "4 days left! Forever Ago is almost here!",
+   "expect": null
+  },
+  {
+   "title": "5 days until Forever Ago is out!",
+   "expect": null
+  },
+  {
+   "title": "Meet two of the voice actors from Forever Ago!",
+   "expect": null
+  },
+  {
+   "title": "SILENT HILL: Townfall is out now on PS5, Steam and Epic Game Store.",
+   "expect": null
+  },
+  {
+   "title": "Clark Aboud - Forever Yours (Official Visualizer - Forever Ago Soundtrack)",
+   "expect": null
+  },
+  {
+   "title": "Clark Aboud - Leave Home Behind (Official Visualizer - Forever Ago Soundtrack)",
+   "expect": null
+  },
+  {
+   "title": "Meet the voice actors for Alfred and Charles from Forever Ago",
+   "expect": null
+  },
+  {
+   "title": "Mixtape is coming to Mac. Here’s a video we made to celebrate and promote. It loops.",
+   "expect": null
+  },
+  {
+   "title": "The D-topia soundtrack is now available!",
+   "expect": null
+  },
+  {
+   "title": "Hooded Horse September Recap #games #gaming #indiegames  #strategygames",
+   "expect": null
+  },
+  {
+   "title": "32 Years of Progress | CLANFOLK",
+   "expect": null
+  },
+  {
+   "title": "We're thrilled to finally reveal Against the Storm: The Board Game!",
+   "expect": null
+  },
+  {
+   "title": "ENDLESS Legend 2 - Battles and Sieges Guide | Turn-Based Fantasy Strategy",
+   "expect": null
+  },
+  {
+   "title": "ENDLESS Legend 2 - Exterminate, Armies, and Heroes Guide | Turn-Based Fantasy Strategy",
+   "expect": null
+  },
+  {
+   "title": "iykyk... and if you don't you should play more endless legend 2 #endlesslegend2 #4x #strategygames",
+   "expect": null
+  },
+  {
+   "title": "Heart of the Machine - Kinship DLC Trailer | Sci-Fi Turn-Based 4X RPG",
+   "expect": null
+  },
+  {
+   "title": "ENDLESS Legend 2 - Explore, Expand, Exploit Guide | Turn-Based Fantasy Strategy",
+   "expect": null
+  },
+  {
+   "title": "ICYMI: Here's a recap of everything we did last month! #games #gaming #indiegames  #strategygames",
+   "expect": null
+  },
+  {
+   "title": "Whiskerwood - The Nautical Update | Cats & Mice City-Builder Game",
+   "expect": null
+  },
+  {
+   "title": "Just me and my sand factory | SANDUSTRY  #hoodedhorse #buildingsimulation #sandustry",
+   "expect": null
+  },
+  {
+   "title": "Not all treasure is silver and gold, Mate. | Corsair Cove #hoodedhorse #buildingsimulation #pirates",
+   "expect": null
+  }
+ ]
+}

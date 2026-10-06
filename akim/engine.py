@@ -24,13 +24,14 @@ from .analysis.indie import IndieClassifier
 from .analysis.laya_judge import LayaJudge
 from .analysis.matching import match_score, search_queries, title_key
 from .analysis.similarity import Evidence, GameContext, classify, heuristic_evidence
+from .analysis.trailers import buzz_score, is_big_franchise, parse_trailer_title
 from .analysis.scoring import MomentumSignals, RobloxAssessment, assess_roblox, decide, momentum_score
 from .config import Config
 from .diagnostics import explain_error, human_duration
 from .events import EventBus
 from .http import HttpClient, redact
 from .models import Alert, ChartEntry, Decision, Priority, RobloxGame, RobloxStatus
-from .sources import EpicSource, RobloxSource, RobloxUnavailable, SteamSource
+from .sources import EpicSource, RobloxSource, RobloxUnavailable, SteamSource, YouTubeSource
 from .storage import Storage
 
 log = logging.getLogger(__name__)
@@ -98,6 +99,10 @@ class RobloxHealth:
     alerted: bool = False
 
 
+# Fragman -> oyun çözümlemesinin ne kadar süre geçerli sayılacağı (durum başına)
+RESOLVE_TTL = {"upcoming": 12 * HOUR, "unlisted": 24 * HOUR, "released": 7 * DAY, "filtered": 7 * DAY}
+TR_MONTHS = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"]
+
 SOURCE_LABELS = {"steam": "Steam", "epic": "Epic", "roblox": "Roblox", "youtube": "YouTube"}
 FAILS_TO_DOWN = 2  # Roblox art arda bu kadar işlemde ulaşılamazsa "kesinti" sayılır
 
@@ -113,6 +118,13 @@ class LookupResult:
     @property
     def all_games(self) -> list[RobloxGame]:
         return [g for g, _ in self.matches + self.related]
+
+
+def _fmt_date(ts: float | None) -> str:
+    if not ts:
+        return "açıklanmadı"
+    t = time.gmtime(ts)
+    return f"{t.tm_mday} {TR_MONTHS[t.tm_mon - 1]} {t.tm_year}"
 
 
 def _fmt_int(n: int | float | None) -> str:
@@ -135,6 +147,7 @@ class Engine:
         self.steam = SteamSource(http, country=g.country, language=g.language, top_n=cfg.steam.top_n)
         self.epic = EpicSource(http, country=g.country)
         self.roblox = RobloxSource(http, request_delay=cfg.roblox.request_delay_seconds)
+        self.youtube = YouTubeSource(http)
         http.set_host_interval("api.steampowered.com", 0.25)
         self.indie = IndieClassifier(
             extra_major=cfg.filters.extra_major_publishers,
@@ -151,6 +164,7 @@ class Engine:
         self._charts_polled: set[str] = set()
         self.roblox_health = RobloxHealth()
         self._need_unverified_eval = False
+        self._channel_ids: dict[str, str] = {}
         self._scan_fail: dict[str, tuple[int, float]] = {}  # oyun -> (ardışık hata, yeniden deneme zamanı)
         down_since = float(self.store.get_kv("roblox_down_since") or 0)
         if down_since:  # kesinti sırasında yeniden başlatıldı: kesintiyi sürdür, tekrar uyarma
@@ -194,13 +208,7 @@ class Engine:
     async def ingest(self, source: str, entries: list[ChartEntry], errors: dict[str, str]) -> None:
         now = time.time()
         if entries:
-            if self.store.source_ok(source, now):
-                label = SOURCE_LABELS.get(source, source.capitalize())
-                lasted = self.store.close_outage(source, now)
-                took = f" ({human_duration(lasted)} sürdü)" if lasted else ""
-                await self._system_alert(
-                    f"{label} yeniden çalışıyor", f"Bağlantı geri geldi{took}. Takip kaldığı yerden sürüyor.", Priority.LOW
-                )
+            await self._source_recovered(source, now)
         if errors:
             msg = "; ".join(f"{k}: {v}" for k, v in errors.items())
             if not entries:
@@ -251,10 +259,207 @@ class Engine:
         self._wake_scanner.set()
         self.bus.publish("charts", {"source": source, "entries": len(entries), "candidates": len(touched), "ts": now})
 
+    async def _source_recovered(self, source: str, now: float) -> None:
+        """Başarılı çağrıyı kaydeder; daha önce arıza bildirildiyse tek bir toparlanma bildirimi gönderir."""
+        if not self.store.source_ok(source, now):
+            return
+        label = SOURCE_LABELS.get(source, source.capitalize())
+        lasted = self.store.close_outage(source, now)
+        took = f" ({human_duration(lasted)} sürdü)" if lasted else ""
+        await self._system_alert(
+            f"{label} yeniden çalışıyor", f"Bağlantı geri geldi{took}. Takip kaldığı yerden sürüyor.", Priority.LOW
+        )
+
     def _add_signal(self, key: str, signal: Signal) -> None:
         bucket = self._pending.setdefault(key, [])
         if all(s.type != signal.type for s in bucket):
             bucket.append(signal)
+
+    # ------------------------------------------------------------------ youtube fragmanları (çıkmamış oyunlar)
+    async def _youtube_channel_id(self, ref: str) -> str | None:
+        cached = self._channel_ids.get(ref) or self.store.get_kv(f"yt:chan:{ref}")
+        if cached:
+            self._channel_ids[ref] = cached
+            return cached
+        cid = await self.youtube.resolve_channel(ref)
+        if cid:
+            self._channel_ids[ref] = cid
+            self.store.set_kv(f"yt:chan:{ref}", cid)
+        return cid
+
+    async def poll_youtube(self) -> None:
+        yc = self.cfg.youtube
+        now = time.time()
+        videos, errors, last_error = [], 0, ""
+        for ref in yc.channels:
+            try:
+                cid = await self._youtube_channel_id(ref)
+                if not cid:
+                    raise ValueError(f"kanal çözülemedi: {ref}")
+                videos += await self.youtube.fetch_feed(cid)
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                errors += 1
+                last_error = str(exc)
+                log.debug("YouTube akışı alınamadı (%s): %s", ref, exc)
+        try:
+            if yc.channels and errors == len(yc.channels):
+                await self._source_failure("youtube", last_error)
+                return
+            if errors:
+                log.warning("YouTube: %d/%d kanal alınamadı", errors, len(yc.channels))
+            await self._source_recovered("youtube", now)
+            await self._ingest_trailers(videos, now)
+        finally:
+            self._charts_polled.add("youtube")
+
+    async def _ingest_trailers(self, videos: list, now: float) -> None:
+        yc = self.cfg.youtube
+        horizon = now - yc.max_age_days * DAY
+        best: dict[str, dict] = {}
+        for v in videos:
+            if v.published_ts < horizon or v.views < yc.min_views:
+                continue
+            info = parse_trailer_title(v.title)
+            if not info or info.released:
+                continue
+            tkey = title_key(info.game)
+            if not tkey:
+                continue
+            self.store.upsert_trailer({
+                "video_id": v.id, "channel_id": v.channel_id, "channel": v.channel, "title": v.title, "game": info.game,
+                "title_key": tkey, "kind": info.kind, "published_ts": v.published_ts, "url": v.url,
+                "image": v.thumbnail, "views": v.views,
+            }, now)
+            prev = self.store.trailer_metric_before(v.id, now - 20 * 60)
+            velocity = max(0.0, (v.views - prev["views"]) / ((now - prev["ts"]) / 3600)) if prev else None
+            self.store.add_trailer_metric(v.id, v.views, now)
+            age_h = max(1.0, (now - v.published_ts) / 3600)
+            cand = {
+                "game": info.game, "kind": info.kind, "video_id": v.id, "video_url": v.url, "video_ts": v.published_ts,
+                "channel": v.channel, "views": v.views, "vph": round(v.views / age_h, 1), "thumb": v.thumbnail,
+                "buzz": buzz_score(v.views, age_h, velocity),
+            }
+            if tkey not in best or cand["buzz"] > best[tkey]["buzz"]:
+                best[tkey] = cand
+        lookups = 0
+        for tkey, cand in sorted(best.items(), key=lambda kv: -kv[1]["buzz"]):
+            lookups = await self._update_upcoming(tkey, cand, now, lookups)
+        log.info("YouTube: %d video, %d fragman adayı", len(videos), len(best))
+        self.bus.publish("upcoming", {"candidates": len(best), "ts": now})
+
+    async def _resolve_trailer_game(self, u: dict, game_name: str, now: float) -> bool:
+        """Oyun adını Steam'de arar; çıkmış mı / yakında mı / mağazasız mı karar verir. Ağ hatasında False."""
+        try:
+            game = await self.steam.find_by_title(game_name)
+            if not game and re.search(r"\s*[:\-–]\s+", game_name):
+                # "BALL x PIT: Risen Ballbylon" gibi ek paket/alt başlık: ana oyun çıkmışsa bu yeni bir oyun değildir
+                prefix = re.split(r"\s*[:\-–]\s+", game_name, maxsplit=1)[0].strip()
+                base = await self.steam.find_by_title(prefix) if len(prefix) >= 3 else None
+                if base and not base.coming_soon and (not base.release_ts or base.release_ts <= now):
+                    u.update(state="released", title=game_name, resolved_at=now)
+                    return True
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:
+            log.debug("Steam'de aranamadı (%s): %s", game_name, exc)
+            return False
+        u["resolved_at"] = now
+        if not game:
+            u.update(state="filtered" if is_big_franchise(game_name) else "unlisted", title=game_name, steam_key=None,
+                     store_url="", publishers=[], tags=[], description="", indie=None, release_ts=None)
+            return True
+        u.update(
+            steam_key=game.key, store_url=game.url, title=game.title, publishers=game.publishers or game.developers,
+            tags=game.tags, description=game.description, image=game.image, release_ts=game.release_ts,
+        )
+        released = game.kind == "game" and not game.coming_soon and (not game.release_ts or game.release_ts <= now)
+        if game.kind != "game" or released:
+            u["state"] = "released" if released else "filtered"
+            return True
+        assessment = self.indie.assess(game)
+        u["indie"] = assessment.score
+        u["state"] = "upcoming" if assessment.score >= self.min_indie else "filtered"
+        return True
+
+    async def _update_upcoming(self, tkey: str, cand: dict, now: float, lookups: int) -> int:
+        yc = self.cfg.youtube
+        prev = self.store.get_upcoming(tkey)
+        u = dict(prev) if prev else {"title_key": tkey, "title": cand["game"], "first_seen": now, "state": None}
+        stale = not prev or now - (prev.get("resolved_at") or 0) > RESOLVE_TTL.get(prev["state"], DAY)
+        if stale and not await self._resolve_trailer_game(u, cand["game"], now):
+            return lookups  # Steam'e ulaşılamadı: bir sonraki turda yeniden denenir
+        u.update(
+            best_video=cand["video_id"], video_url=cand["video_url"], video_ts=cand["video_ts"], channel=cand["channel"],
+            kind=cand["kind"], views=cand["views"], vph=cand["vph"], buzz=cand["buzz"], updated_at=now,
+        )
+        if not u.get("image"):
+            u["image"] = cand["thumb"]
+
+        live = u["state"] in ("upcoming", "unlisted")
+        if (
+            live and yc.check_roblox and self.roblox_usable() and lookups < yc.max_roblox_lookups_per_poll
+            and u["buzz"] >= yc.alert_buzz * 0.6 and now - (u.get("roblox_ts") or 0) > 12 * HOUR
+        ):
+            ctx = GameContext(u["title"], u.get("description") or "", list(u.get("tags") or []))
+            if not ctx.concept_profile.empty:  # yalnızca isimle arama güvenilmez; bağlam yoksa atla
+                lookups += 1
+                try:
+                    result = await self.lookup_roblox(ctx)
+                except RobloxUnavailable:
+                    pass  # zorunlu değil; sağlık durumu lookup içinde işlendi
+                else:
+                    a = assess_roblox([(g, ev.weight) for g, ev in result.matches], None, self.cfg.scoring)
+                    u.update(
+                        roblox_status=a.status.value, roblox_ts=now,
+                        roblox_note=f"{a.status.label} ({a.clone_count} klon, {a.similar_count} benzer oynanış, "
+                                    f"{_fmt_int(a.total_playing)} oyuncu)",
+                    )
+
+        should_alert = (not u.get("alerted_at")) and (
+            (u["state"] == "upcoming" and u["buzz"] >= yc.alert_buzz)
+            or (u["state"] == "unlisted" and yc.alert_unlisted and u["buzz"] >= yc.alert_buzz + 0.15
+                and u["views"] <= yc.unlisted_max_views)
+        )
+        if should_alert:
+            u["alerted_at"] = now
+        self.store.save_upcoming(u)
+        if should_alert and not self.bootstrapping:  # ilk açılışta mevcutları sessizce "görüldü" say
+            await self.dispatch(self._upcoming_alert(u, now))
+        return lookups
+
+    def _upcoming_alert(self, u: dict, now: float) -> Alert:
+        listed = u["state"] == "upcoming"
+        kind = {"announce": "duyuru fragmanı", "gameplay": "oynanış fragmanı", "release_date": "çıkış tarihi fragmanı",
+                "demo": "demo fragmanı", "teaser": "teaser"}.get(u.get("kind") or "", "fragman")
+        age = human_duration(now - u["video_ts"]) if u.get("video_ts") else "kısa süre"
+        store_txt = (
+            f"Steam'de 'Yakında' sayfası var; çıkış: {_fmt_date(u.get('release_ts'))}."
+            if listed else
+            "Steam'de mağaza sayfası yok (konsol/Epic/yeni duyuru olabilir); henüz çıkmamış görünüyor."
+        )
+        fields = [
+            ("Çıkış", _fmt_date(u.get("release_ts")) if listed else "bilinmiyor"),
+            ("Fragman", f"{u['channel']} · {_fmt_int(u['views'])} izlenme · {age} önce"),
+        ]
+        if listed:
+            fields += [("Yapımcı", ", ".join((u.get("publishers") or [])[:2]) or "-"),
+                       ("Bağımsızlık", f"{(u.get('indie') or 0):.2f}"), ("Mağaza", u.get("store_url") or "-")]
+        if u.get("roblox_note"):
+            fields.append(("Roblox", u["roblox_note"]))
+        fields.append(("Ses getirme", f"{u['buzz']:.2f}"))
+        return Alert(
+            type="upcoming_trailer",
+            priority=Priority.HIGH if listed and u["buzz"] >= 0.65 else Priority.MEDIUM,
+            title=f"🎬 Çıkmamış oyun ses getiriyor: {u['title']}",
+            body=f"{u['channel']} kanalındaki {kind}, {age} içinde {_fmt_int(u['views'])} izlenmeye ulaştı "
+                 f"(saatte ~{_fmt_int(u['vph'])}). {store_txt}",
+            url=u.get("video_url"), image=u.get("image"), fields=fields, dedupe_key=f"upcoming:{u['title_key']}",
+        )
+
+    def upcoming_board(self, limit: int = 50, min_buzz: float = 0.0) -> list[dict]:
+        return self.store.list_upcoming(("upcoming", "unlisted"), limit=limit, min_buzz=min_buzz)
 
     # ------------------------------------------------------------------ roblox
     async def context_for(self, game: dict) -> GameContext:
@@ -830,16 +1035,21 @@ class Engine:
     async def send_digest(self, *, title: str | None = None, type_: str = "digest", priority: Priority = Priority.MEDIUM) -> bool:
         rows = self.board([Decision.OPPORTUNITY.value, Decision.RISING_TREND.value, Decision.WATCH.value],
                           limit=self.cfg.notifications.digest_size)
-        if not rows:
+        upcoming = self.upcoming_board(limit=5, min_buzz=self.cfg.youtube.alert_buzz) if self.cfg.youtube.enabled else []
+        if not rows and not upcoming:
             return False
         counts = {d: sum(1 for r in rows if r["decision"] == d.value) for d in ACTIONABLE}
         head = title or (
             f"Akım özeti: {counts[Decision.OPPORTUNITY]} fırsat, {counts[Decision.RISING_TREND]} akım, "
-            f"{counts[Decision.WATCH]} izlemede"
+            f"{counts[Decision.WATCH]} izlemede" + (f", {len(upcoming)} yaklaşan" if upcoming else "")
         )
         lines = self._summary_lines(rows)
         if self.cfg.roblox.enabled and self.roblox_health.state == "down":
             lines.insert(0, "⚠️ Roblox'a ulaşılamıyor; aşağıdaki durumlar Roblox doğrulaması olmadan hazırlandı.")
+        if upcoming:
+            lines += ["", "Yaklaşan oyunlar (fragman):"] + [
+                f"🎬 {u['title']} — {_fmt_int(u['views'])} izlenme · çıkış: {_fmt_date(u.get('release_ts'))}" for u in upcoming
+            ]
         await self.dispatch(Alert(type=type_, priority=priority, title=head, body="\n".join(lines)))
         return True
 
@@ -972,7 +1182,9 @@ class Engine:
         self.store.prune(time.time() - 30 * DAY)
 
     def _enabled_sources(self) -> list[str]:
-        return [s for s, on in (("steam", self.cfg.steam.enabled), ("epic", self.cfg.epic.enabled)) if on]
+        return [s for s, on in (
+            ("steam", self.cfg.steam.enabled), ("epic", self.cfg.epic.enabled), ("youtube", self.cfg.youtube.enabled)
+        ) if on]
 
     async def run_forever(self) -> None:
         self.bootstrapping = self.cfg.notifications.startup_summary and self.store.decisions_count() == 0
@@ -985,6 +1197,8 @@ class Engine:
             tasks.append(self._every("ccu", c.steam.ccu_interval_minutes * 60, self.poll_ccu, initial_delay=90))
         if c.epic.enabled:
             tasks.append(self._every("epic", c.epic.interval_minutes * 60, self.poll_epic, initial_delay=5))
+        if c.youtube.enabled:
+            tasks.append(self._every("youtube", c.youtube.interval_minutes * 60, self.poll_youtube, initial_delay=20))
         if c.roblox.enabled:
             tasks.append(self._scanner_loop())
             tasks.append(self._every(
@@ -1070,6 +1284,18 @@ class Engine:
             for line, r in zip(self._summary_lines(rows), rows):
                 lines.append(f'{e(line)} — <a href="{e(r["url"] or "", quote=True)}">mağaza</a>')
             return "\n".join(lines)
+        if cmd in ("yaklasan", "yaklaşan", "upcoming"):
+            rows = self.upcoming_board(limit=10)
+            if not rows:
+                return "Şu an fragmandan yakalanan çıkmamış oyun yok."
+            lines = ["<b>Yaklaşan oyunlar (fragman ses getirmesine göre)</b>", ""]
+            for i, r in enumerate(rows, 1):
+                tag = "" if r["state"] == "upcoming" else " (mağaza sayfası yok)"
+                lines.append(
+                    f'{i}. <a href="{e(r["video_url"] or "", quote=True)}">{e(r["title"])}</a>{tag} — '
+                    f"{_fmt_int(r['views'])} izlenme · çıkış: {e(_fmt_date(r.get('release_ts')))}"
+                )
+            return "\n".join(lines)
         if cmd in ("durum", "status"):
             st = self.status()
             up = int(st["uptime"] // 3600)
@@ -1146,5 +1372,6 @@ class Engine:
             "/firsatlar — güncel fırsatlar\n"
             "/kontrol &lt;oyun&gt; — bir oyunu anında Roblox'ta kontrol et\n"
             "/oyun &lt;oyun&gt; — takip edilen oyunun detayı\n"
+            "/yaklasan — fragmandan yakalanan çıkmamış oyunlar\n"
             "/durum — sistem durumu"
         )

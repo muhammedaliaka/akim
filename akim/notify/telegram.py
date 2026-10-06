@@ -2,6 +2,7 @@
 
 Komutlar (yalnızca yapılandırılmış chat_id'den kabul edilir):
   /firsatlar          güncel fırsat listesi
+  /yaklasan           fragmandan yakalanan, henüz çıkmamış oyunlar
   /durum              sistem ve kaynak sağlığı
   /kontrol <oyun>     herhangi bir oyunu anında Roblox'ta kontrol et
   /oyun <oyun>        takip edilen bir oyunun detayı
@@ -70,6 +71,7 @@ class TelegramChannel(Channel):
                             {"command": "firsatlar", "description": "Güncel fırsatlar"},
                             {"command": "kontrol", "description": "Bir oyunu Roblox'ta kontrol et"},
                             {"command": "oyun", "description": "Takip edilen oyunun detayı"},
+                            {"command": "yaklasan", "description": "Fragmandan yakalanan çıkmamış oyunlar"},
                             {"command": "durum", "description": "Sistem durumu"},
                             {"command": "yardim", "description": "Yardım"},
                         ]

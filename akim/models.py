@@ -77,6 +77,7 @@ class RobloxStatus(str, Enum):
     RISING = "rising"  # klonlar hızla büyüyor, akım Roblox'a geçiyor
     COMPETITIVE = "competitive"  # oturmuş rakipler var
     SATURATED = "saturated"  # doymuş pazar
+    UNKNOWN = "unknown"  # Roblox'a ulaşılamadı / kapalı: durum doğrulanamadı (VPN kapalı olabilir)
 
     @property
     def label(self) -> str:
@@ -89,6 +90,7 @@ ROBLOX_STATUS_LABELS = {
     RobloxStatus.RISING: "Roblox'ta yükselişte",
     RobloxStatus.COMPETITIVE: "Rekabetçi",
     RobloxStatus.SATURATED: "Doymuş",
+    RobloxStatus.UNKNOWN: "Roblox doğrulanamadı",
 }
 
 

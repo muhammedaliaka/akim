@@ -9,6 +9,7 @@ Kurallar:
   * Roblox doymuş                     -> DOYMUŞ
   * Roblox'ta yok/erken + fırsat yüksek + gerçek momentum -> FIRSAT
   * fırsat orta                        -> İZLE
+  * Roblox doğrulanamıyor (erişim yok/kapalı) -> en fazla İZLE: "Roblox'ta yok" iddiası kanıtsız yapılmaz
 """
 
 from __future__ import annotations
@@ -180,6 +181,12 @@ def decide(
     score = opportunity_score(indie, momentum, roblox.saturation)
     if indie < min_indie:
         return Decision.FILTERED, score
+    if roblox.status == RobloxStatus.UNKNOWN:
+        # Roblox tarafı bilinmiyor: doygunluk nötr (0.5) varsayılır ve FIRSAT/AKIM/DOYMUŞ kararı verilmez.
+        # Roblox'a tekrar ulaşılınca oyun taranır ve karar kesinleşir.
+        if score >= cfg.watch_threshold and momentum >= cfg.min_watch_momentum:
+            return Decision.WATCH, score
+        return Decision.LOW, score
     if roblox.status == RobloxStatus.RISING:
         return Decision.RISING_TREND, score
     if roblox.status == RobloxStatus.SATURATED:

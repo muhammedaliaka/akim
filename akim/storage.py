@@ -73,6 +73,10 @@ CREATE TABLE IF NOT EXISTS source_health (
     consecutive_failures INTEGER DEFAULT 0, alerted INTEGER DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS kv (k TEXT PRIMARY KEY, v TEXT);
+CREATE TABLE IF NOT EXISTS outages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, source TEXT NOT NULL, started_at REAL, ended_at REAL, reason TEXT
+);
+CREATE INDEX IF NOT EXISTS ix_outages ON outages(source, started_at);
 CREATE TABLE IF NOT EXISTS laya_scores (
     title_key TEXT NOT NULL, universe_id INTEGER NOT NULL, fingerprint TEXT, similarity REAL, relation TEXT,
     probabilities TEXT, confidence REAL, embedding REAL, checkpoint TEXT, ts REAL,
@@ -497,6 +501,27 @@ class Storage:
     def source_health(self) -> list[dict]:
         return self._all("SELECT * FROM source_health ORDER BY source")
 
+    # ------------------------------------------------------------------ kesintiler (rapor için)
+    def open_outage(self, source: str, now: float, reason: str) -> None:
+        if self._one("SELECT id FROM outages WHERE source=? AND ended_at IS NULL", (source,)):
+            return
+        self.db.execute(
+            "INSERT INTO outages(source, started_at, reason) VALUES(?,?,?)", (source, now, reason[:200])
+        )
+
+    def close_outage(self, source: str, now: float) -> float | None:
+        """Açık kesintiyi kapatır; süresini (sn) döner. Açık kesinti yoksa None."""
+        row = self._one("SELECT id, started_at FROM outages WHERE source=? AND ended_at IS NULL", (source,))
+        if not row:
+            return None
+        self.db.execute("UPDATE outages SET ended_at=? WHERE id=?", (now, row["id"]))
+        return now - row["started_at"]
+
+    def outages_since(self, since: float) -> list[dict]:
+        return self._all(
+            "SELECT * FROM outages WHERE COALESCE(ended_at, started_at)>=? ORDER BY started_at", (since,)
+        )
+
     # ------------------------------------------------------------------ bakım
     def stats(self) -> dict:
         one = lambda sql, p=(): self._one(sql, p)["c"]  # noqa: E731
@@ -512,4 +537,5 @@ class Storage:
         for table in ("chart_snapshots", "game_metrics", "roblox_metrics", "roblox_checks"):
             self.db.execute(f"DELETE FROM {table} WHERE ts<?", (older_than,))
         self.db.execute("DELETE FROM alerts WHERE ts<?", (older_than,))
+        self.db.execute("DELETE FROM outages WHERE COALESCE(ended_at, started_at)<?", (older_than - 60 * 86400,))
 

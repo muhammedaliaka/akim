@@ -87,6 +87,46 @@ class RobloxConfig:
     request_delay_seconds: float = 1.0
     # Tek analiz döngüsünde en fazla kaç oyun taransın (API'yi yormamak için)
     batch_size: int = 10
+    # Roblox'a ulaşılamıyorsa (VPN kapalı, engelli ağ) kaç dakikada bir yeniden yoklansın
+    probe_minutes: float = 5
+    # Kesinti bu kadar dakika sürerse tek bir uyarı gönderilir (kısa kopmalar bildirim üretmez)
+    outage_alert_minutes: float = 10
+
+
+# Fragman izlenen kanallar (kanal kimliği ya da @tanıtıcı). Anahtarsız RSS kullanılır; hesap/ücret gerekmez.
+DEFAULT_YOUTUBE_CHANNELS = [
+    "UChmZ6QbxgHlmX3ISIHxIpQQ",  # Steam
+    "UCKy1dAqELo0zrOtPkf0eTMw",  # IGN
+    "UCbu2SsF-Or3Rsn3NxqODImw",  # GameSpot
+    "UCJx5KP-pCUmL9eZUv-mIcNw",  # GameTrailers
+    "UCgaPRP68bbyHnfkPhWWBrNw",  # PC Gamer
+    "UCK-65DO2oOxxMwphl2tYtcw",  # Game Informer
+    "UCk2ipH2l8RvLG0dr-rsBiZw",  # GamesRadar
+    "UCfJL30VNmfSjNIWZIxeYQUg",  # Day of the Devs
+    "UCSg5I8fGpBym4RCsP_xSx2w",  # Indie Game Trailers
+    "UCdlrzcCrJd6v9rLMJlcu9fw",  # IndieGame+
+    "UCSc6s-ZJXKlSQr51dsox34g",  # Devolver Digital
+    "UCoztP3NSW03Kd69KjQEIxeg",  # Annapurna Interactive
+    "UCOchKaC3FN2G-odtv4DiVlA",  # Hooded Horse
+]
+
+
+@dataclass
+class YouTubeConfig:
+    """Henüz çıkmamış oyunları fragmanlarından yakalar (YouTube RSS, anahtarsız ve ücretsiz)."""
+
+    enabled: bool = True
+    interval_minutes: float = 60
+    channels: list[str] = field(default_factory=lambda: list(DEFAULT_YOUTUBE_CHANNELS))
+    max_age_days: float = 10  # bundan eski videolar yok sayılır
+    min_views: int = 2000  # bunun altındaki fragmanlar gürültü sayılır
+    alert_buzz: float = 0.5  # bildirim için en düşük "ses getirme" puanı (0..1)
+    # Steam'de sayfası olmayan (konsol/Epic/yeni duyuru) oyunlar için bildirim; daha yüksek eşik ve orta öncelik
+    alert_unlisted: bool = True
+    unlisted_max_views: int = 1_500_000  # bundan çok izlenen mağazasız fragmanlar büyük yapım sayılır
+    # Çıkmamış oyunu Roblox'ta da ara (Roblox erişilebilirse; zorunlu değil, yalnızca ek bilgi)
+    check_roblox: bool = True
+    max_roblox_lookups_per_poll: int = 3
 
 
 @dataclass
@@ -129,6 +169,8 @@ class ScoringConfig:
     rank_surge_positions: int = 15
     ccu_surge_ratio: float = 1.5
     ccu_surge_min_players: int = 1000
+    # Roblox doğrulanamıyorken (erişim yok/kapalı) 'yükseliyor' bildirimi için en düşük momentum
+    unverified_alert_momentum: float = 0.5
 
 
 @dataclass
@@ -205,6 +247,7 @@ class Config:
     roblox: RobloxConfig = field(default_factory=RobloxConfig)
     filters: FilterConfig = field(default_factory=FilterConfig)
     scoring: ScoringConfig = field(default_factory=ScoringConfig)
+    youtube: YouTubeConfig = field(default_factory=YouTubeConfig)
     laya: LayaConfig = field(default_factory=LayaConfig)
     notifications: NotificationConfig = field(default_factory=NotificationConfig)
     web: WebConfig = field(default_factory=WebConfig)

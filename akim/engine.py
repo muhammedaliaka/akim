@@ -26,10 +26,11 @@ from .analysis.matching import match_score, search_queries, title_key
 from .analysis.similarity import Evidence, GameContext, classify, heuristic_evidence
 from .analysis.scoring import MomentumSignals, RobloxAssessment, assess_roblox, decide, momentum_score
 from .config import Config
+from .diagnostics import explain_error, human_duration
 from .events import EventBus
-from .http import HttpClient
+from .http import HttpClient, redact
 from .models import Alert, ChartEntry, Decision, Priority, RobloxGame, RobloxStatus
-from .sources import EpicSource, RobloxSource, SteamSource
+from .sources import EpicSource, RobloxSource, RobloxUnavailable, SteamSource
 from .storage import Storage
 
 log = logging.getLogger(__name__)
@@ -84,6 +85,24 @@ class RobloxEvents:
 
 
 @dataclass
+class RobloxHealth:
+    """Roblox'a erişilebilirlik durumu: VPN kapalı/engelli ağda tarama durur, 'yok' kararı verilmez."""
+
+    state: str = "ok"  # ok | down
+    fail_streak: int = 0
+    down_since: float | None = None
+    last_probe: float = 0.0  # kesintideyken son yoklama zamanı
+    last_ok_probe: float = 0.0  # kanarya yoklamasının son başarısı
+    last_ok_write: float = 0.0
+    reason: str = ""
+    alerted: bool = False
+
+
+SOURCE_LABELS = {"steam": "Steam", "epic": "Epic", "roblox": "Roblox", "youtube": "YouTube"}
+FAILS_TO_DOWN = 2  # Roblox art arda bu kadar işlemde ulaşılamazsa "kesinti" sayılır
+
+
+@dataclass
 class LookupResult:
     title: str
     queries: list[str]
@@ -130,6 +149,14 @@ class Engine:
         self._lookup_cache: dict[str, tuple[float, str, LookupResult]] = {}
         self._wake_scanner = asyncio.Event()
         self._charts_polled: set[str] = set()
+        self.roblox_health = RobloxHealth()
+        self._need_unverified_eval = False
+        self._scan_fail: dict[str, tuple[int, float]] = {}  # oyun -> (ardışık hata, yeniden deneme zamanı)
+        down_since = float(self.store.get_kv("roblox_down_since") or 0)
+        if down_since:  # kesinti sırasında yeniden başlatıldı: kesintiyi sürdür, tekrar uyarma
+            h = self.roblox_health
+            h.state, h.down_since, h.fail_streak = "down", down_since, FAILS_TO_DOWN
+            h.alerted = self.store.get_kv("roblox_outage_alerted") == "1"
         self.bootstrapping = False
         self.started_at = time.time()
         self.last_run: dict[str, float] = {}
@@ -168,7 +195,12 @@ class Engine:
         now = time.time()
         if entries:
             if self.store.source_ok(source, now):
-                await self._system_alert(f"{source.capitalize()} kaynağı yeniden çalışıyor", "Veri akışı normale döndü.", Priority.LOW)
+                label = SOURCE_LABELS.get(source, source.capitalize())
+                lasted = self.store.close_outage(source, now)
+                took = f" ({human_duration(lasted)} sürdü)" if lasted else ""
+                await self._system_alert(
+                    f"{label} yeniden çalışıyor", f"Bağlantı geri geldi{took}. Takip kaldığı yerden sürüyor.", Priority.LOW
+                )
         if errors:
             msg = "; ".join(f"{k}: {v}" for k, v in errors.items())
             if not entries:
@@ -214,7 +246,7 @@ class Engine:
         self._charts_polled.add(source)
         log.info("%s: %d liste girdisi, %d bağımsız aday", source, len(entries), len(touched))
         for key in touched:
-            if self.store.last_roblox_check(key):
+            if self._evaluable(key):
                 await self.evaluate(key)
         self._wake_scanner.set()
         self.bus.publish("charts", {"source": source, "entries": len(entries), "candidates": len(touched), "ts": now})
@@ -259,8 +291,124 @@ class Engine:
             return GameContext(twin.title, twin.description, twin.tags), f"Steam: {twin.title}"
         return GameContext(title), "yalnızca isim (Steam'de bulunamadı)"
 
+    # ------------------------------------------------------------------ roblox erişim sağlığı
+    def roblox_usable(self) -> bool:
+        """Roblox açık ve erişilebilir mi? Hayırsa kararlar Roblox'suz (UNKNOWN) modda üretilir."""
+        return self.cfg.roblox.enabled and self.roblox_health.state != "down"
+
+    def _evaluable(self, key: str) -> bool:
+        """Bu oyun şimdi değerlendirilebilir mi? Roblox taraması gelmişse ya da Roblox'suz moddaysak evet."""
+        return bool(self.store.last_roblox_check(key)) or not self.roblox_usable()
+
+    def _roblox_failed(self, exc: Exception) -> None:
+        h, now = self.roblox_health, time.time()
+        reason = getattr(exc, "reason", None) or explain_error(str(exc))
+        detail = getattr(exc, "detail", "") or str(exc)
+        h.reason, h.fail_streak = reason, h.fail_streak + 1
+        self.store.source_failed("roblox", reason, now)
+        log.warning("Roblox erişim sorunu (%d. kez): %s [%s]", h.fail_streak, reason, redact(detail)[:200])
+        if h.state != "down" and h.fail_streak >= FAILS_TO_DOWN:
+            h.state, h.down_since, h.alerted = "down", now, False
+            self.store.set_kv("roblox_down_since", str(now))
+            self.store.set_kv("roblox_outage_alerted", "0")
+            self.store.open_outage("roblox", now, reason)
+            self._need_unverified_eval = True
+            self._wake_scanner.set()
+            log.error("Roblox'a ulaşılamıyor; Roblox'suz modda sürüyorum (%s)", reason)
+
+    async def _roblox_ok(self) -> None:
+        h, now = self.roblox_health, time.time()
+        if h.state != "down" and h.fail_streak == 0:
+            if now - h.last_ok_write > 60:
+                h.last_ok_write = now
+                self.store.source_ok("roblox", now)
+            return
+        was_down, alerted = h.state == "down", h.alerted
+        h.state, h.fail_streak, h.last_ok_probe, h.last_ok_write = "ok", 0, now, now
+        h.down_since, h.alerted = None, False
+        self.store.source_ok("roblox", now)
+        lasted = self.store.close_outage("roblox", now)
+        self.store.set_kv("roblox_down_since", "")
+        self.store.set_kv("roblox_outage_alerted", "0")
+        if was_down:
+            waiting = len(self._due_games())
+            log.info("Roblox yeniden erişilebilir (%s sürdü); %d oyun taranacak", human_duration(lasted or 0), waiting)
+            if alerted:
+                await self._system_alert(
+                    "Roblox yeniden çalışıyor",
+                    f"Bağlantı geri geldi ({human_duration(lasted or 0)} sürdü). Roblox'ta doğrulanamayan "
+                    f"{waiting} oyun şimdi taranıyor; sonuçlar bildirilecek.",
+                    Priority.LOW,
+                )
+            self._wake_scanner.set()
+
+    async def _roblox_ready(self) -> bool:
+        """Tarama yapılabilir mi? Kesintideyse belirli aralıkla yoklar; toparlanmışsa kesintiyi kapatır."""
+        if not self.cfg.roblox.enabled:
+            return False
+        h = self.roblox_health
+        if h.state != "down":
+            return True
+        if time.time() - h.last_probe < self.cfg.roblox.probe_minutes * 60:
+            return False
+        h.last_probe = time.time()
+        try:
+            await self._probe_roblox()
+        except RobloxUnavailable as exc:
+            self._roblox_failed(exc)
+            return False
+        await self._roblox_ok()
+        return True
+
+    async def _probe_roblox(self) -> None:
+        probe = getattr(self.roblox, "probe", None)
+        if probe is not None:
+            await probe()
+
+    async def _ensure_roblox_alive(self) -> None:
+        """Arama hiç sonuç vermediyse (sağlıklı Roblox bile her sorguya sonuç döndürür) erişimi doğrular."""
+        h = self.roblox_health
+        if time.time() - h.last_ok_probe < 300:
+            return
+        await self._probe_roblox()
+        h.last_ok_probe = time.time()
+
+    async def _maybe_alert_outage(self) -> None:
+        h = self.roblox_health
+        if h.state != "down" or h.alerted or h.down_since is None:
+            return
+        if time.time() - h.down_since < self.cfg.roblox.outage_alert_minutes * 60:
+            return
+        h.alerted = True
+        self.store.set_kv("roblox_outage_alerted", "1")
+        extra = " ve YouTube" if self.cfg.youtube.enabled else ""
+        await self._system_alert(
+            "Roblox'a ulaşılamıyor",
+            f"Sebep: {h.reason}. Roblox'a erişim engelli bir ağdaysan VPN'in kapanmış olabilir; VPN'i açman yeterli, "
+            "bağlantı gelince kendiliğinden devam ederim. O zamana kadar Steam, Epic"
+            f"{extra} tarafındaki yükselen oyunları 'Roblox doğrulanamadı' notuyla raporlamaya devam ediyorum.",
+            Priority.HIGH,
+        )
+
+    async def _evaluate_unscanned(self) -> None:
+        """Roblox kesintiye girince, henüz taranmamış takipteki oyunlar için Roblox'suz karar üretir."""
+        now = time.time()
+        for g in self.store.tracked_games(self.track_since(now), self.min_indie):
+            if not self.store.last_roblox_check(g["key"]):
+                await self.evaluate(g["key"])
+
     async def lookup_roblox(self, ctx: GameContext) -> LookupResult:
-        """Roblox'ta arar; her adayı isim, açıklama-atfı, oynanış ve (açıksa) Laya ile değerlendirir."""
+        """Roblox'ta arar; erişim sorununu sağlık durumuna işler. Roblox'a ulaşılamazsa RobloxUnavailable fırlatır."""
+        try:
+            result = await self._lookup_roblox(ctx)
+        except RobloxUnavailable as exc:
+            self._roblox_failed(exc)
+            raise
+        await self._roblox_ok()
+        return result
+
+    async def _lookup_roblox(self, ctx: GameContext) -> LookupResult:
+        """Her adayı isim, açıklama-atfı, oynanış ve (açıksa) Laya ile değerlendirir."""
         rc, sc = self.cfg.roblox, self.cfg.scoring
         queries = search_queries(ctx.title, rc.max_queries_per_game)
         found: dict[int, RobloxGame] = {}
@@ -275,6 +423,9 @@ class Engine:
                 pre, _ = match_score(ctx.title_profile, g.name, g.description)
                 if pre >= 0.5 or pos < 15 or (not g.description and pos < 25):
                     want_details.append(g.universe_id)
+        if not found:
+            # Sağlıklı Roblox hiçbir sorguya boş dönmez; bu bir engel/VPN sorunu olabilir ve "yok" demek yanlış olur
+            await self._ensure_roblox_alive()
         if want_details:
             details = await self.roblox.details(want_details[:100])
             for uid, d in details.items():
@@ -379,18 +530,26 @@ class Engine:
         rows = self.store.games_due_for_roblox(
             now, self.track_since(now), self.min_indie, rc.recheck_hours * HOUR, rc.hot_recheck_hours * HOUR
         )
+        rows = [r for r in rows if self._scan_fail.get(r["key"], (0, 0.0))[1] <= now]  # hatalı oyunlar bekler
         # Sinyali olan (yeni giren / hızla yükselen) oyunlar öne
         return sorted(rows, key=lambda r: r["key"] not in self._pending)
 
     async def refresh_clones(self) -> None:
         """Bilinen Roblox klonlarının anlık oyuncu sayılarını topluca yeniler (arama yapmadan)."""
+        if not self.roblox_usable():
+            return
         now = time.time()
         keys = [g["key"] for g in self.store.tracked_games(self.track_since(now), self.min_indie)]
         links = self.store.keys_with_links(keys)
         ids = sorted({u for us in links.values() for u, _ in us})
         if not ids:
             return
-        details = await self.roblox.details(ids)
+        try:
+            details = await self.roblox.details(ids)
+        except RobloxUnavailable as exc:
+            self._roblox_failed(exc)
+            return
+        await self._roblox_ok()
         self.store.upsert_roblox_games(details.values(), now)
         for key, uids in links.items():
             games = [(details[u], w) for u, w in uids if u in details]
@@ -426,7 +585,7 @@ class Engine:
             sc = self.cfg.scoring
             if ratio and ratio >= sc.ccu_surge_ratio and ccu >= sc.ccu_surge_min_players:
                 self._add_signal(g["key"], Signal("ccu_surge", f"anlık oyuncu 24 saatte x{ratio:.1f} → {_fmt_int(ccu)}"))
-                if self.store.last_roblox_check(g["key"]):
+                if self._evaluable(g["key"]):
                     await self.evaluate(g["key"])
         log.info("Steam anlık oyuncu: %d oyun ölçüldü", count)
 
@@ -472,17 +631,23 @@ class Engine:
     ) -> Decision | None:
         game = self.store.get_game(key)
         check = self.store.last_roblox_check(key)
-        if not game or not check:
+        if not game:
             return None
+        if not check and self.roblox_usable():
+            return None  # Roblox taraması bekleniyor; "doğrulanamadı" demek için erken
         now = time.time()
         momentum, m_reasons, m = self.momentum_for(key, game, now)
         full = self.store.last_roblox_check(key, full_scan_only=True)
-        clones = check["clone_count"] if check["clone_count"] is not None else check["match_count"]
-        assessment = RobloxAssessment(
-            RobloxStatus(check["status"]), check["saturation"], check["match_count"],
-            check["total_playing"], check["top_visits"], clone_count=clones,
-            similar_count=max(0, check["match_count"] - clones),
-        )
+        if check:
+            clones = check["clone_count"] if check["clone_count"] is not None else check["match_count"]
+            assessment = RobloxAssessment(
+                RobloxStatus(check["status"]), check["saturation"], check["match_count"],
+                check["total_playing"], check["top_visits"], clone_count=clones,
+                similar_count=max(0, check["match_count"] - clones),
+            )
+        else:
+            # Roblox kapalı ya da erişilemiyor: karar yalnızca bağımsızlık + momentumdan çıkar
+            assessment = RobloxAssessment(RobloxStatus.UNKNOWN, 0.5, 0, 0, 0, ["Roblox doğrulanamadı"])
         decision, score = decide(game["indie_score"], momentum, assessment, self.cfg.scoring, self.min_indie)
         prev = self.store.get_decision(key)
 
@@ -526,9 +691,12 @@ class Engine:
         fields = [
             ("Listeler", chart_txt or "-"),
             ("Yayıncı", ", ".join(game["publishers"][:2]) or "-"),
-            ("Roblox", f"{a.status.label} ({a.clone_count} klon, {a.similar_count} benzer oynanış, "
-                       f"{_fmt_int(a.total_playing)} oyuncu)"),
-            ("Skor", f"{score:.2f} (bağımsızlık {game['indie_score']:.2f} · momentum {momentum:.2f} · doygunluk {a.saturation:.2f})"),
+            ("Roblox", "doğrulanamadı (erişim yok); gelince otomatik kontrol edilecek"
+             if a.status == RobloxStatus.UNKNOWN
+             else f"{a.status.label} ({a.clone_count} klon, {a.similar_count} benzer oynanış, "
+                  f"{_fmt_int(a.total_playing)} oyuncu)"),
+            ("Skor", f"{score:.2f} (bağımsızlık {game['indie_score']:.2f} · momentum {momentum:.2f}"
+                     + ("" if a.status == RobloxStatus.UNKNOWN else f" · doygunluk {a.saturation:.2f}") + ")"),
         ]
         if m.ccu_now:
             fields.append(("Steam anlık oyuncu", _fmt_int(m.ccu_now) + (f" (x{m.ccu_ratio:.1f})" if m.ccu_ratio else "")))
@@ -578,6 +746,20 @@ class Engine:
                 **base,
             ))
 
+        if (
+            decision == Decision.WATCH and a.status == RobloxStatus.UNKNOWN and became
+            and momentum >= self.cfg.scoring.unverified_alert_momentum
+        ):
+            strong = momentum >= 0.65
+            signal_txt = ("\nSinyal: " + "; ".join(s.text for s in signals)) if signals else ""
+            out.append(Alert(
+                type="rising_unverified", priority=Priority.HIGH if strong else Priority.MEDIUM,
+                title=f"📈 Yükseliyor: {title}",
+                body=f"{game['store'].capitalize()} listelerinde yükselen bağımsız oyun. Roblox durumunu şu an kontrol "
+                     f"edemiyorum (erişim yok); bağlantı gelince otomatik doğrulayıp haber vereceğim.{signal_txt}",
+                **base,
+            ))
+
         if rev.first_clone:
             names = "; ".join(f"{c['name'][:50]} ({_fmt_int(c['playing'])} oyuncu)" for c in rev.new_clones[:3])
             out.append(Alert(
@@ -603,7 +785,7 @@ class Engine:
                 **base,
             ))
 
-        if decision in ACTIONABLE and not any(x.type in ("opportunity", "rising_trend") for x in out):
+        if decision in ACTIONABLE and not any(x.type in ("opportunity", "rising_trend", "rising_unverified") for x in out):
             for s in signals:
                 pr = Priority.HIGH if decision != Decision.WATCH and s.type != "chart_entry" else Priority.MEDIUM
                 out.append(Alert(
@@ -655,7 +837,10 @@ class Engine:
             f"Akım özeti: {counts[Decision.OPPORTUNITY]} fırsat, {counts[Decision.RISING_TREND]} akım, "
             f"{counts[Decision.WATCH]} izlemede"
         )
-        await self.dispatch(Alert(type=type_, priority=priority, title=head, body="\n".join(self._summary_lines(rows))))
+        lines = self._summary_lines(rows)
+        if self.cfg.roblox.enabled and self.roblox_health.state == "down":
+            lines.insert(0, "⚠️ Roblox'a ulaşılamıyor; aşağıdaki durumlar Roblox doğrulaması olmadan hazırlandı.")
+        await self.dispatch(Alert(type=type_, priority=priority, title=head, body="\n".join(lines)))
         return True
 
     async def _finish_bootstrap(self) -> None:
@@ -675,13 +860,20 @@ class Engine:
         await self.dispatch(Alert(type="system", priority=priority, title=title, body=body))
 
     async def _source_failure(self, source: str, error: str) -> None:
-        row = self.store.source_failed(source, error, time.time())
-        log.error("%s kaynağı başarısız (%d. kez): %s", source, row["consecutive_failures"], error)
-        if row["consecutive_failures"] >= 3 and not row["alerted"]:
+        now = time.time()
+        row = self.store.source_failed(source, error, now)
+        log.error("%s kaynağı başarısız (%d. kez): %s", source, row["consecutive_failures"], redact(error)[:300])
+        # YouTube yardımcı bir kaynak: kısa kopmalarda uyarma (saatte bir denendiği için 6 deneme ≈ 6 saat)
+        threshold = 6 if source == "youtube" else 3
+        if row["consecutive_failures"] >= threshold and not row["alerted"]:
             self.store.mark_source_alerted(source)
+            reason = explain_error(error)
+            self.store.open_outage(source, now, reason)
+            label = SOURCE_LABELS.get(source, source.capitalize())
             await self._system_alert(
-                f"{source.capitalize()} kaynağına ulaşılamıyor",
-                f"Art arda {row['consecutive_failures']} deneme başarısız. Son hata: {error[:300]}",
+                f"{label} verisi alınamıyor",
+                f"{label}'a {row['consecutive_failures']} denemedir ulaşamıyorum. Sebep: {reason}. İnternet "
+                "bağlantını (gerekiyorsa VPN'i) kontrol et; düzelince kendiliğinden devam ederim, bir şey yapman gerekmez.",
                 Priority.HIGH,
             )
 
@@ -700,28 +892,39 @@ class Engine:
             self.last_run[name] = time.time()
             await asyncio.sleep(max(5.0, interval - (time.monotonic() - started)))
 
+    def _scan_error(self, key: str, title: str, exc: Exception) -> None:
+        """Yalnızca bu oyuna özgü tarama hatası: diğer oyunları engellemez, bu oyun artan aralıkla yeniden denenir."""
+        n = self._scan_fail.get(key, (0, 0.0))[0] + 1
+        delay = min(6 * HOUR, 300 * 2 ** (n - 1))
+        self._scan_fail[key] = (n, time.time() + delay)
+        log.warning("Roblox taraması başarısız (%s, %d. kez; %s sonra tekrar): %s", title, n, human_duration(delay), exc)
+
     async def _scanner_loop(self) -> None:
         await asyncio.sleep(2)
         while True:
-            due = self._due_games()
+            ready = await self._roblox_ready()
+            due = self._due_games() if ready else []
             batch = due[: self.cfg.roblox.batch_size]
             for row in batch:
+                if not self.roblox_usable():  # önceki oyunda kesinti başladı
+                    break
                 try:
                     await self.scan_roblox(row["key"])
-                    if self.store.source_ok("roblox", time.time()):
-                        await self._system_alert("Roblox kaynağı yeniden çalışıyor", "Veri akışı normale döndü.", Priority.LOW)
+                    self._scan_fail.pop(row["key"], None)
                 except asyncio.CancelledError:
                     raise
-                except Exception as exc:
-                    log.warning("Roblox taraması başarısız (%s): %s", row["title"], exc)
-                    await self._source_failure("roblox", str(exc))
+                except RobloxUnavailable:
+                    # sağlık durumu lookup_roblox içinde işlendi; kısa bekleyip yeniden dene
                     await asyncio.sleep(30)
                     break
+                except Exception as exc:
+                    self._scan_error(row["key"], row["title"], exc)
             self.last_run["roblox"] = time.time()
-            polled_all = all(s in self._charts_polled for s in self._enabled_sources())
-            # Roblox uzun süre ulaşılamazsa bildirimler sonsuza dek bastırılmasın
-            timed_out = time.time() - self.started_at > BOOTSTRAP_MAX_SECONDS
-            if self.bootstrapping and ((polled_all and not self._due_games()) or timed_out):
+            if self._need_unverified_eval:
+                self._need_unverified_eval = False
+                await self._evaluate_unscanned()
+            await self._maybe_alert_outage()
+            if self.bootstrapping and self._bootstrap_done(waiting_for_scan=ready and bool(self._due_games())):
                 await self._finish_bootstrap()
             if len(due) > len(batch):
                 await asyncio.sleep(1)
@@ -731,6 +934,20 @@ class Engine:
                 await asyncio.wait_for(self._wake_scanner.wait(), timeout=60)
             except asyncio.TimeoutError:
                 pass
+
+    def _bootstrap_done(self, waiting_for_scan: bool = False) -> bool:
+        """Başlangıç taraması bitti mi? Roblox taraması sürüyorsa beklenir; en geç 30 dakikada bitirilir."""
+        polled_all = all(s in self._charts_polled for s in self._enabled_sources())
+        timed_out = time.time() - self.started_at > BOOTSTRAP_MAX_SECONDS
+        return timed_out or (polled_all and not waiting_for_scan)
+
+    async def _bootstrap_watch(self) -> None:
+        """Roblox kapalıyken (tarayıcı döngüsü yok) başlangıç özetini gönderir."""
+        while self.bootstrapping:
+            if self._bootstrap_done():
+                await self._finish_bootstrap()
+                return
+            await asyncio.sleep(5)
 
     async def _digest_loop(self) -> None:
         hours = self.cfg.notifications.digest_hours
@@ -758,9 +975,7 @@ class Engine:
         return [s for s, on in (("steam", self.cfg.steam.enabled), ("epic", self.cfg.epic.enabled)) if on]
 
     async def run_forever(self) -> None:
-        self.bootstrapping = (
-            self.cfg.notifications.startup_summary and self.cfg.roblox.enabled and self.store.decisions_count() == 0
-        )
+        self.bootstrapping = self.cfg.notifications.startup_summary and self.store.decisions_count() == 0
         if self.bootstrapping:
             log.info("İlk çalıştırma: başlangıç taraması bitene kadar tekil bildirimler tek özet halinde toplanacak")
         c = self.cfg
@@ -776,6 +991,8 @@ class Engine:
                 "clones", c.roblox.clone_refresh_minutes * 60, self.refresh_clones,
                 initial_delay=c.roblox.clone_refresh_minutes * 60,
             ))
+        elif self.bootstrapping:
+            tasks.append(self._bootstrap_watch())
         tasks.append(self._digest_loop())
         tasks.append(self._every("prune", DAY, self.prune, initial_delay=HOUR))
         await asyncio.gather(*tasks)
@@ -833,7 +1050,14 @@ class Engine:
                          "last_error": self.laya.last_error},
             },
             "queue": len(self._due_games()),
+            "roblox": self.roblox_state(),
         }
+
+    def roblox_state(self) -> dict:
+        h = self.roblox_health
+        if not self.cfg.roblox.enabled:
+            return {"state": "off", "reason": "Roblox kapalı (config: roblox.enabled)", "since": None}
+        return {"state": h.state, "reason": h.reason if h.state == "down" else "", "since": h.down_since}
 
     async def command(self, cmd: str, arg: str) -> str:
         """Telegram komutları. HTML döner."""
@@ -860,11 +1084,19 @@ class Engine:
             for s in st["sources"]:
                 ok = "✅" if not s["consecutive_failures"] else f"⚠️ {s['consecutive_failures']} hata"
                 lines.append(f"{e(s['source'])}: {ok}")
+            rb = st["roblox"]
+            if rb["state"] == "down":
+                lines.append(f"⚠️ Roblox'a ulaşılamıyor ({e(rb['reason'])}); kararlar Roblox'suz üretiliyor.")
+            elif rb["state"] == "off":
+                lines.append("Roblox kapalı: kararlar Roblox'suz üretiliyor.")
             return "\n".join(lines)
         if cmd in ("kontrol", "check"):
             if not arg:
                 return "Kullanım: /kontrol &lt;oyun adı&gt;"
-            r = await self.adhoc_check(arg)
+            try:
+                r = await self.adhoc_check(arg)
+            except RobloxUnavailable as exc:
+                return f"⚠️ Roblox'a şu an ulaşılamıyor ({e(str(exc))}). VPN gerekiyorsa aç ve tekrar dene."
             lines = [
                 f"<b>{e(r['resolved_title'])}</b> → <b>{e(r['status_label'])}</b> "
                 f"({r['clone_count']} klon, {r['similar_count']} benzer · doygunluk {r['saturation']:.2f})",

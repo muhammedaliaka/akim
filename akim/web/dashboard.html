@@ -80,6 +80,8 @@ tbody tr:hover { background: var(--panel-2); }
 .rs-rising { color: var(--rocket); font-weight: 600; }
 .rs-competitive { color: var(--amber); }
 .rs-saturated { color: var(--red); }
+.rs-unknown { color: var(--amber); }
+.banner { background: var(--amber-bg, var(--gray-bg)); color: var(--amber); border-radius: 8px; padding: 8px 12px; margin: 8px 0; font-size: 14px; }
 .score { min-width: 130px; }
 .bar { height: 6px; background: var(--gray-bg); border-radius: 3px; overflow: hidden; margin-top: 4px; }
 .bar > span { display: block; height: 100%; background: var(--accent); }
@@ -217,7 +219,7 @@ const DECISIONS = {
 };
 const RSTATUS = {
   none: "Roblox'ta YOK", early: "Erken aşama", rising: "Yükselişte",
-  competitive: "Rekabetçi", saturated: "Doymuş"
+  competitive: "Rekabetçi", saturated: "Doymuş", unknown: "Doğrulanamadı"
 };
 const CHARTS = {
   steam_topsellers: "Steam Satış", steam_weekly: "Steam Haftalık", steam_mostplayed: "Steam Oynanan",
@@ -344,7 +346,11 @@ async function loadStatus() {
       `<span class="chip">${esc(s.source)} ${s.consecutive_failures ? "⚠️ " + s.consecutive_failures + " hata" : "✅"}</span>`).join("");
     const ch = (st.channels || []).map(c =>
       `<span class="chip">${esc(c.name)} ≥${esc(c.min_priority)} ${c.last_error ? "⚠️" : ""}</span>`).join("");
-    $("system").innerHTML = `
+    const rb = st.roblox || {};
+    const rbBanner = rb.state === "down"
+      ? `<div class="banner">⚠️ Roblox'a ulaşılamıyor (${esc(rb.reason)}). VPN kapalı olabilir; kararlar Roblox doğrulaması olmadan üretiliyor ve bağlantı gelince otomatik doğrulanacak.</div>`
+      : rb.state === "off" ? `<div class="banner">Roblox kapalı: kararlar Roblox'suz üretiliyor.</div>` : "";
+    $("system").innerHTML = rbBanner + `
       <p class="small muted">Çalışma süresi: ${Math.floor(st.uptime / 3600)} sa ${Math.floor(st.uptime % 3600 / 60)} dk
       ${st.bootstrapping ? " · <b>başlangıç taraması sürüyor</b>" : ""}</p>
       <div class="chips">${src}</div><p class="small muted">Son çalışmalar</p><div class="chips">${runs || "-"}</div>

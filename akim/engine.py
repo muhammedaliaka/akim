@@ -165,6 +165,7 @@ class Engine:
         self.roblox_health = RobloxHealth()
         self._need_unverified_eval = False
         self._channel_ids: dict[str, str] = {}
+        self._youtube_silent = False
         self._scan_fail: dict[str, tuple[int, float]] = {}  # oyun -> (ardışık hata, yeniden deneme zamanı)
         down_since = float(self.store.get_kv("roblox_down_since") or 0)
         if down_since:  # kesinti sırasında yeniden başlatıldı: kesintiyi sürdür, tekrar uyarma
@@ -344,8 +345,20 @@ class Engine:
             if tkey not in best or cand["buzz"] > best[tkey]["buzz"]:
                 best[tkey] = cand
         lookups = 0
-        for tkey, cand in sorted(best.items(), key=lambda kv: -kv[1]["buzz"]):
-            lookups = await self._update_upcoming(tkey, cand, now, lookups)
+        # İlk tarama: o an ses getiren her oyun için ayrı bildirim yağdırmak yerine tek özet gönderilir
+        first_run = not self.store.get_kv("youtube_first_poll_done")
+        self._youtube_silent = first_run
+        try:
+            for tkey, cand in sorted(best.items(), key=lambda kv: -kv[1]["buzz"]):
+                lookups = await self._update_upcoming(tkey, cand, now, lookups)
+        finally:
+            self._youtube_silent = False
+        if first_run and best:
+            self.store.set_kv("youtube_first_poll_done", "1")
+            if not self.bootstrapping:  # başlangıç özeti zaten "Yaklaşan oyunlar" bölümünü taşır
+                await self._announce_first_trailers(now)
+        elif first_run:
+            self.store.set_kv("youtube_first_poll_done", "1")
         log.info("YouTube: %d video, %d fragman adayı", len(videos), len(best))
         self.bus.publish("upcoming", {"candidates": len(best), "ts": now})
 
@@ -425,9 +438,27 @@ class Engine:
         if should_alert:
             u["alerted_at"] = now
         self.store.save_upcoming(u)
-        if should_alert and not self.bootstrapping:  # ilk açılışta mevcutları sessizce "görüldü" say
+        if should_alert and not self.bootstrapping and not self._youtube_silent:  # ilk turda mevcutlar sessizce "görüldü" sayılır
             await self.dispatch(self._upcoming_alert(u, now))
         return lookups
+
+    async def _announce_first_trailers(self, now: float) -> None:
+        rows = self.store._all(
+            "SELECT * FROM upcoming WHERE state IN ('upcoming','unlisted') AND alerted_at IS NOT NULL "
+            "ORDER BY buzz DESC LIMIT 8"
+        )
+        if not rows:
+            return
+        lines = [
+            f"🎬 {r['title']} — {_fmt_int(r['views'])} izlenme · çıkış: {_fmt_date(r.get('release_ts'))}"
+            + ("" if r["state"] == "upcoming" else " (mağaza sayfası yok)")
+            for r in rows
+        ]
+        await self.dispatch(Alert(
+            type="digest", priority=Priority.MEDIUM,
+            title=f"Fragman izleme başladı: şu an ses getiren {len(rows)} çıkmamış oyun",
+            body="\n".join(lines) + "\n\nBundan sonra yeni bir oyun ses getirince ayrı ayrı bildirilecek.",
+        ))
 
     def _upcoming_alert(self, u: dict, now: float) -> Alert:
         listed = u["state"] == "upcoming"

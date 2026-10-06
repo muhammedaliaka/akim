@@ -276,3 +276,52 @@ def test_explain_error_and_durations():
     assert human_duration(30) == "1 dk'dan kısa"
     assert human_duration(125 * 60) == "2 sa 5 dk"
     assert human_duration(3 * 86400 + 2 * 3600) == "3 gün 2 sa"
+
+
+# ---------------------------------------------------------------------- tarayıcı döngüsü (uçtan uca, hızlandırılmış zaman)
+def test_scanner_loop_rides_out_a_vpn_drop(monkeypatch):
+    """VPN kapalıyken başla -> Roblox'suz rapor + tek uyarı -> VPN açılınca otomatik doğrula ve FIRSAT bildir."""
+    import akim.engine as engine_module
+
+    real_sleep = asyncio.sleep
+
+    async def fast_sleep(delay, *a, **k):
+        await real_sleep(0.001)
+
+    async def scenario():
+        engine, cap = make()
+        engine.cfg.roblox.probe_minutes = 0  # kesintide her turda yokla
+        engine.cfg.roblox.outage_alert_minutes = 0  # uyarı hemen
+        engine.roblox.down = True
+        engine.bootstrapping = False
+        engine.steam.entries = [ChartEntry("steam_topsellers", 30, indie_game())]
+        await engine.poll_steam()
+
+        monkeypatch.setattr(engine_module.asyncio, "sleep", fast_sleep)
+        loop_task = asyncio.create_task(engine._scanner_loop())
+
+        async def wake_until(predicate, what):
+            for _ in range(600):
+                if predicate():
+                    return
+                engine._wake_scanner.set()
+                await real_sleep(0.01)
+            raise AssertionError(f"zaman aşımı: {what}")
+
+        try:
+            await wake_until(lambda: engine.roblox_health.state == "down", "kesinti ilanı")
+            await wake_until(lambda: any(a.type == "rising_unverified" for a in cap.sent), "Roblox'suz rapor")
+            await wake_until(lambda: any(a.type == "system" for a in cap.sent), "kesinti uyarısı")
+            assert len([a for a in cap.sent if a.type == "system"]) == 1
+            assert engine.store.last_roblox_check("steam:100") is None  # "yok" yazılmadı
+
+            engine.roblox.down = False  # VPN açıldı
+            await wake_until(lambda: any(a.type == "opportunity" for a in cap.sent), "toparlanma + FIRSAT")
+            assert engine.roblox_health.state == "ok"
+            titles = [a.title for a in cap.sent if a.type == "system"]
+            assert titles == ["Roblox'a ulaşılamıyor", "Roblox yeniden çalışıyor"]
+        finally:
+            loop_task.cancel()
+            await asyncio.gather(loop_task, return_exceptions=True)
+
+    run(scenario())

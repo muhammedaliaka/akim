@@ -67,3 +67,22 @@ def test_removed_llm_section_is_ignored_with_warning(tmp_path, monkeypatch, capl
         cfg = load_config(f)
     assert cfg.scoring.clone_threshold == 0.8
     assert any("llm" in r.getMessage() and "yok sayıldı" in r.getMessage() for r in caplog.records)
+
+
+def test_bad_config_gives_a_plain_message_not_a_traceback(tmp_path, capsys, monkeypatch):
+    import pytest
+
+    from akim.__main__ import main
+
+    monkeypatch.delenv("AKIM_CONFIG", raising=False)
+    cfg = tmp_path / "config.yaml"
+    cfg.write_text("roblox:\n  recheck_hourz: 3\n", encoding="utf-8")
+    with pytest.raises(SystemExit) as info:
+        main(["-c", str(cfg), "top"])
+    err = capsys.readouterr().err
+    assert info.value.code == 2 and "Ayar dosyası okunamadı" in err and "recheck_hourz" in err and "Traceback" not in err
+
+    cfg.write_text("general: [bozuk\n", encoding="utf-8")
+    with pytest.raises(SystemExit) as info:
+        main(["-c", str(cfg), "top"])
+    assert info.value.code == 2 and "Ayar dosyası okunamadı" in capsys.readouterr().err

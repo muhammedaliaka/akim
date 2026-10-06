@@ -15,9 +15,12 @@ import argparse
 import asyncio
 import logging
 import logging.handlers
+import os
 import sys
 import time
 from pathlib import Path
+
+import yaml
 
 from . import __version__
 from .config import Config, load_config
@@ -257,6 +260,21 @@ def cmd_top(cfg: Config, limit: int) -> None:
     store.close()
 
 
+def _config_error(exc: Exception, config_path: str | None, console: bool) -> None:
+    """Config okunamazsa traceback yerine anlaşılır bir mesaj verir (konsolsuzsa yanına dosya yazar)."""
+    where = config_path or os.environ.get("AKIM_CONFIG") or "config.yaml"
+    detail = str(exc).strip().splitlines()[0] if str(exc).strip() else exc.__class__.__name__
+    msg = f"Ayar dosyası okunamadı ({where}): {detail}\nDosyayı düzeltip yeniden başlat; örnek: config.example.yaml"
+    print(msg, file=sys.stderr)
+    if not console:  # pythonw / Görev Zamanlayıcı: hata görünmez olmasın
+        try:
+            target = Path(where).resolve().parent if Path(where).exists() else Path.cwd()
+            (target / "akim-ayar-hatasi.txt").write_text(msg + "\n", encoding="utf-8")
+        except OSError:
+            pass
+    sys.exit(2)
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="akim", description="Steam/Epic → Roblox 7/24 akım izleme sistemi")
     parser.add_argument("-c", "--config", help="config.yaml yolu (varsayılan: AKIM_CONFIG veya ./config.yaml)")
@@ -279,7 +297,10 @@ def main(argv: list[str] | None = None) -> None:
 
     console = has_console()  # setup_console() konsolsuz akışları değiştirmeden önce ölç
     color = setup_console()
-    cfg = load_config(args.config)
+    try:
+        cfg = load_config(args.config)
+    except (ValueError, OSError, yaml.YAMLError) as exc:
+        _config_error(exc, args.config, console)
     log_file = cfg.general.log_file
     if not log_file and not console:
         log_file = str(Path(cfg.general.data_dir) / "akim.log")  # pythonw/Görev Zamanlayıcı: log görünmez olmasın

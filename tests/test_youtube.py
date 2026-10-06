@@ -156,8 +156,10 @@ def store_game(title, *, coming_soon=True, publishers=("Tiny Pond",), kind="game
     )
 
 
-def make(games=None):
+def make(games=None, first_run=False):
     engine, cap = build()
+    if not first_run:
+        engine.store.set_kv("youtube_first_poll_done", "1")  # çalışan sistem: ilk tur özeti geçti
     engine.cfg.youtube.channels = [CHANNEL]
     engine.youtube = FakeYouTube()
     catalog = games or {}
@@ -341,3 +343,34 @@ def test_old_or_unpopular_videos_are_ignored():
         assert alerts(cap) == [] and engine.store.get_upcoming("moss garden") is None
 
     run(scenario())
+
+
+def test_first_poll_sends_one_summary_then_individual_alerts():
+    """Yükseltme sonrası ilk tur: mevcut her oyun için ayrı bildirim yağmaz, tek özet gider."""
+    async def scenario():
+        engine, cap = make({"Moss Garden": store_game("Moss Garden"), "Pine Cave": store_game("Pine Cave")}, first_run=True)
+        engine.youtube.videos = [
+            video("Moss Garden - Official Reveal Trailer", 200_000, vid="i1"),
+            video("Pine Cave - Official Reveal Trailer", 150_000, vid="i2"),
+        ]
+        await engine.poll_youtube()
+        assert alerts(cap) == []
+        [summary] = alerts(cap, "digest")
+        assert "Fragman izleme başladı" in summary.title and "Moss Garden" in summary.body and "Pine Cave" in summary.body
+        # aynı oyunlar bir daha bildirilmez; yeni bir oyun ayrı bildirim üretir
+        engine.steam.find_by_title = _catalog_with(engine, {"New Reef": store_game("New Reef")})
+        engine.youtube.videos.append(video("New Reef - Official Reveal Trailer", 250_000, vid="i3"))
+        await engine.poll_youtube()
+        [one] = alerts(cap)
+        assert "New Reef" in one.title and len(alerts(cap, "digest")) == 1
+
+    run(scenario())
+
+
+def _catalog_with(engine, extra):
+    previous = engine.steam.find_by_title
+
+    async def find(title):
+        return extra.get(title) or await previous(title)
+
+    return find

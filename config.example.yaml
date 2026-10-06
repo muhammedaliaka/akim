@@ -132,6 +132,12 @@ notifications:
 
 web:
   enabled: true
-  host: 0.0.0.0
+  # Varsayılan yalnızca bu cihaz. Telefondan/aynı Wi-Fi'dan açmak için "0.0.0.0" yap ve AKIM_WEB_TOKEN ayarla.
+  # (Docker'da kapsayıcı içinde 0.0.0.0 gerekir; docker-compose.yml portu yalnızca bu makineye yayımlar.)
+  host: 127.0.0.1
   port: 8080
-  token: ${AKIM_WEB_TOKEN}    # boş değilse panelden anlık kontrol için gerekli
+  # Token doluysa kontrol uçları "Authorization: Bearer <token>" ister. Boşsa kontrol yalnızca bu cihazdan çalışır;
+  # ağdaki cihazlar paneli okuyabilir ama Roblox sorgusu/yeniden tarama yapamaz.
+  token: ${AKIM_WEB_TOKEN}
+  # IP ve *.local dışındaki adlarla erişim için (ör. Tailscale: "pc.tailnet.ts.net"): DNS rebinding savunması
+  allowed_hosts: []

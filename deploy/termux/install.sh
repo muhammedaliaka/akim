@@ -23,6 +23,7 @@ export FROZENLIST_NO_EXTENSIONS=1 PROPCACHE_NO_EXTENSIONS=1
 
 [ -f config.yaml ] || { cp config.example.yaml config.yaml; echo "config.yaml oluşturuldu"; }
 [ -f .env ] || { cp .env.example .env; echo ".env oluşturuldu"; }
+chmod 600 .env config.yaml 2>/dev/null || true   # token ve konu adları yalnızca sana açık olsun
 
 .venv/bin/akim --version
 cat <<'MSG'

@@ -233,10 +233,13 @@ class NotificationConfig:
 @dataclass
 class WebConfig:
     enabled: bool = True
-    host: str = "0.0.0.0"
+    # Varsayılan yalnızca bu cihaz. Telefondan/aynı ağdan açmak için "0.0.0.0" yap ve AKIM_WEB_TOKEN ayarla.
+    host: str = "127.0.0.1"
     port: int = 8080
-    # Boş değilse POST uç noktaları "Authorization: Bearer <token>" ister
+    # Token doluysa kontrol uçları "Authorization: Bearer <token>" ister. Boşsa kontrol yalnızca bu cihazdan çalışır.
     token: str = ""
+    # IP ve *.local dışındaki adlarla erişim için (ör. "pc.tailnet.ts.net", "*.example.org"): DNS rebinding savunması
+    allowed_hosts: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -375,6 +378,8 @@ def _apply_env_shortcuts(cfg: Config) -> None:
         ch["slack"] = ChannelConfig(enabled=True, webhook_url=env["AKIM_SLACK_WEBHOOK_URL"])
     if env.get("AKIM_WEB_TOKEN"):
         cfg.web.token = env["AKIM_WEB_TOKEN"]
+    if env.get("AKIM_WEB_HOST"):
+        cfg.web.host = env["AKIM_WEB_HOST"]
     if env.get("AKIM_LAYA_ENABLED"):
         cfg.laya.enabled = env["AKIM_LAYA_ENABLED"].strip().lower() in {"1", "true", "yes", "on", "evet"}
     if env.get("AKIM_DATA_DIR"):

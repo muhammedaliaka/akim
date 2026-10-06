@@ -110,6 +110,19 @@ MIGRATIONS = [
 ]
 
 
+_BOARD_SQL = """
+    SELECT d.*, g.title, g.title_key, g.store, g.url, g.image, g.publishers, g.developers, g.tags,
+           g.release_ts, g.indie_tier, g.last_seen, g.first_seen,
+           (SELECT MIN(rank) FROM chart_state c WHERE c.key=d.key AND c.last_seen>=?) AS best_rank,
+           (SELECT GROUP_CONCAT(chart || ':' || rank) FROM chart_state c WHERE c.key=d.key AND c.last_seen>=?) AS charts
+    FROM decisions d JOIN games g ON g.key=d.key
+    {where}
+    ORDER BY CASE d.decision WHEN 'opportunity' THEN 0 WHEN 'rising_trend' THEN 1 WHEN 'watch' THEN 2
+             WHEN 'low' THEN 3 WHEN 'saturated' THEN 4 ELSE 5 END, d.score DESC
+    LIMIT ?
+"""
+
+
 def _row(r: sqlite3.Row | None) -> dict | None:
     return dict(r) if r is not None else None
 
@@ -322,7 +335,7 @@ class Storage:
             return {}
         q = ",".join("?" * len(keys))
         out: dict[str, list[tuple[int, float]]] = {}
-        for r in self._all(f"SELECT key, universe_id, weight FROM roblox_links WHERE key IN ({q})", keys):
+        for r in self._all(f"SELECT key, universe_id, weight FROM roblox_links WHERE key IN ({q})", keys):  # nosec B608
             out.setdefault(r["key"], []).append((r["universe_id"], r["weight"] if r["weight"] is not None else 1.0))
         return out
 
@@ -341,7 +354,7 @@ class Storage:
 
     def last_roblox_check(self, key: str, full_scan_only: bool = False) -> dict | None:
         extra = " AND full_scan=1" if full_scan_only else ""
-        return self._one(f"SELECT * FROM roblox_checks WHERE key=?{extra} ORDER BY ts DESC LIMIT 1", (key,))
+        return self._one(f"SELECT * FROM roblox_checks WHERE key=?{extra} ORDER BY ts DESC LIMIT 1", (key,))  # nosec B608
 
     def roblox_baseline(self, key: str, since: float, before: float) -> int | None:
         r = self._one(
@@ -428,17 +441,8 @@ class Storage:
         if since:
             where.append("g.last_seen>=?")
             params.append(since)
-        sql = f"""
-            SELECT d.*, g.title, g.title_key, g.store, g.url, g.image, g.publishers, g.developers, g.tags,
-                   g.release_ts, g.indie_tier, g.last_seen, g.first_seen,
-                   (SELECT MIN(rank) FROM chart_state c WHERE c.key=d.key AND c.last_seen>=?) AS best_rank,
-                   (SELECT GROUP_CONCAT(chart || ':' || rank) FROM chart_state c WHERE c.key=d.key AND c.last_seen>=?) AS charts
-            FROM decisions d JOIN games g ON g.key=d.key
-            {"WHERE " + " AND ".join(where) if where else ""}
-            ORDER BY CASE d.decision WHEN 'opportunity' THEN 0 WHEN 'rising_trend' THEN 1 WHEN 'watch' THEN 2
-                     WHEN 'low' THEN 3 WHEN 'saturated' THEN 4 ELSE 5 END, d.score DESC
-            LIMIT ?
-        """
+        where_sql = ("WHERE " + " AND ".join(where)) if where else ""  # yalnızca sabit parçalar ve ? yer tutucuları
+        sql = _BOARD_SQL.replace("{where}", where_sql)
         rows = self._all(sql, params + [limit])
         for r in rows:
             r["reasons"] = json.loads(r["reasons"] or "[]")
@@ -559,7 +563,7 @@ class Storage:
         row["tags"] = json.dumps(u.get("tags") or [], ensure_ascii=False)
         updates = ", ".join(f"{c}=excluded.{c}" for c in cols if c not in ("title_key", "first_seen"))
         self.db.execute(
-            f"INSERT INTO upcoming({', '.join(cols)}) VALUES({', '.join('?' * len(cols))}) "
+            f"INSERT INTO upcoming({', '.join(cols)}) VALUES({', '.join('?' * len(cols))}) "  # nosec B608
             f"ON CONFLICT(title_key) DO UPDATE SET {updates}",
             tuple(row[c] for c in cols),
         )
@@ -571,7 +575,7 @@ class Storage:
         states = list(states)
         q = ",".join("?" * len(states))
         rows = self._all(
-            f"SELECT * FROM upcoming WHERE state IN ({q}) AND COALESCE(buzz,0)>=? ORDER BY buzz DESC, views DESC LIMIT ?",
+            f"SELECT * FROM upcoming WHERE state IN ({q}) AND COALESCE(buzz,0)>=? ORDER BY buzz DESC, views DESC LIMIT ?",  # nosec B608
             states + [min_buzz, limit],
         )
         return [self._decode_upcoming(r) for r in rows]
@@ -611,7 +615,7 @@ class Storage:
 
     def prune(self, older_than: float) -> None:
         for table in ("chart_snapshots", "game_metrics", "roblox_metrics", "roblox_checks"):
-            self.db.execute(f"DELETE FROM {table} WHERE ts<?", (older_than,))
+            self.db.execute(f"DELETE FROM {table} WHERE ts<?", (older_than,))  # nosec B608
         self.db.execute("DELETE FROM alerts WHERE ts<?", (older_than,))
         self.db.execute("DELETE FROM trailer_metrics WHERE ts<?", (older_than,))
         self.db.execute("DELETE FROM trailers WHERE last_seen<?", (older_than,))

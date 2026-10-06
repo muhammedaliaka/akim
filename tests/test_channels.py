@@ -116,7 +116,7 @@ def test_ntfy_discord_slack_payloads():
         assert "Skor: 0.81" in body
         embed = got["discord"]["embeds"][0]
         assert embed["url"] == a.url and embed["fields"][0] == {"name": "Skor", "value": "0.81", "inline": True}
-        assert "*FIRSAT: Moss <Diver>*" in got["slack"]["text"]
+        assert "*FIRSAT: Moss &lt;Diver&gt;*" in got["slack"]["text"]  # Slack: < > & kaçışlı (<!channel> tetiklenmesin)
         await http.close()
         await server.close()
 

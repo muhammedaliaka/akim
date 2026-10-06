@@ -1284,6 +1284,14 @@ class Engine:
             for line, r in zip(self._summary_lines(rows), rows):
                 lines.append(f'{e(line)} — <a href="{e(r["url"] or "", quote=True)}">mağaza</a>')
             return "\n".join(lines)
+        if cmd in ("rapor", "report"):
+            from .report import build_report
+
+            try:
+                days = min(30.0, max(1.0, float(arg))) if arg else 7.0
+            except ValueError:
+                days = 7.0
+            return e(build_report(self.store, self.cfg, days))
         if cmd in ("yaklasan", "yaklaşan", "upcoming"):
             rows = self.upcoming_board(limit=10)
             if not rows:
@@ -1373,5 +1381,6 @@ class Engine:
             "/kontrol &lt;oyun&gt; — bir oyunu anında Roblox'ta kontrol et\n"
             "/oyun &lt;oyun&gt; — takip edilen oyunun detayı\n"
             "/yaklasan — fragmandan yakalanan çıkmamış oyunlar\n"
+            "/rapor [gün] — son günlerin sade raporu\n"
             "/durum — sistem durumu"
         )

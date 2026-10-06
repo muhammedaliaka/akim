@@ -82,7 +82,7 @@ class LayaVerdict:
 
 def _fingerprint(ctx: GameContext, g: RobloxGame, checkpoint: str) -> str:
     raw = f"{checkpoint}|{pc_text(ctx)}|{roblox_text(g.name, g.description)}"
-    return hashlib.sha1(raw.encode("utf-8")).hexdigest()[:16]
+    return hashlib.sha1(raw.encode("utf-8"), usedforsecurity=False).hexdigest()[:16]  # önbellek anahtarı, güvenlik amaçlı değil
 
 
 class LayaJudge:

@@ -8,7 +8,7 @@ import time
 
 from ..config import NotificationConfig
 from ..events import EventBus
-from ..http import HttpClient
+from ..http import HttpClient, register_secret
 from ..models import Alert, Priority
 from ..storage import Storage
 from .base import Channel
@@ -23,6 +23,8 @@ def build_channels(cfg: NotificationConfig, http: HttpClient, command_handler: C
     for name, ch in cfg.channels.items():
         if not ch.enabled:
             continue
+        for secret in (ch.bot_token, ch.webhook_url, ch.topic, ch.token, ch.url, ch.password, *ch.headers.values()):
+            register_secret(secret)  # log, hata ve panel metinlerinde maskelenir
         kind = name.split(":")[0]  # "discord:ekip" gibi aynı türden birden fazla kanal
         try:
             if kind == "console":

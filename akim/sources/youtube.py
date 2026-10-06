@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import logging
 import re
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ET  # nosec B405 - DTD/ENTITY içeren girdi ayrıştırılmadan reddedilir (parse_feed)
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
@@ -59,7 +59,7 @@ def parse_feed(xml_text: str) -> list[Video]:
     if "<!doctype" in head or "<!entity" in head or "<!entity" in xml_text.lower():
         raise FeedError("güvenilmeyen XML (DTD/ENTITY)")
     try:
-        root = ET.fromstring(xml_text)
+        root = ET.fromstring(xml_text)  # nosec B314 - DTD/ENTITY yukarıda reddedildi
     except ET.ParseError as exc:
         raise FeedError(f"XML ayrıştırılamadı: {exc}") from exc
     if not root.tag.endswith("feed"):

@@ -5,6 +5,8 @@
     python -m akim check "Schedule I"  # bir oyunu anında Roblox'ta kontrol et
     python -m akim top                 # veritabanındaki güncel fırsat tablosu
     python -m akim test-notify         # tüm kanallara test bildirimi gönder
+    python -m akim report --days 7     # son günlerin sade raporu (bildirimler, kesintiler, dikkat edilecekler)
+    python -m akim invite              # arkadaşlar için ntfy katılım metni (WhatsApp'a yapıştır)
 """
 
 from __future__ import annotations
@@ -21,9 +23,12 @@ from . import __version__
 from .config import Config, load_config
 from .engine import DECISION_EMOJI, Engine, _fmt_int
 from .events import EventBus
-from .http import HttpClient
+from .http import HttpClient, RedactingFormatter
 from .models import Decision, RobloxStatus
 from .notify import Notifier, build_channels
+from .sources import RobloxUnavailable
+from .invite import OWNER_NOTE, build_invite, ntfy_target, suggest_topic, topic_weakness
+from .report import build_report
 from .runtime import has_console, install_stop_handlers, keep_awake, lan_addresses, setup_console
 from .storage import Storage
 
@@ -34,7 +39,7 @@ LOG_FORMAT = "%(asctime)s %(levelname)-7s %(name)s: %(message)s"
 LOG_DATEFMT = "%Y-%m-%d %H:%M:%S"
 
 
-class ColorFormatter(logging.Formatter):
+class ColorFormatter(RedactingFormatter):
     """Bildirim kanalının işaretlediği kayıtları renklendirir (yalnızca konsol işleyicisinde kullanılır)."""
 
     def format(self, record: logging.LogRecord) -> str:
@@ -49,13 +54,13 @@ def setup_logging(level: str, log_file: str = "", color: bool = False) -> None:
     for handler in list(root.handlers):
         root.removeHandler(handler)
     console = logging.StreamHandler()
-    console.setFormatter(ColorFormatter(LOG_FORMAT, LOG_DATEFMT) if color else logging.Formatter(LOG_FORMAT, LOG_DATEFMT))
+    console.setFormatter(ColorFormatter(LOG_FORMAT, LOG_DATEFMT) if color else RedactingFormatter(LOG_FORMAT, LOG_DATEFMT))
     root.addHandler(console)
     if log_file:
         try:
             Path(log_file).parent.mkdir(parents=True, exist_ok=True)
             fh = logging.handlers.RotatingFileHandler(log_file, maxBytes=5_000_000, backupCount=3, encoding="utf-8")
-            fh.setFormatter(logging.Formatter(LOG_FORMAT, LOG_DATEFMT))
+            fh.setFormatter(RedactingFormatter(LOG_FORMAT, LOG_DATEFMT))
             root.addHandler(fh)
         except OSError as exc:
             root.warning("Log dosyası açılamadı (%s): %s", log_file, exc)
@@ -102,6 +107,9 @@ async def cmd_run(cfg: Config) -> None:
                 # Bildirimler panelden önemli: port doluysa (Windows'ta 8080 sık kullanılır) panelsiz sürdür
                 log.error("Web paneli başlatılamadı (port %d dolu olabilir; web.port ile değiştir): %s", cfg.web.port, exc)
 
+        target = ntfy_target(cfg)
+        if target and (weak := topic_weakness(target[1])):
+            log.warning("ntfy konu adı %s; tahmin edilirse bildirimlerin okunabilir. Öneri: AKIM_NTFY_TOPIC=%s", weak, suggest_topic())
         log.info("Akım %s başladı (veri: %s)", __version__, cfg.db_path)
         engine_task = asyncio.create_task(app.engine.run_forever(), name="engine")
         stop_task = asyncio.create_task(stop.wait(), name="stop")
@@ -147,16 +155,30 @@ async def cmd_once(cfg: Config, limit: int, notify: bool) -> None:
             await e.poll_steam()
         if cfg.epic.enabled:
             await e.poll_epic()
-        due = e._due_games()[:limit]
-        print(f"\n{len(due)} bağımsız aday Roblox'ta taranıyor…")
+        if cfg.youtube.enabled:
+            await e.poll_youtube()
+        due = e._due_games()[:limit] if cfg.roblox.enabled else []
+        if due:
+            print(f"\n{len(due)} bağımsız aday Roblox'ta taranıyor…")
         for i, row in enumerate(due, 1):
             try:
                 await e.scan_roblox(row["key"])
+            except RobloxUnavailable as exc:
+                print(f"\n⚠️  Roblox'a ulaşılamıyor ({exc}). VPN gerekiyorsa aç. Roblox'suz karar tablosu gösteriliyor.")
+                break
             except Exception as exc:
                 print(f"  ! {row['title']}: {exc}")
             print(f"  [{i}/{len(due)}] {row['title']}")
+        if not e.roblox_usable():
+            await e._evaluate_unscanned()
         print()
         _print_board(e.board(limit=max(limit, 30)))
+        upcoming = e.upcoming_board(limit=10)
+        if upcoming:
+            print("\nYaklaşan oyunlar (YouTube fragmanı):")
+            for u in upcoming:
+                print(f"  🎬 {u['title'][:40]:40} {_fmt_int(u['views']):>7} izlenme · ses getirme {u['buzz']:.2f} · "
+                      f"{'Steam: yakında' if u['state'] == 'upcoming' else 'mağaza sayfası yok'}")
     finally:
         await app.close()
 
@@ -165,6 +187,9 @@ async def cmd_check(cfg: Config, title: str) -> None:
     app = App(cfg, notify=False)
     try:
         r = await app.engine.adhoc_check(title)
+    except RobloxUnavailable as exc:
+        print(f"\n⚠️  Roblox'a şu an ulaşılamıyor ({exc}). VPN gerekiyorsa aç ve tekrar dene.")
+        sys.exit(2)
     finally:
         await app.close()
     print(
@@ -202,6 +227,28 @@ async def cmd_test_notify(cfg: Config) -> None:
         sys.exit(1)
 
 
+def cmd_report(cfg: Config, days: float) -> None:
+    store = Storage(cfg.db_path)
+    try:
+        print(build_report(store, cfg, days))
+    finally:
+        store.close()
+
+
+def cmd_invite(cfg: Config) -> None:
+    target = ntfy_target(cfg)
+    if not target:
+        print("ntfy kurulu değil. .env dosyasına tahmin edilemez bir konu adı yaz, örn: AKIM_NTFY_TOPIC=akim-4f9c2a7e1b", file=sys.stderr)
+        sys.exit(1)
+    weak = topic_weakness(target[1])
+    if weak:
+        print(f"⚠️  Konu adın {weak}. Başkası tahmin edip bildirimlerini okuyabilir.", file=sys.stderr)
+        print(f"   Öneri: .env içinde AKIM_NTFY_TOPIC={suggest_topic()}\n", file=sys.stderr)
+    print(build_invite(*target))
+    print("\n" + "-" * 60)
+    print(OWNER_NOTE)
+
+
 def cmd_top(cfg: Config, limit: int) -> None:
     store = Storage(cfg.db_path)
     now = time.time()
@@ -225,6 +272,9 @@ def main(argv: list[str] | None = None) -> None:
     p_top = sub.add_parser("top", help="güncel fırsat tablosunu yazdır")
     p_top.add_argument("--limit", type=int, default=30)
     sub.add_parser("test-notify", help="tüm kanallara test bildirimi gönder")
+    p_report = sub.add_parser("report", help="son günlerin sade raporunu yazdır")
+    p_report.add_argument("--days", type=float, default=7)
+    sub.add_parser("invite", help="arkadaşlar için ntfy katılım metnini yazdır")
     args = parser.parse_args(argv)
 
     console = has_console()  # setup_console() konsolsuz akışları değiştirmeden önce ölç
@@ -246,6 +296,10 @@ def main(argv: list[str] | None = None) -> None:
             cmd_top(cfg, args.limit)
         elif command == "test-notify":
             asyncio.run(cmd_test_notify(cfg))
+        elif command == "report":
+            cmd_report(cfg, args.days)
+        elif command == "invite":
+            cmd_invite(cfg)
     except KeyboardInterrupt:
         pass
 

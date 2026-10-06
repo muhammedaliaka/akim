@@ -11,7 +11,7 @@ from email.message import EmailMessage
 from ..config import ChannelConfig
 from ..http import HttpClient
 from ..models import Alert, Priority
-from .base import PRIORITY_EMOJI, PRIORITY_LABEL, Channel, plain_text
+from .base import PRIORITY_EMOJI, PRIORITY_LABEL, Channel, oneline, plain_text, safe_url
 
 log = logging.getLogger("akim.alert")
 
@@ -50,11 +50,13 @@ class DiscordChannel(Channel):
             "fields": [{"name": k[:256], "value": (v or "-")[:1024], "inline": True} for k, v in alert.fields[:25]],
             "footer": {"text": f"Akım • {PRIORITY_LABEL[alert.priority]} öncelik"},
         }
-        if alert.url:
+        if safe_url(alert.url):
             embed["url"] = alert.url
-        if alert.image:
+        if safe_url(alert.image):
             embed["thumbnail"] = {"url": alert.image}
-        await self.http.post(self.cfg.webhook_url, json_body={"username": "Akım", "embeds": [embed]}, retries=2)
+        # oyun adları dış kaynaklıdır: "@everyone" gibi içerikler kimseyi etiketlememeli
+        payload = {"username": "Akım", "embeds": [embed], "allowed_mentions": {"parse": []}}
+        await self.http.post(self.cfg.webhook_url, json_body=payload, retries=2)
 
 
 class SlackChannel(Channel):
@@ -67,9 +69,10 @@ class SlackChannel(Channel):
         self.http = http
 
     async def send(self, alert: Alert) -> None:
-        fields = "\n".join(f"*{k}:* {v}" for k, v in alert.fields)
-        link = f"\n<{alert.url}|Mağaza sayfası>" if alert.url else ""
-        text = f"{PRIORITY_EMOJI[alert.priority]} *{alert.title}*\n{alert.body}\n{fields}{link}"
+        esc = _slack_escape  # <!channel>, <@kullanıcı> ve bağlantı biçimi dış metinden tetiklenmesin
+        fields = "\n".join(f"*{esc(k)}:* {esc(v)}" for k, v in alert.fields)
+        link = f"\n<{alert.url}|Bağlantı>" if safe_url(alert.url) and not any(c in alert.url for c in "<>|") else ""
+        text = f"{PRIORITY_EMOJI[alert.priority]} *{esc(alert.title)}*\n{esc(alert.body)}\n{fields}{link}"
         await self.http.post(self.cfg.webhook_url, json_body={"text": text}, retries=2)
 
 
@@ -93,19 +96,24 @@ class NtfyChannel(Channel):
             body += "\n" + "\n".join(f"{k}: {v}" for k, v in alert.fields)
         body = _clip_bytes(body, self.MAX_BODY)
         headers = {
-            # HTTP başlıkları latin-1 olmalı; Türkçe başlıklar için RFC 2047 kodlaması
-            "Title": _rfc2047(alert.title),
+            # HTTP başlıkları latin-1 olmalı; Türkçe başlıklar için RFC 2047 kodlaması. Satır sonu içeren bir oyun adı
+            # başlığı bozar (ve bildirimi kaybettirir), bu yüzden tek satıra indirilir.
+            "Title": _rfc2047(oneline(alert.title)),
             "Priority": self.PRIO[alert.priority],
             "Tags": self.TAGS[alert.priority],
         }
-        if alert.url:
+        if safe_url(alert.url):
             headers["Click"] = alert.url
-        if alert.image:
+        if safe_url(alert.image):
             headers["Attach"] = alert.image
         if self.cfg.token:
             headers["Authorization"] = f"Bearer {self.cfg.token}"
         url = f"{self.cfg.server.rstrip('/')}/{self.cfg.topic}"
         await self.http.post(url, data=body.encode("utf-8"), headers=headers, retries=2)
+
+
+def _slack_escape(text: str) -> str:
+    return (text or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
 def _clip_bytes(text: str, limit: int) -> str:
@@ -150,7 +158,7 @@ class EmailChannel(Channel):
 
     def _send_sync(self, alert: Alert) -> None:
         msg = EmailMessage()
-        msg["Subject"] = f"[Akım] {alert.title}"
+        msg["Subject"] = f"[Akım] {oneline(alert.title)}"
         msg["From"] = self.cfg.sender or self.cfg.username
         msg["To"] = ", ".join(self.cfg.recipients)
         msg.set_content(plain_text(alert))

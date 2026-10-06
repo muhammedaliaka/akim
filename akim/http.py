@@ -29,11 +29,32 @@ _SECRET_PATTERNS = [
 ]
 
 
-def redact(url: str) -> str:
-    """Log ve hata mesajlarında gizli bilgi taşıyan URL parçalarını maskeler."""
+# Yapılandırmadan gelen gizli değerler (bot token, webhook adresi, ntfy konusu, parolalar...). ntfy konusu da bir
+# parola gibidir: bilen herkes bildirimleri okuyabilir. Her metinde bunlar maskelenir.
+_SECRETS: set[str] = set()
+
+
+def register_secret(value: str | None) -> None:
+    """Bu değer bundan sonra log, hata ve panel metinlerinde '***' olarak görünür (çok kısa değerler yok sayılır)."""
+    if value and len(value) >= 6:
+        _SECRETS.add(value)
+
+
+def redact(text: str) -> str:
+    """Log ve hata mesajlarında gizli bilgi taşıyan parçaları maskeler."""
     for pattern, repl in _SECRET_PATTERNS:
-        url = pattern.sub(repl, url)
-    return url
+        text = pattern.sub(repl, text)
+    for secret in _SECRETS:
+        if secret in text:
+            text = text.replace(secret, "***")
+    return text
+
+
+class RedactingFormatter(logging.Formatter):
+    """Biçimlenmiş log satırını (istisna izleri dahil) yazmadan önce gizli bilgilerden arındırır."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        return redact(super().format(record))
 
 
 class HttpError(Exception):
@@ -155,10 +176,10 @@ class HttpClient:
                 last_exc = exc
                 if attempt < attempts - 1:
                     delay = _backoff(attempt)
-                    log.warning("%s %s ağ hatası (%s), %.1fs sonra tekrar", method, redact(url), exc, delay)
+                    log.warning("%s %s ağ hatası (%s), %.1fs sonra tekrar", method, redact(url), redact(str(exc)), delay)
                     await asyncio.sleep(delay)
                     continue
-        raise ConnectionError(f"{method} {redact(url)} başarısız: {last_exc}")
+        raise ConnectionError(redact(f"{method} {url} başarısız: {last_exc}"))
 
     async def get_json(self, url: str, **kw) -> Any:
         _, text = await self.request("GET", url, **kw)
@@ -173,7 +194,7 @@ class HttpClient:
 
 
 def _backoff(attempt: int) -> float:
-    return min(60.0, 2.0 * (2**attempt)) + random.uniform(0, 1)
+    return min(60.0, 2.0 * (2**attempt)) + random.uniform(0, 1)  # nosec B311 - yeniden deneme titreşimi, güvenlik amaçlı değil
 
 
 def _retry_after(value: str | None) -> float | None:

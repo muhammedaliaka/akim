@@ -41,9 +41,15 @@ sh deploy/termux/run.sh      # tmux'tan ayrılmak için Ctrl+B, sonra D; geri d�
 `run.sh` uykuyu engeller (`termux-wake-lock`), hata ile durursa 15 sn sonra yeniden başlatır; Ctrl+C temiz kapanır.
 Termux'u yeniden başlatırsan (telefon açılışı dahil) bu adımı elle tekrarla.
 
-Paneli aynı telefonda aç: Chrome'da `http://localhost:8080` → menü → **Uygulamayı yükle**. `localhost` güvenli bağlam sayıldığından tam PWA çalışır.
+Paneli aynı telefonda aç (varsayılan olarak yalnızca bu telefondan erişilir; başka cihazlar için `.env` içine `AKIM_WEB_HOST=0.0.0.0` ve `AKIM_WEB_TOKEN` yaz): Chrome'da `http://localhost:8080` → menü → **Uygulamayı yükle**. `localhost` güvenli bağlam sayıldığından tam PWA çalışır.
 
-## 5. Öldürülmeyi azalt
+## 5. Roblox erişimi (VPN)
+
+Roblox'a erişimin engelli olduğu bir ağdaysan telefonda VPN açık olmalı. Bölünmüş tünel (split tunneling) Termux'u dışarıda bırakmıyorsa VPN Termux trafiğini de kapsar.
+VPN kapanırsa Akım durmaz: Roblox'suz "yükseliyor" raporu verir ve VPN açılınca kendiliğinden doğrular. Kesinti 10 dakikayı aşarsa tek bir uyarı gelir.
+Son günlerde ne olduğunu görmek için: `.venv/bin/akim report`.
+
+## 6. Öldürülmeyi azalt
 
 1. **HyperOS:** Termux'u son uygulamalarda kilitle; Ayarlar → Uygulamalar → Termux → "Arka planda otomatik başlatma" açık, pil kısıtlaması **Kısıtlama yok** ([android-hyperos.md](android-hyperos.md) bölüm 2).
 2. **Phantom Process Killer** ([kaynak](https://github.com/agnostic-apollo/Android-Docs/blob/master/en/docs/apps/processes/phantom-cached-and-empty-processes.md)):
@@ -66,5 +72,5 @@ cd akim && git pull && .venv/bin/python -m pip install -e .
 |---|---|
 | `pip install` derleme hatası veriyor | Aynı Termux oturumunda `sh deploy/termux/install.sh` çalıştır (derlemeyi atlatan değişkenleri o ayarlar). Hata sürerse çıktıyı paylaş |
 | `Web paneli başlatılamadı (port 8080 dolu olabilir)` | `config.yaml` → `web.port: 8088` |
-| Bir süre sonra Akım kendiliğinden kapanıyor | Bölüm 5; Termux'un hâlâ çalıştığını ve wake-lock'un açık olduğunu kontrol et |
+| Bir süre sonra Akım kendiliğinden kapanıyor | Bölüm 6; Termux'un hâlâ çalıştığını ve wake-lock'un açık olduğunu kontrol et |
 | Bildirim gelmiyor | Konsol çıktısına bak (dosyaya da yazmak için `config.yaml` → `general.log_file: akim.log`); `.venv/bin/akim test-notify` çalıştır |

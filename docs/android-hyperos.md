@@ -46,7 +46,9 @@ Ayarları yapınca **gerçekten işe yaradığını** şöyle test et; Android c
 
 ## 4. Paneli telefona ekle
 
-Sunucu log'unda `Telefondan (aynı Wi-Fi): http://192.168.x.x:8080` adresi yazar. Chrome/Mi Tarayıcı'da aç → menü → **Ana ekrana ekle** (veya **Uygulamayı yükle**).
+Panel varsayılan olarak yalnızca sunucu makinesinden açılır. Telefondan açmak için sunucuda `.env` içine `AKIM_WEB_HOST=0.0.0.0` ve güçlü bir `AKIM_WEB_TOKEN` yaz
+(ayrıntı: [windows.md](windows.md#telefondan-panele-erişim)); yeniden başlatınca log'a `Telefondan (aynı Wi-Fi): http://192.168.x.x:8080` yazar.
+Chrome/Mi Tarayıcı'da aç → menü → **Ana ekrana ekle** (veya **Uygulamayı yükle**). Token olmadan panel telefonda yalnızca okunur.
 
 - Panel telefonda tek sütun, büyük dokunma hedefleri, çentik/çene güvenli alanları ve açık/koyu temayla çalışır; ekran kilidinden dönünce canlı bağlantıyı kendi yeniler.
 - Düz `http://` (HTTPS olmayan yerel adres) üzerinde tarayıcı servis çalışanını çalıştırmaz: ana ekran kısayolu çalışır, tam "uygulama" kabuğu ve çevrimdışı açılış yalnızca HTTPS/`localhost` üzerinde olur.

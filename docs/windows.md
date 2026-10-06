@@ -28,16 +28,32 @@ Görev oturum açılınca başladığından yeniden başlatmadan sonra bir kez o
 
 ## Telefondan panele erişim
 
-Sunucu açılışında log'a `Telefondan (aynı Wi-Fi): http://192.168.x.x:8080` yazar. İlk çalıştırmada Windows Güvenlik Duvarı izin sorar:
-**Özel ağlar**'ı işaretle. Sonradan elle açmak için (yönetici PowerShell):
+Panel varsayılan olarak **yalnızca bu bilgisayardan** açılır (<http://localhost:8080>). Telefondan (aynı Wi-Fi) açmak için:
 
-```powershell
-New-NetFirewallRule -DisplayName "Akim Panel" -Direction Inbound -Protocol TCP -LocalPort 8080 -Profile Private -Action Allow
-```
+1. `.env` dosyasına ekle (Not Defteri ile):
 
-Panelin okuma uçları (tablo, bildirim akışı) kimlik istemez. **Kontrol/Yeniden tara** gibi yazma uçları yalnızca `AKIM_WEB_TOKEN` doluysa `Bearer` ister;
-boşsa ağdaki herkes bunları çağırabilir. Güvenmediğin bir Wi-Fi'deysen token ayarla.
-Yalnızca bu bilgisayardan erişmek için `config.yaml` → `web.host: 127.0.0.1`. Portu internete açma; uzaktan erişim için VPN (ör. Tailscale) kullan.
+   ```
+   AKIM_WEB_HOST=0.0.0.0
+   AKIM_WEB_TOKEN=<uzun rastgele bir değer>
+   ```
+
+   Rastgele değer için: `.venv\Scripts\python.exe -c "import secrets; print(secrets.token_urlsafe(24))"`
+2. Akım'ı yeniden başlat. Log'a `Telefondan (aynı Wi-Fi): http://192.168.x.x:8080` yazar. İlk çalıştırmada Windows Güvenlik Duvarı izin sorar:
+   **Özel ağlar**'ı işaretle. Sonradan elle açmak için (yönetici PowerShell):
+
+   ```powershell
+   New-NetFirewallRule -DisplayName "Akim Panel" -Direction Inbound -Protocol TCP -LocalPort 8080 -Profile Private -Action Allow
+   ```
+
+Token olmadan da telefonda panel **okunur** (tablo, bildirimler, yaklaşanlar), ama Roblox kontrolü ve "Yeniden tara" yalnızca bu bilgisayardan çalışır;
+ağdaki başka bir cihaz bunları token'sız çağıramaz. Güvenmediğin bir Wi-Fi'deysen paneli hiç açma (`web.host: 127.0.0.1` kalsın).
+Portu internete açma; uzaktan erişim için VPN (ör. Tailscale) kullan ve adı `web.allowed_hosts` içine yaz (ör. `*.ts.net`).
+
+## Roblox erişimi (VPN)
+
+Roblox'a erişimin engelli olduğu bir ağdaysan Akım'ın çalıştığı bilgisayarda VPN açık olmalı. VPN kapanırsa Akım durmaz:
+Roblox'suz rapor verir ve VPN açılınca kendiliğinden doğrular (bkz. [README](../README.md#roblox-erişilemezken-vpn)).
+Sürekli VPN gerekiyorsa VPN uygulamasında "bilgisayar açılınca otomatik bağlan" ayarını aç.
 
 ## Sorun giderme
 

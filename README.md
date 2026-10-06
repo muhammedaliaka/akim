@@ -5,9 +5,11 @@ Akım, 7/24 açık kalan bir izleme servisidir:
 1. **Steam** ve **Epic Games Store** listelerini (en çok satanlar, en çok oynananlar, trend, yeni çıkanlar…) sürekli çeker.
 2. Büyük markaları (EA, Ubisoft, Sony, Tencent…) eler; **az bilinen / bağımsız yapımcıların** yükselen oyunlarını bulur.
 3. Her adayı **Roblox'ta arar**. Klonları yalnızca isme göre değil **oynanışa göre** tespit eder. Örneğin adında "CS2" geçmeyen ama "5v5, bombayı kur/çöz" oynatan bir Roblox oyunu Counter-Strike klonu sayılır (bkz. [Benzerlik nasıl hesaplanır](#benzerlik-nasıl-hesaplanır)).
-4. Sıra tırmanışı, yeni giriş, oyuncu artışı ve Roblox doygunluğunu birleştirip **karar verir**.
-5. Durum değiştiği anda Telegram, telefon (ntfy), Discord, Slack, e-posta veya webhook ile **bildirim gönderir**.
-6. Canlı bir **web paneli** sunar ve Telegram üzerinden komut alır (`/firsatlar`, `/kontrol <oyun>`).
+4. **Roblox'a ulaşılamazsa** (ör. VPN kapalı) durmaz: Roblox bilgisi olmadan "yükseliyor" raporu verir, bağlantı gelince otomatik doğrular ([ayrıntı](#roblox-erişilemezken-vpn)).
+5. **YouTube fragmanlarını** izleyip henüz **çıkmamış** oyunları da yakalar; Roblox'ta karşılığı olması şart değildir ([ayrıntı](#çıkmamış-oyunlar-youtube-fragmanları)).
+6. Sıra tırmanışı, yeni giriş, oyuncu artışı ve Roblox doygunluğunu birleştirip **karar verir**.
+7. Durum değiştiği anda Telegram, telefon (ntfy), Discord, Slack, e-posta veya webhook ile **bildirim gönderir**.
+8. Canlı bir **web paneli** sunar ve Telegram üzerinden komut alır (`/firsatlar`, `/kontrol <oyun>`, `/yaklasan`, `/rapor`).
 
 ```
 Steam ─┐                                         ┌─ Telegram (+ komutlar)
@@ -117,12 +119,36 @@ Docker'da `docker-compose.yml` içindeki `EXTRAS: "laya"` ile derle. Model (~800
 | `opportunity` | Yüksek / **Kritik** | Oyun FIRSAT durumuna geçti (Roblox'ta hiç yok ve momentum yüksekse kritik) |
 | `rising_trend` | Yüksek | Roblox'taki klonlar hızla büyüyor |
 | `first_clone` | Yüksek | Daha önce karşılığı olmayan oyunun **ilk Roblox klonu** çıktı |
+| `rising_unverified` | Orta–Yüksek | Bağımsız oyun yükseliyor ama **Roblox doğrulanamıyor** (VPN kapalı/Roblox kapalı); gelince otomatik doğrulanır |
+| `upcoming_trailer` | Orta–Yüksek | YouTube'da fragmanı ses getiren, **henüz çıkmamış** oyun (Steam'de "Yakında" ya da mağazasız) |
 | `rank_surge` / `ccu_surge` / `chart_entry` | Orta–Yüksek | Takipteki oyun sıçradı / listeye girdi |
 | `saturated` | Bilgi | Fırsat penceresi kapandı |
 | `digest` | Orta | Periyodik özet (varsayılan 6 saatte bir) |
-| `system` | Yüksek | Bir veri kaynağına 3 kez üst üste ulaşılamadı / düzeldi |
+| `system` | Yüksek / Bilgi | Bir kaynağa ulaşılamıyor (sade Türkçe sebep + ne yapman gerektiği) / yeniden çalışıyor. Roblox kesintisi 10 dakikayı geçerse **tek** uyarı gider |
 
 Aynı oyun + aynı olay için 12 saat tekrar koruması vardır. Aynı oyun hem Steam'de hem Epic'te listelenmişse **tek bildirim** gider. İlk açılışta, mevcut her fırsat için ayrı bildirim göndermek yerine **tek bir başlangıç özeti** gönderilir.
+
+## Roblox erişilemezken (VPN)
+
+Roblox bazı ağlarda engellidir ve VPN gerektirebilir. VPN kapandığında:
+
+- Sistem **"Roblox'ta yok" demez**. Ulaşılamayan, bozuk ya da boş yanıt "bilmiyorum" sayılır; aksi hâlde sahte FIRSAT çıkardı. Sağlıklı Roblox hiçbir aramaya boş dönmediğinden boş yanıt da engel işareti kabul edilir.
+- İki ardışık hatadan sonra **Roblox'suz mod** başlar: oyunlar yalnızca bağımsızlık ve momentumla değerlendirilir, en fazla İZLE olur ve bildirim "Roblox doğrulanamadı" notu taşır (`rising_unverified`).
+- Roblox her 5 dakikada bir yoklanır. Kesinti 10 dakikayı aşarsa tek bir uyarı gelir ("VPN'i açman yeterli"); bağlantı gelince doğrulanamayan oyunlar otomatik taranır, gerçek karar ve FIRSAT bildirimi o zaman verilir.
+- Kesintiler kaydedilir: `akim report`. Roblox'u hiç kullanmak istemezsen `roblox.enabled: false` (sistem hep Roblox'suz çalışır).
+
+## Çıkmamış oyunlar: YouTube fragmanları
+
+Roblox'ta karşılığı aramadan, oyunlar **çıkmadan** fragmanından öğrenilir. Hesap, API anahtarı ve ücret gerekmez (kanal RSS akışları).
+
+1. 13 kanalın (Steam, IGN, GameSpot, GameTrailers, PC Gamer, Game Informer, GamesRadar, Day of the Devs, Indie Game Trailers, IndieGame+, Devolver, Annapurna, Hooded Horse) son videoları saatte bir okunur. Kanalları `youtube.channels` ile değiştirebilirsin (`UC...` kimliği ya da `@tanıtıcı`).
+2. Başlıktan oyun adı çıkarılır ("X - Official Reveal Trailer", "X | Release Date Trailer"). İnceleme, liste, etkinlik, müzik, DLC ve güncelleme videoları elenir.
+3. Oyun **Steam'de aranır**: çıkmışsa ya da ek paketse elenir, büyük yayıncıysa elenir; "Yakında" sayfası varsa **çıkmamış bağımsız oyun** sayılır. Steam'e ulaşılamazsa tahmin yürütülmez, sonraki tur denenir.
+4. Mağaza sayfası olmayanlar (konsol/Epic/yeni duyuru) daha yüksek eşikle ve yalnızca orta öncelikle bildirilir; büyük markalar elenir.
+5. **Ses getirme** puanı (0–1): toplam izlenme, yaşa göre hız ve ölçümler arası hız. Varsayılan eşik 0,4; 0,65 üstü yüksek öncelik.
+6. Bildirim çıkış tarihini, fragmanı, yapımcıyı ve Roblox durumunu (erişilebiliyorsa, ek bilgi olarak) taşır. Aynı oyun için bir kez bildirilir.
+
+Panelde **Yaklaşanlar** sekmesi, Telegram'da `/yaklasan` ve özetlerde "Yaklaşan oyunlar" bölümü bulunur.
 
 ## Platformlar
 
@@ -189,7 +215,9 @@ akim test-notify
 | `/firsatlar` | Güncel fırsat, akım ve izleme listesi |
 | `/kontrol <oyun>` | Herhangi bir oyunu **anında** Roblox'ta kontrol et |
 | `/oyun <oyun>` | Takip edilen oyunun detayı: sıralar, gerekçe, Roblox benzerleri |
-| `/durum` | Sistem ve kaynak sağlığı |
+| `/yaklasan` | Fragmandan yakalanan, henüz çıkmamış oyunlar |
+| `/rapor [gün]` | Son günlerin sade raporu (bildirimler, kesintiler, dikkat edilecekler) |
+| `/durum` | Sistem ve kaynak sağlığı (Roblox kesintisi dahil) |
 
 Komutlar yalnızca yapılandırılmış `chat_id`'den kabul edilir.
 
@@ -201,7 +229,11 @@ akim once --limit 30        # tek tur: listeleri çek, 30 adayı Roblox'ta tara,
 akim check "Schedule I"     # bir oyunu anında Roblox'ta kontrol et
 akim top                    # veritabanındaki güncel tablo
 akim test-notify            # tüm kanallara test bildirimi
+akim report --days 7        # son günlerin sade raporu: bildirimler, kesintiler, dikkat edilecekler
+akim invite                 # arkadaşlar için ntfy katılım metni (WhatsApp'a yapıştır)
 ```
+
+Arkadaşlarını bildirimlere katmak için: [docs/arkadaslar.md](docs/arkadaslar.md).
 
 Örnek `akim check "R.E.P.O."` çıktısı:
 
@@ -217,13 +249,21 @@ R.E.P.O. → Rekabetçi (doygunluk 0.53, toplam 103 anlık oyuncu)
 - `GET /` : canlı panel (Server-Sent Events ile anlık güncellenir, tarayıcı bildirimi destekler)
 - `GET /api/board?decision=opportunity,watch` : karar tablosu
 - `GET /api/games/{key}` : oyun detayı (sıra geçmişi, anlık oyuncu, Roblox benzerleri)
+- `GET /api/upcoming` : fragmandan yakalanan çıkmamış oyunlar
 - `GET /api/alerts` : son bildirimler
 - `GET /api/events` : canlı olay akışı (SSE)
 - `POST /api/check` `{"title": "..."}` : anlık Roblox kontrolü
 - `POST /api/rescan/{key}` : bir oyunu hemen yeniden tara
 - `GET /healthz` : sağlık kontrolü (Docker healthcheck bunu kullanır)
 
-`AKIM_WEB_TOKEN` tanımlıysa POST uç noktaları `Authorization: Bearer <token>` ister. Paneli internete açacaksan önüne kimlik doğrulamalı bir ters vekil (reverse proxy) koy.
+### Güvenlik varsayılanları
+
+- Panel varsayılan olarak **yalnızca bu cihazdan** erişilebilir (`web.host: 127.0.0.1`). Telefondan/aynı ağdan açmak için `web.host: 0.0.0.0` ve `.env` içinde güçlü bir `AKIM_WEB_TOKEN` ayarla.
+- Token yoksa kontrol uçları (`/api/check`, `/api/rescan`) yalnızca bu cihazdan çalışır; ağdan okuma açık olsa bile yazma 403 döner. Token varsa `Authorization: Bearer <token>` zorunludur.
+- Host başlığı doğrulanır (DNS rebinding); IP ve `*.local` dışındaki adlar için `web.allowed_hosts` (ör. `*.ts.net`). POST için `application/json` zorunludur; yazma uçları hız sınırlıdır; CSP ve diğer güvenlik başlıkları her yanıtta bulunur.
+- Bot token, webhook adresleri, parolalar ve **ntfy konu adı** log'larda, hata mesajlarında ve panelde maskelenir. Konu adı bir parola gibidir: bilen herkes bildirimlerini okuyabilir ve konuya mesaj gönderebilir; bu yüzden zayıf/kısa konu adları uyarılır.
+- Oyun adları dış kaynaklıdır: Slack/Discord etiketleri, başlık ve e-posta enjeksiyonları kanal düzeyinde engellenir.
+- Paneli internete açacaksan önüne kimlik doğrulamalı bir ters vekil (reverse proxy) koy; ya da VPN (ör. Tailscale) kullan.
 
 ## Döngüler ve varsayılan sıklıklar
 
@@ -234,7 +274,8 @@ R.E.P.O. → Rekabetçi (doygunluk 0.53, toplam 103 anlık oyuncu)
 | Roblox taraması | sürekli | Yeni/sinyalli oyunlar önce; normal oyunlar 6 saatte, FIRSAT oyunları 1,5 saatte bir |
 | Klon takibi | 15 dk | Bilinen Roblox benzerlerinin anlık oyuncusu (akım Roblox'a geçti mi?) |
 | Steam anlık oyuncu | 30 dk | Takipteki bağımsız oyunların oyuncu sayısı (ani sıçrama tespiti) |
-| Özet | 6 saat | En iyi 10 fırsat |
+| YouTube fragmanları | 60 dk | Kanal akışları → çıkmamış oyun adayları (Steam doğrulaması) |
+| Özet | 6 saat | En iyi 10 fırsat + yaklaşan oyunlar |
 
 Tüm API çağrılarında yeniden deneme, üstel geri çekilme ve host bazlı hız sınırı vardır. 429 alan hostun bekleme süresi otomatik büyür, başarılı çağrılarla yeniden küçülür. Log'larda bot token ve webhook adresleri maskelenir.
 
@@ -244,6 +285,8 @@ Tüm API çağrılarında yeniden deneme, üstel geri çekilme ve host bazlı h�
 - Roblox aramasının döndürmediği oyunlar hiç değerlendirilmez. Sistem, Roblox'un kendi aramasında oyun adıyla bulunan adaylarla sınırlıdır.
 - "Peak", "Halloween" gibi **genel isimler** için isim eşleşmesi yalnızca neredeyse birebir ise kabul edilir ve kararın yanında "elle doğrula" notu çıkar.
 - Epic, tam koleksiyon sayfalarını Cloudflare arkasında tuttuğu için her Epic listesinden mağaza ana sayfasında görünen ilk ~15 oyun alınır.
+- Fragman tespiti başlık biçimine dayanır (her kanalın son ~15 videosu). Alışılmadık başlıklar kaçabilir; çıkmış bir oyunun adıyla Steam'de yanlış eşleşme olursa o oyun elenir (güvenli taraf). Mağazası olmayan oyunlarda bağımsızlık doğrulanamaz; bu yüzden eşik yüksek, öncelik orta tutulur.
+- Roblox'suz modda (erişim yok) kararlar yalnızca bağımsızlık ve momentuma dayanır; "Roblox'ta yok" iddiası yapılmaz.
 - Kullanılan uç noktalar herkese açık ama resmi olarak belgelenmemiştir; biçimleri değişebilir. Bir kaynak bozulursa sistem çalışmaya devam eder ve `system` bildirimi gönderir.
 
 ## Geliştirme
@@ -257,16 +300,18 @@ Proje yapısı:
 
 ```
 akim/
-  sources/    steam.py · epic.py · roblox.py     veri toplayıcılar
+  sources/    steam.py · epic.py · roblox.py · youtube.py   veri toplayıcılar
   analysis/   indie.py      büyük marka / bağımsız ayrımı
               matching.py   isim benzerliği, açıklamada atıf
               concepts.py   oynanış kavramları ve konsept benzerliği
               similarity.py kanıtların birleştirilmesi, klon / benzer sınıflandırması
               laya_judge.py isteğe bağlı yerel Laya karar modeli
               scoring.py    momentum, Roblox doygunluğu, karar
+              trailers.py   YouTube başlığından oyun adı, ses getirme puanı
   notify/     telegram.py · channels.py           bildirim kanalları + dağıtıcı
   web/        server.py · dashboard.html          canlı panel ve API
               static/                             PWA: manifest, simgeler, servis çalışanı
+  diagnostics.py  ham hata -> sade Türkçe neden; report.py  `akim report`; invite.py  ntfy davet metni
   runtime.py  Windows konsolu, uyku engelleme, .env, kapatma sinyalleri, yerel ağ adresi
   engine.py   döngüler, karar geçişleri, bildirim üretimi
   storage.py  SQLite (sıra geçmişi, Roblox geçmişi, kararlar, bildirim tekrar koruması)

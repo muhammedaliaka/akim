@@ -35,6 +35,8 @@ roblox:
   max_queries_per_game: 3
   request_delay_seconds: 1.0
   batch_size: 10
+  probe_minutes: 5            # Roblox'a ulaşılamıyorsa (VPN kapalı, engelli ağ) kaç dakikada bir yoklansın
+  outage_alert_minutes: 10    # kesinti bu kadar sürerse TEK uyarı gider; o zamana kadar Roblox'suz rapor verilir
 
 filters:
   min_indie_score: 0.5        # 0 = AAA, 1 = tamamen bağımsız
@@ -57,6 +59,22 @@ scoring:
   rank_surge_positions: 15    # bu kadar sıra tırmanış = sinyal
   ccu_surge_ratio: 1.5
   ccu_surge_min_players: 1000
+  unverified_alert_momentum: 0.5   # Roblox doğrulanamıyorken "yükseliyor" bildirimi için en düşük momentum
+
+# YouTube fragmanlarından henüz çıkmamış oyunları yakala (RSS: anahtarsız, hesapsız, ücretsiz).
+# Roblox'ta karşılığı olması gerekmez; Roblox erişilebiliyorsa durumu ek bilgi olarak eklenir.
+youtube:
+  enabled: true
+  interval_minutes: 60
+  # channels: ["UC...", "@IGN"]   # varsayılan: Steam, IGN, GameSpot, GameTrailers, PC Gamer, Game Informer, GamesRadar,
+                                  # Day of the Devs, Indie Game Trailers, IndieGame+, Devolver, Annapurna, Hooded Horse
+  max_age_days: 10            # bundan eski videolar yok sayılır
+  min_views: 2000             # bunun altındaki fragmanlar gürültü sayılır
+  alert_buzz: 0.4             # bildirim için en düşük "ses getirme" puanı (0..1); 0.65 üstü yüksek öncelik
+  alert_unlisted: true        # Steam sayfası olmayan (konsol/Epic/yeni duyuru) oyunlar için de bildir (eşik +0.15, orta öncelik)
+  unlisted_max_views: 1500000 # bundan çok izlenen mağazasız fragmanlar büyük yapım sayılır
+  check_roblox: true          # çıkmamış oyunu Roblox'ta da ara (zorunlu değil, ek bilgi)
+  max_roblox_lookups_per_poll: 3
 
 # İsteğe bağlı Laya karar modeli (Convai, Apache 2.0): yerel ve ücretsiz, API anahtarı/hesap gerekmez.
 # Akım'da ücretli (kredi/API anahtarı isteyen) hiçbir bileşen yoktur.

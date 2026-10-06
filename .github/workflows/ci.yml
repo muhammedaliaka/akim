@@ -97,3 +97,16 @@ jobs:
           sleep 3
           grep -q "Kapatılıyor" run.log || { cat run.log; exit 1; }
           ! grep -q "yeniden başlatılıyor" run.log || { cat run.log; exit 1; }
+
+  security:
+    name: security (bandit, pip-audit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install bandit pip-audit
+      # Orta ve üstü önem + orta ve üstü güven: denetlenmiş yerler "# nosec" ile gerekçelendirilmiştir
+      - run: bandit -q -r akim -ll -ii
+      - run: pip-audit .
